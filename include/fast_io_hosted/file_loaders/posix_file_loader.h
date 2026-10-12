@@ -7,6 +7,7 @@ namespace details
 {
 
 inline char *posix_load_address_options(int fd, ::std::size_t file_size, ::fast_io::posix_mmap_options const &options)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (file_size == 0)
 	{
@@ -16,6 +17,7 @@ inline char *posix_load_address_options(int fd, ::std::size_t file_size, ::fast_
 }
 
 inline char *posix_load_address(int fd, ::std::size_t file_size)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (file_size == 0)
 	{
@@ -45,6 +47,7 @@ struct posix_file_loader_return_value_t
 };
 
 inline posix_file_loader_return_value_t posix_load_address_impl(int fd)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t size{posix_loader_get_file_size(fd)};
 	auto add{posix_load_address(fd, size)};
@@ -58,6 +61,7 @@ inline posix_file_loader_return_value_t posix_load_address_impl(int fd)
 
 template <typename... Args>
 inline auto posix_load_file_impl(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	posix_file pf(::fast_io::freestanding::forward<Args>(args)...);
 	return posix_load_address_impl(pf.fd);
@@ -65,6 +69,7 @@ inline auto posix_load_file_impl(Args &&...args)
 
 inline posix_file_loader_return_value_t posix_load_address_options_impl(::fast_io::posix_mmap_options const &options,
 																		int fd)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t size{posix_loader_get_file_size(fd)};
 	auto add{posix_load_address_options(fd, size, options)};
@@ -78,6 +83,7 @@ inline posix_file_loader_return_value_t posix_load_address_options_impl(::fast_i
 
 template <typename... Args>
 inline auto posix_load_file_options_impl(::fast_io::posix_mmap_options const &options, Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	posix_file pf(::fast_io::freestanding::forward<Args>(args)...);
 	return posix_load_address_options_impl(options, pf.fd);
@@ -108,6 +114,7 @@ public:
 	{
 	}
 	inline explicit posix_file_loader(posix_at_entry pate)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::details::posix_load_address_impl(pate.fd)};
 		address_begin = ret.address_begin;
@@ -115,6 +122,7 @@ public:
 	}
 	inline explicit posix_file_loader(native_fs_dirent fsdirent, open_mode om = open_mode::in,
 									  perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::details::posix_load_file_impl(fsdirent, om, pm)};
 		address_begin = ret.address_begin;
@@ -123,6 +131,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit posix_file_loader(T const &filename, open_mode om = open_mode::in,
 									  perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::details::posix_load_file_impl(filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -131,12 +140,14 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit posix_file_loader(native_at_entry ent, T const &filename, open_mode om = open_mode::in,
 									  perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::details::posix_load_file_impl(ent, filename, om, pm)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}
 	inline explicit posix_file_loader(posix_mmap_options const &options, posix_at_entry pate)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::details::posix_load_address_options_impl(options, pate.fd)};
 		address_begin = ret.address_begin;
@@ -144,6 +155,7 @@ public:
 	}
 	inline explicit posix_file_loader(posix_mmap_options const &options, native_fs_dirent fsdirent,
 									  open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::details::posix_load_file_options_impl(options, fsdirent, om, pm)};
 		address_begin = ret.address_begin;
@@ -152,6 +164,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit posix_file_loader(posix_mmap_options const &options, T const &filename,
 									  open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::details::posix_load_file_options_impl(options, filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -160,6 +173,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit posix_file_loader(posix_mmap_options const &options, native_at_entry ent, T const &filename,
 									  open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::details::posix_load_file_options_impl(options, ent, filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -194,10 +208,6 @@ public:
 	inline constexpr const_pointer data() const noexcept
 	{
 		return address_begin;
-	}
-	inline constexpr bool empty() const noexcept
-	{
-		return address_begin == address_end;
 	}
 	inline constexpr bool is_empty() const noexcept
 	{
@@ -369,7 +379,7 @@ public:
 	{
 		return address_begin[size];
 	}
-	inline void close()
+	inline void close() noexcept
 	{
 		::fast_io::details::posix_unload_address(address_begin,
 												 static_cast<::std::size_t>(address_end - address_begin));

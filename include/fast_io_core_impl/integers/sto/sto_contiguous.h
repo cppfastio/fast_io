@@ -251,7 +251,7 @@ inline constexpr char_type const *find_none_zero_simd_impl(char_type const *firs
 struct simd_parse_result
 {
 	::std::size_t digits;
-	fast_io::parse_code code;
+	::fast_io::freestanding::parse_errc code;
 };
 
 inline constexpr char unsigned simd16_shift_table[32]{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -318,7 +318,7 @@ inline simd_parse_result sse_parse(char unsigned const *buffer, char unsigned co
 {
 	constexpr char8_t zero_constant{char_execharset ? static_cast<char8_t>('0') : u8'0'};
 	constexpr char8_t v176_constant{static_cast<char8_t>((zero_constant + static_cast<char8_t>(128)) & 255u)};
-	using fast_io::parse_code;
+	using ::fast_io::freestanding::parse_errc;
 #if (defined(__GNUC__) || defined(__clang__)) && !defined(__INTEL_COMPILER)
 	using namespace fast_io::intrinsics;
 	x86_64_v16qu chunk;
@@ -334,7 +334,7 @@ inline simd_parse_result sse_parse(char unsigned const *buffer, char unsigned co
 	::std::uint_least32_t digits{static_cast<::std::uint_least32_t>(::std::countr_one(v))};
 	if (digits == 0)
 	{
-		return {0, parse_code::invalid};
+		return {0, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	x86_64_v16qu const zeros{zero_constant, zero_constant, zero_constant, zero_constant, zero_constant, zero_constant,
 							 zero_constant, zero_constant, zero_constant, zero_constant, zero_constant, zero_constant,
@@ -358,7 +358,7 @@ inline simd_parse_result sse_parse(char unsigned const *buffer, char unsigned co
 	::std::uint_least32_t digits{static_cast<::std::uint_least32_t>(::std::countr_one(v))};
 	if (digits == 0)
 	{
-		return {0, parse_code::invalid};
+		return {0, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	chunk = _mm_sub_epi8(chunk, _mm_set1_epi8(zero_constant));
 	chunk = _mm_shuffle_epi8(chunk, _mm_loadu_si128(reinterpret_cast<__m128i const *>(simd16_shift_table + digits)));
@@ -376,7 +376,7 @@ inline simd_parse_result sse_parse(char unsigned const *buffer, char unsigned co
 		if constexpr (less_than_64_bits)
 		{
 			//::std::uint_least32_t can never have 16 digits
-			return {sse_skip_long_overflow_digits<char_execharset>(buffer + 16, buffer_end) + 16, parse_code::overflow};
+			return {sse_skip_long_overflow_digits<char_execharset>(buffer + 16, buffer_end) + 16, ::fast_io::freestanding::parse_errc::overflow};
 		}
 		else
 		{
@@ -389,23 +389,23 @@ inline simd_parse_result sse_parse(char unsigned const *buffer, char unsigned co
 				res = result * UINT16_C(1000) +
 					  ((buffer[16] - zero_constant) * UINT16_C(100) + (buffer[17] - zero_constant) * UINT16_C(10) +
 					   (buffer[18] - zero_constant));
-				return {19, parse_code::ok};
+				return {19, ::fast_io::freestanding::parse_errc::ok};
 			}
 			case 2:
 			{
 				res = result * UINT16_C(100) + ((buffer[16] - zero_constant) * UINT16_C(10) +
 												static_cast<::std::uint_least64_t>(buffer[17] - zero_constant));
-				return {18, parse_code::ok};
+				return {18, ::fast_io::freestanding::parse_errc::ok};
 			}
 			case 1:
 			{
 				res = result * UINT16_C(10) + (buffer[16] - zero_constant);
-				return {17, parse_code::ok};
+				return {17, ::fast_io::freestanding::parse_errc::ok};
 			}
 			case 0:
 			{
 				res = result;
-				return {16, parse_code::ok};
+				return {16, ::fast_io::freestanding::parse_errc::ok};
 			}
 			case 4:
 			{
@@ -413,7 +413,7 @@ inline simd_parse_result sse_parse(char unsigned const *buffer, char unsigned co
 				constexpr ::std::uint_fast16_t risky_mod{UINT_LEAST64_MAX % UINT64_C(10000)};
 				if (result > risky_value)
 				{
-					return {20, parse_code::overflow};
+					return {20, ::fast_io::freestanding::parse_errc::overflow};
 				}
 				::std::uint_fast16_t partial{static_cast<::std::uint_fast16_t>(
 					static_cast<::std::uint_fast16_t>(buffer[16] - zero_constant) * UINT16_C(1000) +
@@ -422,10 +422,10 @@ inline simd_parse_result sse_parse(char unsigned const *buffer, char unsigned co
 					static_cast<::std::uint_fast8_t>(buffer[19] - zero_constant))};
 				if (result == risky_value && risky_mod < partial)
 				{
-					return {20, parse_code::overflow};
+					return {20, ::fast_io::freestanding::parse_errc::overflow};
 				}
 				res = result * UINT16_C(10000) + partial;
-				return {20, parse_code::ok};
+				return {20, ::fast_io::freestanding::parse_errc::ok};
 			}
 			case 16:
 			{
@@ -434,13 +434,13 @@ inline simd_parse_result sse_parse(char unsigned const *buffer, char unsigned co
 			}
 			default:
 			{
-				return {digits1 + 16, parse_code::overflow};
+				return {digits1 + 16, ::fast_io::freestanding::parse_errc::overflow};
 			}
 			}
 		}
 	}
 	res = result;
-	return {digits, parse_code::ok};
+	return {digits, ::fast_io::freestanding::parse_errc::ok};
 }
 
 #endif
@@ -507,7 +507,7 @@ scan_int_contiguous_none_simd_space_part_check_overflow_impl(char_type const *fi
 			}
 		}
 	}
-	return {first, (overflow ? (parse_code::overflow) : (parse_code::ok))};
+	return {first, (overflow ? (::fast_io::freestanding::parse_errc::overflow) : (::fast_io::freestanding::parse_errc::ok))};
 }
 
 template <char8_t base, my_unsigned_integral T, ::std::size_t n>
@@ -930,7 +930,7 @@ inline constexpr parse_result<char_type const *>
 scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, char_type const *last, T &res) noexcept
 {
 #ifdef __cpp_if_consteval
-	if !consteval
+	FAST_IO_IF_NOT_CONSTEVAL
 #else
 	if (!__builtin_is_constant_evaluated())
 #endif
@@ -943,7 +943,7 @@ scan_int_contiguous_none_simd_space_part_define_impl(char_type const *first, cha
 	}
 }
 
-inline constexpr parse_code ongoing_parse_code{static_cast<parse_code>(::std::numeric_limits<char unsigned>::max())};
+inline constexpr ::fast_io::freestanding::parse_errc ongoing_parse_ec{static_cast<::fast_io::freestanding::parse_errc>(::std::numeric_limits<::std::underlying_type_t<::fast_io::freestanding::parse_errc>>::max())};
 
 template <char8_t base, ::std::integral char_type>
 inline constexpr parse_result<char_type const *> scan_shbase_impl(char_type const *first,
@@ -951,11 +951,11 @@ inline constexpr parse_result<char_type const *> scan_shbase_impl(char_type cons
 {
 	if (first == last || *first != char_literal_v<u8'0', char_type>) [[unlikely]]
 	{
-		return {first, parse_code::invalid};
+		return {first, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	if ((++first) == last) [[unlikely]]
 	{
-		return {first, parse_code::invalid};
+		return {first, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	if constexpr (base == 2 || base == 3 || base == 16)
 	{
@@ -963,7 +963,7 @@ inline constexpr parse_result<char_type const *> scan_shbase_impl(char_type cons
 		if ((ch != char_literal_v<(base == 2 ? u8'B' : (base == 3 ? u8't' : u8'X')), char_type>)&(
 				ch != char_literal_v<(base == 2 ? u8'b' : (base == 3 ? u8't' : u8'x')), char_type>)) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++first;
 	}
@@ -971,40 +971,40 @@ inline constexpr parse_result<char_type const *> scan_shbase_impl(char_type cons
 	{
 		if (*first != char_literal_v<u8'[', char_type>) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++first;
 		if ((++first) == last) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		constexpr auto digit0{char_literal_v<u8'0' + (base < 10 ? base : base / 10), char_type>};
 		if (*first != digit0) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		if ((++first) == last) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		if constexpr (10 < base)
 		{
 			constexpr auto digit1{char_literal_v<u8'0' + (base % 10), char_type>};
 			if (*first != digit1) [[unlikely]]
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			if ((++first) == last) [[unlikely]]
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 		}
 		if (*first != char_literal_v<u8']', char_type>) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 	}
-	return {first, ongoing_parse_code};
+	return {first, ::fast_io::details::ongoing_parse_ec};
 }
 
 template <::std::integral char_type>
@@ -1020,7 +1020,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 	{
 		if (first == last) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		constexpr auto minus_sign{char_literal_v<u8'-', char_type>};
 		if ((sign = (minus_sign == *first)))
@@ -1033,14 +1033,14 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 			{
 				if (first == last || *first != char_literal_v<u8'0', char_type>) [[unlikely]]
 				{
-					return {first, parse_code::invalid};
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
 				}
 				++first;
 			}
 			else
 			{
 				auto phase_ret = scan_shbase_impl<base>(first, last);
-				if (phase_ret.code != ongoing_parse_code) [[unlikely]]
+				if (phase_ret.code != ::fast_io::details::ongoing_parse_ec) [[unlikely]]
 				{
 					return phase_ret;
 				}
@@ -1054,7 +1054,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 		auto first_ch{*first};
 		if (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(first_ch))) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		else if (first_ch == zero)
 		{
@@ -1065,7 +1065,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 				if (first == last) [[likely]]
 				{
 					t = 0;
-					return {first, parse_code::ok};
+					return {first, ::fast_io::freestanding::parse_errc::ok};
 				}
 			}
 			else
@@ -1074,9 +1074,9 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 				if ((first == last) || (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first)))) [[likely]]
 				{
 					t = {};
-					return {first, parse_code::ok};
+					return {first, ::fast_io::freestanding::parse_errc::ok};
 				}
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 		}
 	}
@@ -1097,7 +1097,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 			auto [digits, ec] = sse_parse<is_ebcdic<char_type>, smaller_than_uint64>(
 				reinterpret_cast<char unsigned const *>(first), reinterpret_cast<char unsigned const *>(last), temp);
 			it = first + digits;
-			if (ec != parse_code::ok) [[unlikely]]
+			if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 			{
 				return {it, ec};
 			}
@@ -1106,7 +1106,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 				constexpr unsigned_type umax{static_cast<unsigned_type>(-1)};
 				if (temp > umax) [[unlikely]]
 				{
-					return {it, parse_code::overflow};
+					return {it, ::fast_io::freestanding::parse_errc::overflow};
 				}
 				res = static_cast<unsigned_type>(temp);
 			}
@@ -1118,7 +1118,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 		else [[unlikely]]
 		{
 			auto [it2, ec] = scan_int_contiguous_none_simd_space_part_define_impl<base>(first, last, res);
-			if (ec != parse_code::ok) [[unlikely]]
+			if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 			{
 				return {it2, ec};
 			}
@@ -1129,7 +1129,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 #endif
 	{
 		auto [it2, ec] = scan_int_contiguous_none_simd_space_part_define_impl<base>(first, last, res);
-		if (ec != parse_code::ok) [[unlikely]]
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {it2, ec};
 		}
@@ -1141,7 +1141,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 		constexpr unsigned_type imax{umax >> 1};
 		if (res > (static_cast<my_make_unsigned_t<T>>(imax) + sign)) [[unlikely]]
 		{
-			return {it, parse_code::overflow};
+			return {it, ::fast_io::freestanding::parse_errc::overflow};
 		}
 		if (sign)
 		{
@@ -1156,7 +1156,7 @@ scan_int_contiguous_none_space_part_define_impl(char_type const *first, char_typ
 	{
 		t = res;
 	}
-	return {it, parse_code::ok};
+	return {it, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <char8_t base, bool noskipws, bool shbase, bool skipzero, ::std::integral char_type, details::my_integral T>
@@ -1168,7 +1168,7 @@ inline constexpr parse_result<char_type const *> scan_int_contiguous_define_impl
 		first = ::fast_io::details::find_space_common_impl<false, true>(first, last);
 		if (first == last)
 		{
-			return {first, parse_code::end_of_file};
+			return {first, ::fast_io::freestanding::parse_errc::end_of_file};
 		}
 	}
 	if constexpr (my_unsigned_integral<T>)
@@ -1179,14 +1179,14 @@ inline constexpr parse_result<char_type const *> scan_int_contiguous_define_impl
 			{
 				if (first == last || *first != char_literal_v<u8'0', char_type>) [[unlikely]]
 				{
-					return {first, parse_code::invalid};
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
 				}
 				++first;
 			}
 			else
 			{
 				auto phase_ret = scan_shbase_impl<base>(first, last);
-				if (phase_ret.code != ongoing_parse_code) [[unlikely]]
+				if (phase_ret.code != ::fast_io::details::ongoing_parse_ec) [[unlikely]]
 				{
 					return phase_ret;
 				}
@@ -1245,9 +1245,9 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_space_phase(char_typ
 	first = ::fast_io::details::find_space_common_impl<false, true>(first, last);
 	if (first == last)
 	{
-		return {first, parse_code::partial};
+		return {first, ::fast_io::freestanding::parse_errc::partial};
 	}
-	return {first, ongoing_parse_code};
+	return {first, ::fast_io::details::ongoing_parse_ec};
 }
 
 template <bool allow_negative, bool allow_positive, typename State, ::std::integral char_type>
@@ -1257,7 +1257,7 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_sign_phase(State &st
 	if (first == last)
 	{
 		st.integer_phase = scan_integral_context_phase::sign;
-		return {first, parse_code::partial};
+		return {first, ::fast_io::freestanding::parse_errc::partial};
 	}
 	if constexpr (allow_negative)
 	{
@@ -1296,7 +1296,7 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_sign_phase(State &st
 			}
 		}
 	}
-	return {first, ongoing_parse_code};
+	return {first, ::fast_io::details::ongoing_parse_ec};
 }
 
 template <char8_t base, ::std::integral char_type>
@@ -1306,13 +1306,13 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 {
 	if (first == last)
 	{
-		return {first, parse_code::partial};
+		return {first, ::fast_io::freestanding::parse_errc::partial};
 	}
 	if constexpr (base == 8)
 	{
 		if (*first != char_literal_v<u8'0', char_type>) [[unlikely]]
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 	}
 	else
@@ -1322,12 +1322,12 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 		{
 			if (*first != char_literal_v<u8'0', char_type>) [[unlikely]]
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			if ((++first) == last)
 			{
 				sz = 1;
-				return {first, parse_code::partial};
+				return {first, ::fast_io::freestanding::parse_errc::partial};
 			}
 			if constexpr (base != 2 && base != 3 && base != 16)
 			{
@@ -1342,11 +1342,11 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 			{
 				sz = 0;
 				++first;
-				return {first, ongoing_parse_code};
+				return {first, ::fast_io::details::ongoing_parse_ec};
 			}
 			else [[unlikely]]
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 		}
 		else
@@ -1355,12 +1355,12 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 			{
 				if (*first != char_literal_v<u8'[', char_type>) [[unlikely]]
 				{
-					return {first, parse_code::invalid};
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
 				}
 				if ((++first) == last)
 				{
 					sz = 2;
-					return {first, parse_code::partial};
+					return {first, ::fast_io::freestanding::parse_errc::partial};
 				}
 			}
 			constexpr auto digit0{char_literal_v<u8'0' + (base < 10 ? base : base / 10), char_type>};
@@ -1368,12 +1368,12 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 			{
 				if (*first != digit0) [[unlikely]]
 				{
-					return {first, parse_code::invalid};
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
 				}
 				if ((++first) == last)
 				{
 					sz = 3;
-					return {first, parse_code::partial};
+					return {first, ::fast_io::freestanding::parse_errc::partial};
 				}
 			}
 			if constexpr (10 < base)
@@ -1383,12 +1383,12 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 				{
 					if (*first != digit1) [[unlikely]]
 					{
-						return {first, parse_code::invalid};
+						return {first, ::fast_io::freestanding::parse_errc::invalid};
 					}
 					if ((++first) == last)
 					{
 						sz = 4;
-						return {first, parse_code::partial};
+						return {first, ::fast_io::freestanding::parse_errc::partial};
 					}
 				}
 			}
@@ -1397,14 +1397,14 @@ sc_int_ctx_prefix_phase(::std::uint_least8_t &sz, char_type const *first, char_t
 			{
 				if (*first != char_literal_v<u8']', char_type>) [[unlikely]]
 				{
-					return {first, parse_code::invalid};
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
 				}
 				sz = 0;
 				++first;
 			}
 		}
 	}
-	return {first, ongoing_parse_code};
+	return {first, ::fast_io::details::ongoing_parse_ec};
 }
 
 template <char8_t base, bool skipzero, ::std::integral char_type>
@@ -1416,13 +1416,13 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_zero_phase(scan_inte
 	if (first == last)
 	{
 		integer_phase = scan_integral_context_phase::zero;
-		return {first, parse_code::partial};
+		return {first, ::fast_io::freestanding::parse_errc::partial};
 	}
 	constexpr auto zero{char_literal_v<u8'0', char_type>};
 	auto first_ch{*first};
 	if (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(first_ch))) [[unlikely]]
 	{
-		return {first, parse_code::invalid};
+		return {first, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	else if (first_ch == zero) [[unlikely]]
 	{
@@ -1441,18 +1441,18 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_zero_phase(scan_inte
 			{
 				integer_phase = scan_integral_context_phase::zero_invalid;
 			}
-			return {first, parse_code::partial};
+			return {first, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first))) [[likely]]
 		{
-			return {first, parse_code::ok};
+			return {first, ::fast_io::freestanding::parse_errc::ok};
 		}
 		if constexpr (!skipzero)
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 	}
-	return {first, ongoing_parse_code};
+	return {first, ::fast_io::details::ongoing_parse_ec};
 }
 
 template <char8_t base, ::std::integral char_type, typename State, my_integral T>
@@ -1470,12 +1470,12 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_digit_phase(State &s
 		if (it == last)
 		{
 			st.integer_phase = scan_integral_context_phase::digit;
-			return {it, parse_code::partial};
+			return {it, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (st.size == 0) [[likely]]
 		{
 			t = {};
-			return {it, parse_code::ok};
+			return {it, ::fast_io::freestanding::parse_errc::ok};
 		}
 		auto [p, ec] = scan_int_contiguous_none_space_part_define_impl<base>(st.buffer.data(), e, t);
 		return {p - start + first, ec};
@@ -1485,11 +1485,11 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_digit_phase(State &s
 		if (it == last)
 		{
 			st.integer_phase = scan_integral_context_phase::overflow;
-			return {it, parse_code::partial};
+			return {it, ::fast_io::freestanding::parse_errc::partial};
 		}
 		else [[unlikely]]
 		{
-			return {it, parse_code::overflow};
+			return {it, ::fast_io::freestanding::parse_errc::overflow};
 		}
 	}
 }
@@ -1501,14 +1501,14 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_zero_invalid_phase(c
 	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	if (first == last)
 	{
-		return {first, parse_code::partial};
+		return {first, ::fast_io::freestanding::parse_errc::partial};
 	}
 	++first;
 	if (!char_is_digit<base, char_type>(static_cast<unsigned_char_type>(*first))) [[likely]]
 	{
-		return {first, parse_code::ok};
+		return {first, ::fast_io::freestanding::parse_errc::ok};
 	}
-	return {first, parse_code::invalid};
+	return {first, ::fast_io::freestanding::parse_errc::invalid};
 }
 
 template <char8_t base, ::std::integral char_type>
@@ -1516,7 +1516,7 @@ inline constexpr parse_result<char_type const *> sc_int_ctx_skip_digits_phase(ch
 																			  char_type const *last) noexcept
 {
 	first = skip_digits<base>(first, last);
-	return {first, (first == last) ? parse_code::partial : parse_code::invalid};
+	return {first, (first == last) ? ::fast_io::freestanding::parse_errc::partial : ::fast_io::freestanding::parse_errc::invalid};
 }
 
 template <char8_t base, bool noskipws, bool shbase, bool skipzero, typename State, ::std::integral char_type,
@@ -1554,7 +1554,7 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 		if constexpr (!noskipws)
 		{
 			auto phase_ret = sc_int_ctx_space_phase(first, last);
-			if (phase_ret.code != ongoing_parse_code) [[unlikely]]
+			if (phase_ret.code != ::fast_io::details::ongoing_parse_ec) [[unlikely]]
 			{
 				return phase_ret;
 			}
@@ -1567,7 +1567,7 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 		if constexpr (my_signed_integral<T>)
 		{
 			auto phase_ret = sc_int_ctx_sign_phase<true, false>(st, first, last);
-			if (phase_ret.code != ongoing_parse_code) [[unlikely]]
+			if (phase_ret.code != ::fast_io::details::ongoing_parse_ec) [[unlikely]]
 			{
 				return phase_ret;
 			}
@@ -1581,7 +1581,7 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 		{
 			st.integer_phase = scan_integral_context_phase::prefix;
 			auto phase_ret = sc_int_ctx_prefix_phase<base>(st.size, first, last);
-			if (phase_ret.code != ongoing_parse_code) [[unlikely]]
+			if (phase_ret.code != ::fast_io::details::ongoing_parse_ec) [[unlikely]]
 			{
 				return phase_ret;
 			}
@@ -1593,23 +1593,23 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 	case scan_integral_context_phase::zero_skip:
 	{
 		auto phase_ret = sc_int_ctx_zero_phase<base, skipzero>(st.integer_phase, first, last);
-		if (phase_ret.code != ongoing_parse_code)
+		if (phase_ret.code != ::fast_io::details::ongoing_parse_ec)
 		{
 			if constexpr (skipzero)
 			{
-				if (phase_ret.code == parse_code::ok)
+				if (phase_ret.code == ::fast_io::freestanding::parse_errc::ok)
 				{
 					t = {};
 				}
-				else if (phase_ret.code == parse_code::invalid && phase == scan_integral_context_phase::zero_skip)
+				else if (phase_ret.code == ::fast_io::freestanding::parse_errc::invalid && phase == scan_integral_context_phase::zero_skip)
 				{
 					t = {};
-					phase_ret.code = parse_code::ok;
+					phase_ret.code = ::fast_io::freestanding::parse_errc::ok;
 				}
 			}
 			else
 			{
-				if (phase_ret.code == parse_code::ok)
+				if (phase_ret.code == ::fast_io::freestanding::parse_errc::ok)
 				{
 					t = {};
 				}
@@ -1627,12 +1627,12 @@ inline constexpr parse_result<char_type const *> scan_context_define_parse_impl(
 	{
 		if constexpr (skipzero)
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		else
 		{
 			auto phase_ret = sc_int_ctx_zero_invalid_phase<base>(first, last);
-			if (phase_ret.code == parse_code::ok)
+			if (phase_ret.code == ::fast_io::freestanding::parse_errc::ok)
 			{
 				t = {};
 			}
@@ -1650,7 +1650,7 @@ template <char8_t base, bool noskipws, bool shbase, bool skipzero, typename Stat
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr parse_code scan_context_eof_define_parse_impl(State &st, T &t) noexcept
+inline constexpr ::fast_io::freestanding::parse_errc scan_context_eof_define_parse_impl(State &st, T &t) noexcept
 {
 	auto phase{st.integer_phase};
 #if __has_cpp_attribute(assume)
@@ -1665,25 +1665,25 @@ inline constexpr parse_code scan_context_eof_define_parse_impl(State &st, T &t) 
 	{
 		if constexpr (noskipws)
 		{
-			return parse_code::invalid;
+			return ::fast_io::freestanding::parse_errc::invalid;
 		}
 		else
 		{
-			return parse_code::end_of_file;
+			return ::fast_io::freestanding::parse_errc::end_of_file;
 		}
 	}
 	case scan_integral_context_phase::digit:
 		return scan_int_contiguous_none_space_part_define_impl<base>(st.buffer.data(), st.buffer.data() + st.size, t).code;
 	case scan_integral_context_phase::overflow:
-		return parse_code::overflow;
+		return ::fast_io::freestanding::parse_errc::overflow;
 	case scan_integral_context_phase::zero_skip:
 	case scan_integral_context_phase::zero_invalid:
 	{
 		t = {};
-		return parse_code::ok;
+		return ::fast_io::freestanding::parse_errc::ok;
 	}
 	default:
-		return parse_code::invalid;
+		return ::fast_io::freestanding::parse_errc::invalid;
 	}
 }
 
@@ -1791,7 +1791,7 @@ scan_context_define(io_reserve_type_t<char_type, ::fast_io::manipulators::scalar
 }
 
 template <::std::integral char_type, manipulators::scalar_flags flags, typename State, details::my_integral T>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_context_eof_define(io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_t<flags, T &>>, State &state,
 						::fast_io::manipulators::scalar_manip_t<flags, T &> t) noexcept
 {
@@ -1808,11 +1808,11 @@ inline constexpr parse_result<char_type const *> ch_get_context_impl(char_type c
 	first = ::fast_io::details::find_space_common_impl<false, true>(first, last);
 	if (first == last)
 	{
-		return {first, parse_code::partial};
+		return {first, ::fast_io::freestanding::parse_errc::partial};
 	}
 	t = *first;
 	++first;
-	return {first, parse_code::ok};
+	return {first, ::fast_io::freestanding::parse_errc::ok};
 }
 } // namespace details
 
@@ -1832,10 +1832,10 @@ scan_context_define(io_reserve_type_t<char_type, manipulators::ch_get_t<char_typ
 }
 
 template <::std::integral char_type>
-inline constexpr parse_code scan_context_eof_define(io_reserve_type_t<char_type, manipulators::ch_get_t<char_type &>>,
-													details::empty, manipulators::ch_get_t<char_type &>) noexcept
+inline constexpr ::fast_io::freestanding::parse_errc scan_context_eof_define(io_reserve_type_t<char_type, manipulators::ch_get_t<char_type &>>,
+																			 details::empty, manipulators::ch_get_t<char_type &>) noexcept
 {
-	return parse_code::end_of_file;
+	return ::fast_io::freestanding::parse_errc::end_of_file;
 }
 
 } // namespace fast_io

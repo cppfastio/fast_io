@@ -8,6 +8,8 @@ class basic_mfc_io_observer
 {
 public:
 	using char_type = T;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	using native_handle_type = CFile *;
 	native_handle_type phandle{};
 	explicit constexpr operator bool() const noexcept
@@ -70,14 +72,6 @@ inline void mfc_write_n_impl(CFile *cfp, ::std::byte const *first_ptr, ::std::si
 	}
 }
 
-inline void mfc_write_impl(CFile *cfp, void const *first, void const *last)
-{
-	char const *first_ptr{reinterpret_cast<char const *>(first)};
-	char const *last_ptr{reinterpret_cast<char const *>(last)};
-	mfc_write_n_impl(cfp, reinterpret_cast<::std::byte const *>(first_ptr),
-					 static_cast<::std::size_t>(last_ptr - first_ptr));
-}
-
 inline ::std::size_t mfc_read_impl(CFile *cfp, void *first, ::std::size_t to_read)
 {
 	if constexpr (sizeof(::std::size_t) > 4)
@@ -93,40 +87,74 @@ inline ::std::size_t mfc_read_impl(CFile *cfp, void *first, ::std::size_t to_rea
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline void mfc_scatter_write_impl(CFile *cfp, io_scatter_t const *scats, ::std::size_t n)
+struct mfc_scatter_write_chunk_impl
 {
-	auto i{scats};
-	auto e{scats + n};
-	for (; i != e; ++i)
+	CFile *cfp;
+	inline ::std::byte const *operator()(void *, ::std::byte const *first, ::std::size_t count) const
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		mfc_write_n_impl(cfp, reinterpret_cast<::std::byte const *>(i->base), i->len);
+		mfc_write_n_impl(cfp, first, count);
+		return first + count;
 	}
-}
+};
+
+struct mfc_scatter_read_chunk_impl
+{
+	CFile *cfp;
+	inline ::std::byte *operator()(void *, ::std::byte *first, ::std::size_t count) const FAST_IO_HERBCEPTIONS_THROWS
+	{
+		return first + mfc_read_impl(cfp, first, count);
+	}
+};
+
+template <typename T>
+using mfc_scatter_buffer_alloc_ptr = ::fast_io::details::buffer_alloc_arr_ptr<
+	T,
+	false,
+	::fast_io::generic_allocator_adapter<::fast_io::native_thread_local_allocator,
+										 ::fast_io::allocator_adapter_flags::throws_on_allocation_failure>>;
 
 } // namespace details
 
-template <::std::integral T, ::std::contiguous_iterator Iter>
-inline void write(basic_mfc_io_observer<T> hd, Iter first, Iter last)
+template <::std::integral T>
+inline ::std::byte *read_some_bytes_underflow_define(basic_mfc_io_observer<T> hd, ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	::fast_io::details::mfc_write_impl(hd.phandle, ::std::to_address(first), ::std::to_address(last));
+	return first + ::fast_io::details::mfc_read_impl(hd.phandle, first, count);
 }
 
 template <::std::integral T>
-inline void scatter_write(basic_mfc_io_observer<T> hd, io_scatters_t scatters)
+inline ::std::byte const *write_some_bytes_overflow_define(basic_mfc_io_observer<T> hd, ::std::byte const *first,
+														   ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	::fast_io::details::mfc_scatter_write_impl(hd.phandle, scatters.base, scatters.len);
+	::fast_io::details::mfc_write_n_impl(hd.phandle, first, count);
+	return first + count;
 }
 
 template <::std::integral T>
-inline void flush(basic_mfc_io_observer<T> hd)
+inline ::fast_io::io_scatter_status_t
+scatter_read_some_bytes_underflow_define(basic_mfc_io_observer<T> hd, ::fast_io::io_scatter_t const *pscatters,
+										 ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::details::scatter_read_pread_some_bytes_common<
+		::fast_io::details::mfc_scatter_buffer_alloc_ptr<::std::byte>>(
+		nullptr, pscatters, n, ::fast_io::details::mfc_scatter_read_chunk_impl{hd.phandle});
+}
+
+template <::std::integral T>
+inline ::fast_io::io_scatter_status_t
+scatter_write_some_bytes_overflow_define(basic_mfc_io_observer<T> hd, ::fast_io::io_scatter_t const *pscatters,
+										 ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::details::scatter_write_pwrite_some_bytes_common<
+		::fast_io::details::mfc_scatter_buffer_alloc_ptr<::std::byte>>(
+		nullptr, pscatters, n, ::fast_io::details::mfc_scatter_write_chunk_impl{hd.phandle});
+}
+
+template <::std::integral T>
+inline void output_stream_buffer_flush_define(basic_mfc_io_observer<T> hd) FAST_IO_HERBCEPTIONS_THROWS
 {
 	hd.phandle->Flush();
-}
-
-template <::std::integral T, ::std::contiguous_iterator Iter>
-inline Iter read(basic_mfc_io_observer<T> hd, Iter first, Iter last)
-{
-	return first + mfc_read_impl(hd.phandle, ::std::to_address(first), (last - first) * sizeof(*first)) / sizeof(T);
 }
 
 template <::std::integral ch_type>

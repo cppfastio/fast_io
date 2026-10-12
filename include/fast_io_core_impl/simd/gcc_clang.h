@@ -73,7 +73,7 @@ struct simd_vector
 		return value[nm1];
 	}
 
-	inline static constexpr bool empty() noexcept
+	inline static constexpr bool is_empty() noexcept
 	{
 		return !N;
 	}
@@ -406,7 +406,7 @@ struct simd_vector
 			__builtin_memcpy(__builtin_addressof(temp_vec), __builtin_addressof(this->value), sizeof(vec_type));
 #endif
 #if FAST_IO_HAS_BUILTIN(__builtin_shufflevector) && ((!defined(__x86_64__) && !defined(__i386__)) || \
-											   (!defined(__GNUC__) || defined(__clang__)) || defined(__SSE4_2__))
+													 (!defined(__GNUC__) || defined(__clang__)) || defined(__SSE4_2__))
 			if constexpr (sizeof(T) == 8)
 			{
 				// clang-format off

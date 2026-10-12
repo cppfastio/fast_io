@@ -37,14 +37,14 @@ inline
 	{
 		if (base_it != base_ed)
 		{
-			return {first_it, parse_code::partial};
+			return {first_it, ::fast_io::freestanding::parse_errc::partial};
 		}
 	}
 	else if (base_it != base_ed)
 	{
-		return {first_it, parse_code::invalid};
+		return {first_it, ::fast_io::freestanding::parse_errc::invalid};
 	}
-	return {first_it, parse_code::ok};
+	return {first_it, ::fast_io::freestanding::parse_errc::ok};
 }
 
 } // namespace details
@@ -67,11 +67,11 @@ scan_context_define(io_reserve_type_t<::std::iter_value_t<Iter>,
 }
 
 template <::std::integral char_type>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_context_eof_define(io_reserve_type_t<char_type, manipulators::basic_matcher_t<basic_io_scatter_t<char_type>>>,
 						match_context, manipulators::basic_matcher_t<basic_io_scatter_t<char_type>>) noexcept
 {
-	return parse_code::end_of_file;
+	return ::fast_io::freestanding::parse_errc::end_of_file;
 }
 template <::std::integral char_type, ::std::size_t n>
 	requires(n != 0)

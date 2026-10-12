@@ -6,6 +6,7 @@ template <::std::size_t wd = 80, ::std::size_t ht = 25>
 struct terminal
 {
 	using char_type = char;
+	using output_char_type = char_type;
 	static inline constexpr ::std::size_t vga_width = wd;
 	static inline constexpr ::std::size_t vga_height = ht;
 	::std::size_t row{};
@@ -112,27 +113,20 @@ constexpr inline void write_impl(terminal<wd, ht> &tem, char const *b, char cons
 
 } // namespace details
 
-template <::std::size_t wd, ::std::size_t ht, ::std::contiguous_iterator Iter>
-constexpr inline void write(terminal<wd, ht> &tem, Iter begin, Iter end) noexcept
+template <::std::size_t wd, ::std::size_t ht>
+constexpr inline void write_all_overflow_define(terminal<wd, ht> &tem, char const *first, ::std::size_t count) noexcept
 {
-	if constexpr (::std::same_as<::std::iter_value_t<Iter>, char>)
-	{
-		details::write_impl(tem, ::std::to_address(begin), ::std::to_address(end));
-	}
-	else
-	{
-		details::write_impl(tem, reinterpret_cast<char const *>(::std::to_address(begin)),
-							reinterpret_cast<char const *>(::std::to_address(end)));
-	}
+	details::write_impl(tem, first, first + count);
 }
 
 template <::std::size_t wd, ::std::size_t ht>
-constexpr inline void scatter_write(terminal<wd, ht> &tem, ::std::span<fast_io::io_scatter_t const> sp) noexcept
+constexpr inline void scatter_write_all_overflow_define(terminal<wd, ht> &tem,
+														::fast_io::basic_io_scatter_t<char> const *pscatters,
+														::std::size_t n) noexcept
 {
-	for (auto const &e : sp)
+	for (auto const e{pscatters + n}; pscatters != e; ++pscatters)
 	{
-		details::write_impl(tem, reinterpret_cast<char const *>(e.base),
-							reinterpret_cast<char const *>(e.base) + e.len);
+		details::write_impl(tem, pscatters->base, pscatters->base + pscatters->len);
 	}
 }
 

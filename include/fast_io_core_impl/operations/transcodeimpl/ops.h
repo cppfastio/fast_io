@@ -6,6 +6,187 @@ namespace fast_io
 namespace operations::decay
 {
 
+namespace details
+{
+template <typename T>
+inline constexpr bool transcode_bytes_tosize_decay_may_throw{
+	[]() consteval -> bool {
+		namespace D = ::fast_io::operations::decay::defines;
+		if constexpr (D::has_transcode_bytes_tosize_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_tosize_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>()));
+		}
+		else if constexpr (D::has_transcode_tosize_decay_define<T>)
+		{
+			return !noexcept(transcode_tosize_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>()));
+		}
+		else if constexpr (D::has_transcode_bytes_imaginary_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_imaginary_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>(), ::std::size_t{}));
+		}
+		else if constexpr (D::has_transcode_imaginary_decay_define<T>)
+		{
+			return !noexcept(transcode_imaginary_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>(), ::std::size_t{}));
+		}
+		else
+		{
+			return false;
+		}
+	}()};
+
+template <typename T>
+inline constexpr bool transcode_bytes_imaginary_decay_may_throw{
+	[]() consteval -> bool {
+		namespace D = ::fast_io::operations::decay::defines;
+		if constexpr (D::has_transcode_bytes_imaginary_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_imaginary_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>(), ::std::size_t{}));
+		}
+		else if constexpr (D::has_transcode_imaginary_decay_define<T>)
+		{
+			return !noexcept(transcode_imaginary_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>(), ::std::size_t{}));
+		}
+		else if constexpr (D::has_transcode_bytes_tosize_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_tosize_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>()));
+		}
+		else if constexpr (D::has_transcode_tosize_decay_define<T>)
+		{
+			return !noexcept(transcode_tosize_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>()));
+		}
+		else
+		{
+			return false;
+		}
+	}()};
+
+template <typename T>
+inline constexpr bool transcode_bytes_decay_may_throw{
+	[]() consteval -> bool {
+		namespace D = ::fast_io::operations::decay::defines;
+		if constexpr (D::has_transcode_bytes_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>(), ::std::declval<::std::byte *>(),
+				::std::declval<::std::byte *>()));
+		}
+		else
+		{
+			return !noexcept(transcode_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::to_value_type *>(),
+				::std::declval<typename T::to_value_type *>()));
+		}
+	}()};
+
+template <typename T>
+inline constexpr bool transcode_decay_may_throw{
+	[]() consteval -> bool {
+		namespace D = ::fast_io::operations::decay::defines;
+		if constexpr (D::has_transcode_decay_define<T>)
+		{
+			return !noexcept(transcode_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::to_value_type *>(),
+				::std::declval<typename T::to_value_type *>()));
+		}
+		else
+		{
+			return !noexcept(transcode_bytes_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>(), ::std::declval<::std::byte *>(),
+				::std::declval<::std::byte *>()));
+		}
+	}()};
+
+template <typename T>
+inline constexpr bool transcode_tosize_decay_may_throw{
+	[]() consteval -> bool {
+		namespace D = ::fast_io::operations::decay::defines;
+		if constexpr (D::has_transcode_tosize_decay_define<T>)
+		{
+			return !noexcept(transcode_tosize_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>()));
+		}
+		else if constexpr (D::has_transcode_bytes_tosize_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_tosize_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>()));
+		}
+		else if constexpr (D::has_transcode_imaginary_decay_define<T>)
+		{
+			return !noexcept(transcode_imaginary_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>(), ::std::size_t{}));
+		}
+		else if constexpr (D::has_transcode_bytes_imaginary_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_imaginary_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>(), ::std::size_t{}));
+		}
+		else
+		{
+			return false;
+		}
+	}()};
+
+template <typename T>
+inline constexpr bool transcode_imaginary_decay_may_throw{
+	[]() consteval -> bool {
+		namespace D = ::fast_io::operations::decay::defines;
+		if constexpr (D::has_transcode_imaginary_decay_define<T>)
+		{
+			return !noexcept(transcode_imaginary_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>(), ::std::size_t{}));
+		}
+		else if constexpr (D::has_transcode_bytes_imaginary_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_imaginary_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>(), ::std::size_t{}));
+		}
+		else if constexpr (D::has_transcode_tosize_decay_define<T>)
+		{
+			return !noexcept(transcode_tosize_decay_define(
+				::std::declval<T>(), ::std::declval<typename T::from_value_type const *>(),
+				::std::declval<typename T::from_value_type const *>()));
+		}
+		else if constexpr (D::has_transcode_bytes_tosize_decay_define<T>)
+		{
+			return !noexcept(transcode_bytes_tosize_decay_define(
+				::std::declval<T>(), ::std::declval<::std::byte const *>(),
+				::std::declval<::std::byte const *>()));
+		}
+		else
+		{
+			return false;
+		}
+	}()};
+} // namespace details
+
 template <typename T>
 	requires(::fast_io::operations::decay::defines::has_transcode_bytes_min_tosize_decay_define<T> ||
 			 ::fast_io::operations::decay::defines::has_transcode_min_tosize_decay_define<T> ||
@@ -37,7 +218,8 @@ template <typename T>
 			 ::fast_io::operations::decay::defines::has_transcode_bytes_imaginary_decay_define<T> ||
 			 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
 inline constexpr ::std::size_t transcode_bytes_imaginary_decay(T t,
-															   ::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::size_t mxsz);
+															   ::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::size_t mxsz)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::operations::decay::details::transcode_bytes_imaginary_decay_may_throw<T>);
 
 template <typename T>
 	requires(::fast_io::operations::decay::defines::has_transcode_bytes_tosize_decay_define<T> ||
@@ -46,6 +228,8 @@ template <typename T>
 			 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
 inline constexpr ::std::size_t transcode_bytes_tosize_decay(T t,
 															::std::byte const *fromfirst, ::std::byte const *fromlast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::operations::decay::details::transcode_bytes_tosize_decay_may_throw<T>)
+
 {
 	if constexpr (::fast_io::operations::decay::defines::has_transcode_bytes_tosize_decay_define<T>)
 	{
@@ -94,6 +278,7 @@ template <typename T>
 			 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
 inline constexpr ::std::byte const *transcode_bytes_imaginary_decay(T t,
 																	::std::byte const *fromfirst, ::std::byte const *fromlast, ::std::size_t mxsz)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::operations::decay::details::transcode_bytes_imaginary_decay_may_throw<T>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_transcode_bytes_imaginary_decay_define<T>)
 	{
@@ -126,6 +311,8 @@ template <typename T>
 inline constexpr ::fast_io::transcode_bytes_result transcode_bytes_decay(T t,
 																		 ::std::byte const *fromfirst, ::std::byte const *fromlast,
 																		 ::std::byte *tofirst, ::std::byte *tolast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::operations::decay::details::transcode_bytes_decay_may_throw<T>)
+
 {
 	if constexpr (::fast_io::operations::decay::defines::has_transcode_bytes_decay_define<T>)
 	{
@@ -181,6 +368,8 @@ template <typename T>
 inline constexpr ::fast_io::transcode_bytes_result transcode_decay(T t,
 																   typename T::from_value_type const *fromfirst, typename T::from_value_type const *fromlast,
 																   typename T::to_value_type *tofirst, typename T::to_value_type *tolast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::operations::decay::details::transcode_decay_may_throw<T>)
+
 {
 	if constexpr (::fast_io::operations::decay::defines::has_transcode_decay_define<T>)
 	{
@@ -199,7 +388,8 @@ template <typename T>
 			 ::fast_io::operations::decay::defines::has_transcode_bytes_imaginary_decay_define<T> ||
 			 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
 inline constexpr ::std::size_t transcode_imaginary_decay(T t,
-														 typename T::from_value_type const *fromfirst, typename T::from_value_type const *fromlast);
+														 typename T::from_value_type const *fromfirst, typename T::from_value_type const *fromlast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::operations::decay::details::transcode_imaginary_decay_may_throw<T>);
 
 template <typename T>
 	requires(((::fast_io::operations::decay::defines::has_transcode_bytes_tosize_decay_define<T> ||
@@ -209,6 +399,8 @@ template <typename T>
 			 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
 inline constexpr ::std::size_t transcode_tosize_decay(T t,
 													  typename T::from_value_type const *fromfirst, typename T::from_value_type const *fromlast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::operations::decay::details::transcode_tosize_decay_may_throw<T>)
+
 {
 	if constexpr (::fast_io::operations::decay::defines::has_transcode_tosize_decay_define<T>)
 	{
@@ -267,6 +459,7 @@ template <typename T>
 			 ::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
 inline constexpr typename T::from_value_type const *transcode_imaginary_decay(T t,
 																			  typename T::from_value_type const *fromfirst, typename T::from_value_type const *fromlast, ::std::size_t mxsz)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::operations::decay::details::transcode_imaginary_decay_may_throw<T>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_transcode_imaginary_decay_define<T>)
 	{

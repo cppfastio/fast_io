@@ -124,12 +124,12 @@ inline constexpr ::fast_io::parse_result<char_type const *> parse_by_scan_impl(c
 		::std::size_t const diff{static_cast<::std::size_t>(last - first)};
 		if (diff < n) [[unlikely]]
 		{
-			return {first, ::fast_io::parse_code::end_of_file};
+			return {first, ::fast_io::freestanding::parse_errc::end_of_file};
 		}
 		if constexpr (precise_reserve_scannable_no_error<char_type, T>)
 		{
 			scan_precise_reserve_define(io_reserve_type<char_type, T>, first, t);
-			return {first + n, ::fast_io::parse_code::ok};
+			return {first + n, ::fast_io::freestanding::parse_errc::ok};
 		}
 		else
 		{
@@ -144,7 +144,7 @@ inline constexpr ::fast_io::parse_result<char_type const *> parse_by_scan_impl(c
 	{
 		typename ::std::remove_cvref_t<decltype(scan_context_type(io_reserve_type<char_type, T>))>::type state;
 		auto [it, ec] = scan_context_define(io_reserve_type<char_type, T>, state, first, last, t);
-		if (ec != parse_code::partial)
+		if (ec != ::fast_io::freestanding::parse_errc::partial)
 		{
 			return {it, ec};
 		}

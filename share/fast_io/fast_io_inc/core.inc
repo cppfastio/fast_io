@@ -13,16 +13,19 @@ using ::fast_io::io_alias_type;
 using ::fast_io::io_reserve_type_t;
 using ::fast_io::io_reserve_type;
 using ::fast_io::print_alias_define;
+using ::fast_io::print_define;
 using ::fast_io::print_reserve_size;
 using ::fast_io::print_reserve_define;
 using ::fast_io::print_define_internal_shift;
 
 using ::fast_io::print_scatter_define;
 
+using ::fast_io::scan_alias_define;
 using ::fast_io::scan_contiguous_define;
 using ::fast_io::scan_context_type;
 using ::fast_io::scan_context_define;
 using ::fast_io::scan_context_eof_define;
+using ::fast_io::scan_some_result_t;
 
 using ::fast_io::unreachable;
 using ::fast_io::noexcept_call;
@@ -31,20 +34,10 @@ using ::fast_io::little_endian;
 using ::fast_io::big_endian;
 using ::fast_io::byte_swap;
 
-using ::fast_io::error;
-using ::fast_io::error_type_t;
-using ::fast_io::error_type;
-using ::fast_io::error_domain;
-using ::fast_io::is_domain;
-using ::fast_io::to_code;
-using ::fast_io::throw_parse_code;
-using ::fast_io::parse_domain_value;
-
 using ::fast_io::cstr_len;
 using ::fast_io::cstr_nlen;
 
 using ::fast_io::parse_by_scan;
-using ::fast_io::parse_code;
 
 using ::fast_io::io_dup;
 using ::fast_io::open_mode;
@@ -55,10 +48,6 @@ using ::fast_io::basic_io_lockable_nonmovable;
 using ::fast_io::input_stream_ref_define;
 using ::fast_io::output_stream_ref_define;
 using ::fast_io::io_stream_ref_define;
-
-using ::fast_io::input_decorators_ref_define;
-using ::fast_io::output_decorators_ref_define;
-// using ::fast_io::io_decorators_ref_define;
 
 using ::fast_io::ibuffer_begin;
 using ::fast_io::ibuffer_curr;
@@ -104,7 +93,6 @@ using ::fast_io::write_all_bytes_overflow_define;
 // using ::fast_io::scatter_write_some_bytes_overflow_define;
 // using ::fast_io::scatter_write_all_bytes_overflow_define;
 using ::fast_io::scatter_write_some_overflow_define;
-using ::fast_io::scatter_write_all_overflow_define;
 // using ::fast_io::obuffer_overflow_never_define;
 // using ::fast_io::output_stream_char_put_overflow_define;
 using ::fast_io::pwrite_some_bytes_overflow_define;
@@ -168,8 +156,6 @@ using ::fast_io::manipulators::os_c_str_carr;
 
 using ::fast_io::manipulators::rgvw;
 
-using ::fast_io::manipulators::cond;
-
 using ::fast_io::manipulators::code_cvt;
 using ::fast_io::manipulators::code_cvt_os_c_str;
 using ::fast_io::manipulators::os_c_str_null_terminated;
@@ -232,7 +218,7 @@ using ::fast_io::char_category::ranges::to_c_halfwidth;
 } // namespace ranges
 } // namespace char_category
 
-namespace mnp = manipulators;
+namespace mnp = ::fast_io::manipulators;
 
 namespace operations
 {
@@ -276,7 +262,7 @@ using ::fast_io::operations::io_stream_seek_bytes;
 
 namespace decay
 {
-using ::fast_io::operations::decay::scan_freestanding_decay;
+using ::fast_io::operations::decay::scan_some_freestanding_decay;
 using ::fast_io::operations::decay::print_freestanding_decay;
 
 using ::fast_io::operations::decay::stream_ref_decay_lock_guard;
@@ -301,7 +287,7 @@ using ::fast_io::file_lock_mode;
 using ::fast_io::mmap_prot;
 using ::fast_io::mmap_flags;
 using ::fast_io::utime_flags;
-using ::fast_io::unix_timestamp_option;
+using ::fast_io::statx_timestamp_option;
 using ::fast_io::well_known_directory;
 // flags enum
 using ::fast_io::operator&;
@@ -377,16 +363,14 @@ using ::fast_io::intfpos_t;
 using ::fast_io::fposoffadd_scatters;
 using ::fast_io::seekdir;
 
-using ::fast_io::basic_timestamp;
-using ::fast_io::unix_timestamp;
-using ::fast_io::win32_timestamp;
-using ::fast_io::csharp_timestamp;
-using ::fast_io::year0_timestamp;
-using ::fast_io::universe_timestamp;
+using ::fast_io::posix_statx_timestamp64;
 using ::fast_io::iso8601_timestamp;
 
 using ::fast_io::local;
 using ::fast_io::utc;
+using ::fast_io::to_posix_statx_timestamp64;
+using ::fast_io::to_posix_statx_timestamp64_ftu64;
+using ::fast_io::posix_statx_timestamp64_to_ftu64;
 
 using ::fast_io::operator==;
 using ::fast_io::operator!=;
@@ -417,5 +401,4 @@ using ::fast_io::basic_general_concat;
 using ::fast_io::io_print_forward;
 using ::fast_io::io_print_alias;
 
-using ::fast_io::uint_least64_subseconds_per_second;
 } // namespace fast_io

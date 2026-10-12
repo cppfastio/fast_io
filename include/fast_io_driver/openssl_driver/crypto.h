@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io
 {
@@ -7,8 +7,9 @@ class crypto
 {
 public:
 	crypto(::std::uint_least64_t opts, settings_observer sob)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		if (!OPENSSL_init_crypto(opt, sob.native_handle()))
+		if (!OPENSSL_init_crypto(opts, sob.native_handle()))
 		{
 			throw_openssl_error();
 		}

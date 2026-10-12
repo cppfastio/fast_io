@@ -142,7 +142,7 @@ scan_iterative_next_line_define_partial(basic_line_scanner_buffer<char_type> &__
 		buf.buffer.curr_ptr = buf.buffer.begin_ptr;
 	}
 	copy_to_next_line_buffer_impl(buf, first, last);
-	return {last, ::fast_io::parse_code::partial};
+	return {last, ::fast_io::freestanding::parse_errc::partial};
 }
 
 template <::std::integral char_type>
@@ -156,7 +156,7 @@ scan_iterative_next_line_define_inbuffer(basic_line_scanner_buffer<char_type> &_
 	copy_to_next_line_buffer_impl(buf, first, it);
 	buf.view_begin_ptr = buf.buffer.begin_ptr;
 	buf.view_end_ptr = buf.buffer.curr_ptr;
-	return {it + 1, ::fast_io::parse_code::ok};
+	return {it + 1, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <::std::integral char_type>
@@ -175,23 +175,23 @@ scan_iterative_next_line_define_impl(basic_line_scanner_buffer<char_type> &__res
 	}
 	buf.view_begin_ptr = first;
 	buf.view_end_ptr = it;
-	return {it + 1, ::fast_io::parse_code::ok};
+	return {it + 1, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <::std::integral char_type>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_iterative_eof_define_line_internal(basic_line_scanner_buffer<char_type> &__restrict buf) noexcept
 {
 	if (buf.inbuffer)
 	{
 		buf.view_begin_ptr = buf.buffer.begin_ptr;
 		buf.view_end_ptr = buf.buffer.curr_ptr;
-		return parse_code::ok;
+		return ::fast_io::freestanding::parse_errc::ok;
 	}
 	else
 	{
 		buf.view_end_ptr = buf.view_begin_ptr = nullptr;
-		return parse_code::end_of_file;
+		return ::fast_io::freestanding::parse_errc::end_of_file;
 	}
 }
 
@@ -205,13 +205,13 @@ scan_iterative_contiguous_line_define_impl(basic_line_scanner_contiguous_view<ch
 	{
 		if (first == it)
 		{
-			return {it, parse_code::end_of_file};
+			return {it, ::fast_io::freestanding::parse_errc::end_of_file};
 		}
-		return {it, parse_code::ok};
+		return {it, ::fast_io::freestanding::parse_errc::ok};
 	}
 	buf.view_begin_ptr = first;
 	buf.view_end_ptr = it;
-	return {it + 1, parse_code::ok};
+	return {it + 1, ::fast_io::freestanding::parse_errc::ok};
 }
 
 } // namespace details
@@ -233,7 +233,7 @@ scan_iterative_next_define(io_reserve_type_t<char_type, basic_line_scanner_buffe
 }
 
 template <::std::integral char_type>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_iterative_eof_define(io_reserve_type_t<char_type, basic_line_scanner_buffer<char_type>>,
 						  basic_line_scanner_buffer<char_type> &__restrict buf) noexcept
 {

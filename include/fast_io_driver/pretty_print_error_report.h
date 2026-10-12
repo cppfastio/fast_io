@@ -12,7 +12,7 @@ struct print_freestanding_params_assert_okay_type
 {
 	inline static constexpr bool type_ok{::fast_io::operations::defines::print_freestanding_params_okay<char_type, T>};
 	inline static constexpr bool value{print_freestanding_params_assert_okay_type<index + 1, char_type, Args...>::value && type_ok};
-	static_assert(type_ok, ::fast_io::concat("the ", ::fast_io::mnp::ordinal(index), " parameter is not printable on this char type"));
+	static_assert(type_ok, ::fast_io::concat_std("the ", ::fast_io::mnp::ordinal(index), " parameter is not printable on this char type"));
 };
 
 template <::std::size_t index, ::std::integral char_type, typename T>
@@ -20,7 +20,7 @@ struct print_freestanding_params_assert_okay_type<index, char_type, T>
 {
 	inline static constexpr bool type_ok{::fast_io::operations::defines::print_freestanding_params_okay<char_type, T>};
 	static constexpr bool value{type_ok};
-	static_assert(type_ok, ::fast_io::concat("the ", ::fast_io::mnp::ordinal(index), " parameter is not printable on this char type"));
+	static_assert(type_ok, ::fast_io::concat_std("the ", ::fast_io::mnp::ordinal(index), " parameter is not printable on this char type"));
 };
 
 template <::std::integral char_type, typename... Args>

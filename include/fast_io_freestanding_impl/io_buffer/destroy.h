@@ -1,10 +1,13 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io::details
 {
 
 template <typename T>
 inline constexpr void close_basic_io_buffer(T &t)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		(T::traits_type::mode & ::fast_io::buffer_mode::out) == ::fast_io::buffer_mode::out &&
+		io_buffer_output_operations_may_throw<typename T::handle_type>)
 {
 	using traits_type = typename T::traits_type;
 	constexpr auto mode{traits_type::mode};
@@ -37,13 +40,17 @@ inline constexpr void destroy_basic_io_buffer(T &t) noexcept
 	constexpr auto mode{traits_type::mode};
 	if constexpr ((mode & buffer_mode::out) == buffer_mode::out)
 	{
-#ifdef FAST_IO_CPP_EXCEPTIONS
+#if defined(__HERBCEPTIONS__) || defined(FAST_IO_CPP_EXCEPTIONS)
 		try
 #endif
 		{
 			::fast_io::details::close_basic_io_buffer(t);
 		}
-#ifdef FAST_IO_CPP_EXCEPTIONS
+#ifdef __HERBCEPTIONS__
+		catch throws(::std::error)
+		{
+		}
+#elif defined(FAST_IO_CPP_EXCEPTIONS)
 		catch (...)
 		{
 		}
@@ -51,14 +58,23 @@ inline constexpr void destroy_basic_io_buffer(T &t) noexcept
 		auto buffer_begin{t.output_buffer.buffer_begin};
 		if (buffer_begin)
 		{
-			if constexpr ((mode & buffer_mode::secure_clear) == buffer_mode::secure_clear)
+			using typed_allocator_type =
+				::fast_io::typed_generic_allocator_adapter<allocator_type, typename traits_type::output_char_type>;
+			if constexpr ((mode & buffer_mode::secure_clear) == buffer_mode::secure_clear &&
+						  !typed_allocator_type::secure_clear)
 			{
 				secure_clear(buffer_begin,
 							 traits_type::output_buffer_size * sizeof(typename traits_type::output_char_type));
 			}
-			::fast_io::typed_generic_allocator_adapter<
-				allocator_type, typename traits_type::output_char_type>::deallocate_n(buffer_begin,
-																					  traits_type::output_buffer_size);
+			if constexpr (typed_allocator_type::has_status)
+			{
+				typed_allocator_type::handle_deallocate_n(t.allocator_handle, buffer_begin,
+														traits_type::output_buffer_size);
+			}
+			else
+			{
+				typed_allocator_type::deallocate_n(buffer_begin, traits_type::output_buffer_size);
+			}
 		}
 	}
 
@@ -67,14 +83,23 @@ inline constexpr void destroy_basic_io_buffer(T &t) noexcept
 		auto buffer_begin{t.input_buffer.buffer_begin};
 		if (buffer_begin)
 		{
-			if constexpr ((mode & buffer_mode::secure_clear) == buffer_mode::secure_clear)
+			using typed_allocator_type =
+				::fast_io::typed_generic_allocator_adapter<allocator_type, typename traits_type::input_char_type>;
+			if constexpr ((mode & buffer_mode::secure_clear) == buffer_mode::secure_clear &&
+						  !typed_allocator_type::secure_clear)
 			{
 				secure_clear(buffer_begin,
 							 traits_type::input_buffer_size * sizeof(typename traits_type::input_char_type));
 			}
-			::fast_io::typed_generic_allocator_adapter<
-				allocator_type, typename traits_type::input_char_type>::deallocate_n(buffer_begin,
-																					 traits_type::input_buffer_size);
+			if constexpr (typed_allocator_type::has_status)
+			{
+				typed_allocator_type::handle_deallocate_n(t.allocator_handle, buffer_begin,
+														traits_type::input_buffer_size);
+			}
+			else
+			{
+				typed_allocator_type::deallocate_n(buffer_begin, traits_type::input_buffer_size);
+			}
 		}
 	}
 }

@@ -17,7 +17,7 @@ concept api_common_has_size_overload =
 
 template <typename allocator_type, ::std::integral os_char_type, typename Func>
 inline auto api_common_copy_append0_strvw_case_impl(os_char_type const *filename_strvw_str,
-													::std::size_t filename_strvw_len, Func callback)
+													::std::size_t filename_strvw_len, Func callback) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t const filename_strvw_len_p1{
 		::fast_io::details::intrinsics::add_or_overflow_die(filename_strvw_len, 1)};

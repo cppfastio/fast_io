@@ -23,7 +23,6 @@ FAST_IO_DLLIMPORT FAST_IO_GNU_MALLOC extern void *FAST_IO_WINSTDCALL HeapAlloc(v
 FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL HeapFree(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(HeapFree, 12);
 FAST_IO_DLLIMPORT FAST_IO_GNU_CONST extern void *FAST_IO_WINSTDCALL GetProcessHeap() noexcept FAST_IO_WINSTDCALL_RENAME(GetProcessHeap, 0);
 FAST_IO_DLLIMPORT extern void *FAST_IO_WINSTDCALL HeapReAlloc(void *, ::std::uint_least32_t, void *, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(HeapReAlloc, 16);
-FAST_IO_DLLIMPORT extern ::std::size_t FAST_IO_WINSTDCALL HeapSize(void *, ::std::uint_least32_t, void const *) noexcept FAST_IO_WINSTDCALL_RENAME(HeapSize, 12);
 FAST_IO_DLLIMPORT FAST_IO_GNU_MALLOC extern void *FAST_IO_WINSTDCALL VirtualAlloc(void *, ::std::size_t, ::std::uint_least32_t, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(VirtualAlloc, 16);
 FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL VirtualProtect(void *, ::std::size_t, ::std::uint_least32_t, ::std::uint_least32_t *) noexcept FAST_IO_WINSTDCALL_RENAME(VirtualProtect, 16);
 FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL VirtualFree(void *, ::std::size_t, ::std::uint_least32_t) noexcept FAST_IO_WINSTDCALL_RENAME(VirtualFree, 12);
@@ -32,26 +31,15 @@ FAST_IO_DLLIMPORT extern int FAST_IO_WINSTDCALL VirtualQuery(void const *, memor
 
 namespace details
 {
-#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
-[[__gnu__::__returns_nonnull__]]
-#endif
 inline void *win32_heapalloc_handle_common_impl(void *heaphandle, ::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
 	if (n == 0)
 	{
 		n = 1;
 	}
-	auto p{::fast_io::win32::HeapAlloc(heaphandle, flag, n)};
-	if (p == nullptr)
-	{
-		::fast_io::fast_terminate();
-	}
-	return p;
+	return ::fast_io::win32::HeapAlloc(heaphandle, flag, n);
 }
 
-#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
-[[__gnu__::__returns_nonnull__]]
-#endif
 inline void *win32_heaprealloc_handle_common_impl(void *heaphandle, void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
 	if (n == 0)
@@ -63,12 +51,7 @@ inline void *win32_heaprealloc_handle_common_impl(void *heaphandle, void *addr, 
 	{
 		return win32_heapalloc_handle_common_impl(heaphandle, n, flag);
 	}
-	auto p{::fast_io::win32::HeapReAlloc(heaphandle, flag, addr, n)};
-	if (p == nullptr)
-	{
-		::fast_io::fast_terminate();
-	}
-	return p;
+	return ::fast_io::win32::HeapReAlloc(heaphandle, flag, addr, n);
 }
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -102,34 +85,14 @@ inline void *win32_get_process_heap() noexcept
 	}
 }
 
-#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
-[[__gnu__::__returns_nonnull__]]
-#endif
 inline void *win32_heapalloc_common_impl(::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
 	return ::fast_io::details::win32_heapalloc_handle_common_impl(::fast_io::details::win32_get_process_heap(), n, flag);
 }
 
-#if __has_cpp_attribute(__gnu__::__returns_nonnull__)
-[[__gnu__::__returns_nonnull__]]
-#endif
 inline void *win32_heaprealloc_common_impl(void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
 {
 	return ::fast_io::details::win32_heaprealloc_handle_common_impl(::fast_io::details::win32_get_process_heap(), addr, n, flag);
-}
-
-inline ::fast_io::allocation_least_result win32_heapalloc_least_common_impl(::std::size_t n, ::std::uint_least32_t flag) noexcept
-{
-	auto processheap{::fast_io::details::win32_get_process_heap()};
-	auto ptr{::fast_io::details::win32_heapalloc_handle_common_impl(processheap, n, flag)};
-	return {ptr, ::fast_io::win32::HeapSize(processheap, 0, ptr)};
-}
-
-inline ::fast_io::allocation_least_result win32_heaprealloc_least_common_impl(void *addr, ::std::size_t n, ::std::uint_least32_t flag) noexcept
-{
-	auto processheap{::fast_io::details::win32_get_process_heap()};
-	auto ptr{::fast_io::details::win32_heaprealloc_handle_common_impl(processheap, addr, n, flag)};
-	return {ptr, ::fast_io::win32::HeapSize(processheap, 0, ptr)};
 }
 
 } // namespace details
@@ -140,22 +103,81 @@ public:
 #if __has_cpp_attribute(__gnu__::__malloc__)
 	[[__gnu__::__malloc__]]
 #endif
-	static inline void *allocate_conditional_zero(::std::size_t n, bool zeroing) noexcept
+	static inline void *allocate_conditional_zero_die(::std::size_t n, bool zeroing) noexcept
 	{
-		return ::fast_io::details::win32_heapalloc_common_impl(n, zeroing ? 0x00000008u : 0u);
+		auto p{::fast_io::details::win32_heapalloc_common_impl(n, zeroing ? 0x00000008u : 0u)};
+		if (p == nullptr)
+		{
+			::fast_io::fast_terminate();
+		}
+		return p;
+	}
+#if __has_cpp_attribute(__gnu__::__malloc__)
+	[[__gnu__::__malloc__]]
+#endif
+	static inline void *allocate_conditional_zero_try(::std::size_t n, bool zeroing) FAST_IO_HERBCEPTIONS_THROWS
+	{
+		auto p{::fast_io::details::win32_heapalloc_common_impl(n, zeroing ? 0x00000008u : 0u)};
+		if (p == nullptr)
+		{
+			::fast_io::herbceptions::throws_win32_errc_with_value(8u);
+		}
+		return p;
 	}
 
-	static inline void *reallocate(void *addr, ::std::size_t n) noexcept
+	static inline void *reallocate_die(void *addr, ::std::size_t n) noexcept
 	{
-		return ::fast_io::details::win32_heaprealloc_common_impl(addr, n, 0u);
+		auto p{::fast_io::details::win32_heaprealloc_common_impl(addr, n, 0u)};
+		if (p == nullptr)
+		{
+			::fast_io::fast_terminate();
+		}
+		return p;
 	}
-	static inline void *reallocate_zero(void *addr, ::std::size_t n) noexcept
+	static inline void *reallocate_try(void *addr, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 	{
-		return ::fast_io::details::win32_heaprealloc_common_impl(addr, n, 0x00000008u);
+		auto p{::fast_io::details::win32_heaprealloc_common_impl(addr, n, 0u)};
+		if (p == nullptr)
+		{
+			::fast_io::herbceptions::throws_win32_errc_with_value(8u);
+		}
+		return p;
 	}
-	static inline void *reallocate_conditional_zero(void *addr, ::std::size_t n, bool zeroing) noexcept
+	static inline void *reallocate_zero_die(void *addr, ::std::size_t n) noexcept
 	{
-		return ::fast_io::details::win32_heaprealloc_common_impl(addr, n, zeroing ? 0x00000008u : 0u);
+		auto p{::fast_io::details::win32_heaprealloc_common_impl(addr, n, 0x00000008u)};
+		if (p == nullptr)
+		{
+			::fast_io::fast_terminate();
+		}
+		return p;
+	}
+	static inline void *reallocate_zero_try(void *addr, ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+	{
+		auto p{::fast_io::details::win32_heaprealloc_common_impl(addr, n, 0x00000008u)};
+		if (p == nullptr)
+		{
+			::fast_io::herbceptions::throws_win32_errc_with_value(8u);
+		}
+		return p;
+	}
+	static inline void *reallocate_conditional_zero_die(void *addr, ::std::size_t n, bool zeroing) noexcept
+	{
+		auto p{::fast_io::details::win32_heaprealloc_common_impl(addr, n, zeroing ? 0x00000008u : 0u)};
+		if (p == nullptr)
+		{
+			::fast_io::fast_terminate();
+		}
+		return p;
+	}
+	static inline void *reallocate_conditional_zero_try(void *addr, ::std::size_t n, bool zeroing) FAST_IO_HERBCEPTIONS_THROWS
+	{
+		auto p{::fast_io::details::win32_heaprealloc_common_impl(addr, n, zeroing ? 0x00000008u : 0u)};
+		if (p == nullptr)
+		{
+			::fast_io::herbceptions::throws_win32_errc_with_value(8u);
+		}
+		return p;
 	}
 	static inline void deallocate(void *addr) noexcept
 	{
@@ -165,24 +187,6 @@ public:
 		}
 		::fast_io::win32::HeapFree(::fast_io::details::win32_get_process_heap(), 0u, addr);
 	}
-#if 0
-	static inline ::fast_io::allocation_least_result allocate_at_least(::std::size_t n) noexcept
-	{
-		return ::fast_io::details::win32_heapalloc_least_common_impl(n, 0u);
-	}
-	static inline ::fast_io::allocation_least_result allocate_zero_at_least(::std::size_t n) noexcept
-	{
-		return ::fast_io::details::win32_heapalloc_least_common_impl(n, 0x00000008u);
-	}
-	static inline ::fast_io::allocation_least_result reallocate_at_least(void *addr, ::std::size_t n) noexcept
-	{
-		return ::fast_io::details::win32_heaprealloc_least_common_impl(addr, n, 0u);
-	}
-	static inline ::fast_io::allocation_least_result reallocate_zero_at_least(void *addr, ::std::size_t n) noexcept
-	{
-		return ::fast_io::details::win32_heaprealloc_least_common_impl(addr, n, 0x00000008u);
-	}
-#endif
 };
 
 } // namespace fast_io

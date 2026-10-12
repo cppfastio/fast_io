@@ -84,7 +84,7 @@ inline void test_insert_single()
 						   ::std::source_location src = ::std::source_location::current()) {
 		if (dq.size() != ref.size())
 		{
-			::fast_io::io::panicln(src, "\tERROR: size mismatch: ", msg);
+			::fast_io::io::panicln(src, "\tERROR: size mismatch: ", ::fast_io::mnp::os_c_str(msg));
 		}
 		for (::std::size_t i{}; i != dq.size(); ++i)
 		{
@@ -98,7 +98,7 @@ inline void test_insert_single()
 									   "\tref[i]=",
 									   ref[i],
 									   " : ",
-									   msg);
+									   ::fast_io::mnp::os_c_str(msg));
 			}
 		}
 	};

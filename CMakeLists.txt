@@ -2,103 +2,54 @@ cmake_minimum_required(VERSION 3.15)
 
 project(fast_io C CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-
 include(GNUInstallDirs)
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include TYPE INCLUDE)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/man DESTINATION ${CMAKE_INSTALL_MANDIR}/man3 PATTERN "*.3")
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ TYPE INCLUDE)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/man/ DESTINATION ${CMAKE_INSTALL_MANDIR}/man3 PATTERN "*.3")
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/share/fast_io/ DESTINATION ${CMAKE_INSTALL_DATADIR}/fast_io)
 
-option(BUILD_I18N_DLLS "build i18n runtime dlls" OFF)
+# fast_io_i18n — shared locale-blob cache library.
+# src/locale/lcblob.cc owns the process-wide locale cache (thread-local
+# first, then a mutex-guarded global map); mappings are never unloaded.
+# Produces fast_io_i18n.dll on Windows, libfast_io_i18n.so elsewhere.
+option(BUILD_I18N_LIB "build the fast_io_i18n locale library" OFF)
 
-if(BUILD_I18N_DLLS)
-set(CMAKE_SHARED_MODULE_PREFIX "fast_io_i18n.locale.")
-file(GLOB localefiles ${CMAKE_SOURCE_DIR}/src/i18n_data/locale/*.cc)
-
-include(CheckCXXCompilerFlag)
-
-function(compilelocaleencoding encoding localelist)
-
-if(${encoding} STREQUAL "UTF-8")
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		set(compilerencodingtoggle "/utf-8")
-		CHECK_CXX_COMPILER_FLAG(${compilerencodingtoggle} COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
+if(BUILD_I18N_LIB)
+	add_library(fast_io_i18n SHARED src/locale/lcblob.cc)
+	target_include_directories(fast_io_i18n PUBLIC ${CMAKE_SOURCE_DIR}/include)
+	target_compile_definitions(fast_io_i18n PRIVATE FAST_IO_I18N_BUILDING)
+	target_compile_definitions(fast_io_i18n PUBLIC FAST_IO_I18N_SHARED)
+	# static twin — same output name as the shared lib where the
+	# suffixes differ (libfast_io_i18n.{a,so}); on Windows the import
+	# library already owns fast_io_i18n.lib so the static one is
+	# fast_io_i18n_static.lib
+	add_library(fast_io_i18n_static STATIC src/locale/lcblob.cc)
+	target_include_directories(fast_io_i18n_static PUBLIC ${CMAKE_SOURCE_DIR}/include)
+	if(CMAKE_SYSTEM_NAME STREQUAL "Windows" OR CMAKE_SYSTEM_NAME STREQUAL "Cygwin" OR CMAKE_SYSTEM_NAME STREQUAL "Msys")
+		set_target_properties(fast_io_i18n_static PROPERTIES OUTPUT_NAME fast_io_i18n_static)
 	else()
-		set(compilerencodingtoggle "")
-		set(COMPILER_SUPPORT_EXECUTION_CHARSET_UTF-8 1)
+		set_target_properties(fast_io_i18n_static PROPERTIES OUTPUT_NAME fast_io_i18n)
 	endif()
-else()
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-		set(compilerencodingtoggle "/execution-charset:${encoding}")
-	else()
-		set(compilerencodingtoggle "-fexec-charset=${encoding}")
-	endif()
-	CHECK_CXX_COMPILER_FLAG(${compilerencodingtoggle} COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
+	install(TARGETS fast_io_i18n fast_io_i18n_static
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
-if(I18N_INSTALL_DIR)
-else()
-	set(I18N_INSTALL_DIR lib)
-endif()
+# locale tools — the localedef compiler in src/binfmt: fast_io_l10n_gen
+# turns glibc localedata files into flat binary locale blobs,
+# fast_io_l10n_dump inspects them.
+option(BUILD_LOCALE_TOOLS "build locale blob tools (fast_io_l10n_gen, fast_io_l10n_dump)" OFF)
 
-if(COMPILER_SUPPORT_EXECUTION_CHARSET_${encoding})
-	if(localelist)
-		foreach(filename ${localelist})
-			string(REPLACE "@" "_" purfilename ${filename})
-			add_library(${purfilename}.${encoding} MODULE "${CMAKE_SOURCE_DIR}/src/i18n_data/locale/${localelist}.cc")
-			set_target_properties(${purfilename}.${encoding} PROPERTIES OUTPUT_NAME ${filename}.${encoding})
-			if (NOT ${compilerencodingtoggle} STREQUAL "")
-				target_compile_options(${purfilename}.${encoding} PRIVATE ${compilerencodingtoggle})
-			endif()
-			target_compile_definitions(${purfilename}.${encoding} PUBLIC
-				FAST_IO_LOCALE_ENCODING="${encoding}"
-				FAST_IO_LOCALE_LENCODING=L"${encoding}"
-				FAST_IO_LOCALE_u8ENCODING=u8"${encoding}"
-				FAST_IO_LOCALE_uENCODING=u"${encoding}"
-				FAST_IO_LOCALE_UENCODING=U"${encoding}")
-			install(TARGETS ${purfilename}.${encoding}
-				LIBRARY DESTINATION ${I18N_INSTALL_DIR})
-		endforeach()
-
-	else()
-		foreach(filepath ${localefiles})
-			get_filename_component(filename ${filepath} NAME_WE)
-			string(REPLACE "@" "_" purfilename ${filename})
-			add_library(${purfilename}.${encoding} MODULE ${filepath})
-			set_target_properties(${purfilename}.${encoding} PROPERTIES OUTPUT_NAME ${filename}.${encoding})
-			if (NOT ${compilerencodingtoggle} STREQUAL "")
-				target_compile_options(${purfilename}.${encoding} PRIVATE ${compilerencodingtoggle})
-			endif()
-			target_compile_definitions(${purfilename}.${encoding} PUBLIC
-				FAST_IO_LOCALE_ENCODING="${encoding}"
-				FAST_IO_LOCALE_LENCODING=L"${encoding}"
-				FAST_IO_LOCALE_u8ENCODING=u8"${encoding}"
-				FAST_IO_LOCALE_uENCODING=u"${encoding}"
-				FAST_IO_LOCALE_UENCODING=U"${encoding}")
-			install(TARGETS ${purfilename}.${encoding}
-				LIBRARY DESTINATION ${I18N_INSTALL_DIR})
-		endforeach()
-	endif()
-else()
-	message("Compiler does not support \"${compilerencodingtoggle}\"; locale under ${encoding} execution charset will not build.")
-endif()
-endfunction()
-
-compilelocaleencoding("UTF-8" false)
-compilelocaleencoding("GB18030" false)
-if(I18N_LOCALE_ENCODINGS)
-foreach(encoding ${I18N_LOCALE_ENCODINGS})
-	if (NOT proj STREQUAL "UTF-8" AND NOT encoding STREQUAL "GB18030")
-		if(I18N_LOCALE_LIST)
-			compilelocaleencoding(${encoding} ${I18N_LOCALE_LIST})
-		else()
-			compilelocaleencoding(${encoding} false)
-		endif()
-	endif()
-endforeach()
-else()
-endif()
-
+if(BUILD_LOCALE_TOOLS)
+	add_executable(fast_io_l10n_gen src/binfmt/locale_emit.cc)
+	add_executable(fast_io_l10n_dump src/binfmt/locale_dump.cc)
+	foreach(tool fast_io_l10n_gen fast_io_l10n_dump)
+		target_include_directories(${tool} PRIVATE ${CMAKE_SOURCE_DIR}/include)
+		set_target_properties(${tool} PROPERTIES
+			RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+		install(TARGETS ${tool} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+	endforeach()
 endif()
 
 option(ENABLE_TESTS "Enable tests" OFF)
@@ -106,8 +57,6 @@ option(ENABLE_TESTS "Enable tests" OFF)
 if(${ENABLE_TESTS})
 	include(CTest)
 	include_directories(include)
-	set(CMAKE_CXX_STANDARD 23)
-	set(CMAKE_CXX_STANDARD_EXTENSION OFF)
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 		add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 	endif()

@@ -10,14 +10,20 @@ template <typename instmtype>
 [[__gnu__::__cold__]]
 #endif
 inline constexpr io_scatter_status_t scatter_pread_some_bytes_cold_impl(instmtype insm, io_scatter_t const *pscatters,
-																		::std::size_t n, ::fast_io::intfpos_t off);
+																		::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires ::fast_io::operations::decay::defines::bytes_preadable<instmtype>
+;
 
 template <typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 inline constexpr void scatter_pread_all_bytes_cold_impl(instmtype insm, io_scatter_t const *pscatters, ::std::size_t n,
-														::fast_io::intfpos_t off);
+														::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires ::fast_io::operations::decay::defines::bytes_preadable<instmtype>
+;
 
 template <typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
@@ -26,6 +32,8 @@ template <typename instmtype>
 inline constexpr io_scatter_status_t
 scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtype::input_char_type> const *pscatters,
 							 ::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires ::fast_io::operations::decay::defines::preadable<instmtype>
 {
 	using char_type = typename instmtype::input_char_type;
 	if constexpr (::fast_io::operations::decay::defines::has_scatter_pread_some_underflow_define<instmtype>)
@@ -38,7 +46,7 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 		{
 			auto [base, len] = pscatters[i];
 			auto ed{base + len};
-			char_type *it{::fast_io::details::pread_some_impl(insm, base, ed, off)};
+			char_type *it{::fast_io::details::pread_some_impl(insm, base, len, off)};
 			if (it != ed)
 			{
 				return {static_cast<::std::size_t>(i - pscatters), static_cast<::std::size_t>(it - base)};
@@ -73,7 +81,7 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 				auto edf{basef + len};
 				::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(basef))};
 				::std::byte *ed{reinterpret_cast<::std::byte *>(edf)};
-				auto written{::fast_io::details::pread_some_bytes_impl(insm, base, ed, off)};
+				auto written{::fast_io::details::pread_some_bytes_impl(insm, base, static_cast<::std::size_t>(ed - base), off)};
 				::std::size_t diff{static_cast<::std::size_t>(written - base)};
 				off = ::fast_io::fposoffadd_nonegative(off, diff);
 				::std::size_t md{diff % sizeof(char_type)};
@@ -82,8 +90,8 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 				{
 					::std::size_t dfd{sizeof(char_type) - md};
 					auto writtened{written + dfd};
-					auto writtenit{::fast_io::details::pread_all_bytes_impl(insm, written, writtened, off)};
-					if (writtenit == written)
+					auto writtenit{::fast_io::details::pread_some_bytes_impl(insm, written, dfd, off)};
+					if (writtenit == writtened)
 					{
 						++sz;
 					}
@@ -125,13 +133,15 @@ template <typename instmtype>
 inline constexpr io_scatter_status_t
 scatter_pread_some_impl(instmtype insm, basic_io_scatter_t<typename instmtype::input_char_type> const *pscatters,
 						::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires(::fast_io::operations::decay::defines::preadable<instmtype> || ::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{
 			::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::scatter_pread_some_impl(
-			::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm), pscatters, n);
+			::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm), pscatters, n, off);
 	}
 	else
 	{
@@ -146,6 +156,8 @@ template <typename instmtype>
 inline constexpr void
 scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtype::input_char_type> const *pscatters,
 							::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires ::fast_io::operations::decay::defines::preadable<instmtype>
 {
 	if constexpr (::fast_io::operations::decay::defines::has_scatter_pread_all_underflow_define<instmtype>)
 	{
@@ -156,7 +168,7 @@ scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 		for (auto i{pscatters}, e{pscatters + n}; i != e; ++i)
 		{
 			auto [base, len] = *i;
-			::fast_io::details::pread_all_impl(insm, base, base + len, off);
+			::fast_io::details::pread_all_impl(insm, base, len, off);
 			off = ::fast_io::fposoffadd_nonegative(off, len);
 		}
 	}
@@ -172,14 +184,14 @@ scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 			}
 			if (!retpos)
 			{
-				::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+				::fast_io::herbceptions::throws_parse_errc(::fast_io::freestanding::parse_errc::end_of_file);
 			}
 			off = ::fast_io::fposoffadd_scatters(off, pscatters, ret);
 			::std::size_t pisc{ret.position_in_scatter};
 			if (pisc)
 			{
 				auto pi = pscatters[ret.position];
-				::fast_io::details::pread_all_impl(insm, pi.base + pisc, pi.base + pi.len, off);
+				::fast_io::details::pread_all_impl(insm, pi.base + pisc, pi.len - pisc, off);
 				off = ::fast_io::fposoffadd_nonegative(off, pi.len - pisc);
 				++retpos;
 			}
@@ -192,7 +204,7 @@ scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 		for (auto i{pscatters}, e{pscatters + n}; i != e; ++i)
 		{
 			auto [base, len] = *i;
-			::fast_io::details::pread_all_impl(insm, base, base + len, off);
+			::fast_io::details::pread_all_impl(insm, base, len, off);
 			off = ::fast_io::fposoffadd_nonegative(off, len);
 		}
 	}
@@ -214,10 +226,8 @@ scatter_pread_all_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 			for (::std::size_t i{}; i != n; ++i)
 			{
 				auto [basef, len] = pscatters[i];
-				auto edf{basef + len};
 				::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(basef))};
-				::std::byte *ed{reinterpret_cast<::std::byte *>(edf)};
-				::fast_io::details::pread_all_bytes_impl(insm, base, ed, off);
+				::fast_io::details::pread_all_bytes_impl(insm, base, len, off);
 				off = ::fast_io::fposoffadd_nonegative(off, len);
 			}
 		}
@@ -244,13 +254,15 @@ template <typename instmtype>
 inline constexpr void scatter_pread_all_impl(instmtype insm,
 											 basic_io_scatter_t<typename instmtype::input_char_type> const *pscatters,
 											 ::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires(::fast_io::operations::decay::defines::preadable<instmtype> || ::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{
 			::fast_io::operations::decay::input_stream_mutex_ref_decay(insm)};
 		return ::fast_io::details::scatter_pread_all_impl(
-			::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm), pscatters, n);
+			::fast_io::operations::decay::input_stream_unlocked_ref_decay(insm), pscatters, n, off);
 	}
 	else
 	{

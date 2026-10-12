@@ -17,10 +17,7 @@
 #include <algorithm>
 #include "impl/misc/push_macros.h"
 #include "impl/misc/push_warnings.h"
-#include "../fast_io_core_impl/freestanding/impl.h"
-#include "../fast_io_core_impl/terminate.h"
-#include "../fast_io_core_impl/intrinsics/msvc/impl.h"
-#include "../fast_io_core_impl/allocation/impl.h"
+#include "../fast_io_core.h"
 
 #include "impl/freestanding.h"
 #include "impl/common.h"
@@ -36,6 +33,8 @@ namespace fast_io
 
 template <typename T, typename Alloc = ::fast_io::native_global_allocator>
 using deque = ::fast_io::containers::deque<T, Alloc>;
+
+using zu_deque = ::fast_io::containers::deque<::std::size_t, ::fast_io::native_global_allocator>;
 
 namespace containers
 {
@@ -55,7 +54,9 @@ namespace tlc
 {
 template <typename T, typename Alloc = ::fast_io::native_thread_local_allocator>
 using deque = ::fast_io::containers::deque<T, Alloc>;
-}
+
+using zu_deque = ::fast_io::containers::deque<::std::size_t, ::fast_io::native_thread_local_allocator>;
+} // namespace tlc
 
 } // namespace fast_io
 

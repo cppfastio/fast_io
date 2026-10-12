@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <vcruntime_typeinfo.h>
-
 /*
 Referenced from:
 https://github.com/scottslacksmith/__RTDynamicCast/blob/master/main.cpp
@@ -16,6 +14,20 @@ FAST_IO_DLL_DLLIMPORT extern void *FAST_IO_WINCDECL msvc__RTtypeid(void *) noexc
 
 namespace rtti_hack
 {
+/*
+MSVC std::type_info layout: vftable pointer, then a spare pointer slot where the CRT
+caches the undecorated name, then the decorated (.?AV...) name inline. The decorated
+name is what the exception-handling RTTI tables match on and is identical for MSVC STL
+and libc++ on the MSVC ABI. The undecorated name returned by __std_type_info_name /
+type_info::name() is demangled text and is not stable enough for comparison.
+*/
+struct msvc_raw_type_info
+{
+	void *vftable;
+	char const *undecorated_name;
+	char decorated_name[1];
+};
+
 inline char const *abi_type_info_name_or_nullptr(void *mythis) noexcept
 {
 #if defined(__GNUC__) || defined(__clang__)
@@ -24,8 +36,12 @@ inline char const *abi_type_info_name_or_nullptr(void *mythis) noexcept
 #endif
 	__try
 	{
-		return ::__std_type_info_name(reinterpret_cast<::__std_type_info_data *>(reinterpret_cast<char *>(::fast_io::msvc::msvc__RTtypeid(mythis)) + sizeof(void *)),
-									  __builtin_addressof(::__type_info_root_node));
+		auto type_info{reinterpret_cast<msvc_raw_type_info const *>(::fast_io::msvc::msvc__RTtypeid(mythis))};
+		if (type_info == nullptr)
+		{
+			return nullptr;
+		}
+		return type_info->decorated_name;
 	}
 	__except (1)
 	{

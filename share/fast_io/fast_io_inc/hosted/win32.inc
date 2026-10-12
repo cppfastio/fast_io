@@ -2,8 +2,7 @@ export namespace fast_io
 {
     using ::fast_io::win32_stdout_number;
     using ::fast_io::win32_stderr_number;
-    using ::fast_io::win32_domain_value;
-    
+        
     namespace win32
     {
         using ::fast_io::win32::GetLastError;

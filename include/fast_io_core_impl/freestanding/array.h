@@ -41,7 +41,7 @@ struct array
 	{
 		return element + N;
 	}
-	inline static constexpr bool empty() noexcept
+	inline static constexpr bool is_empty() noexcept
 	{
 		return false;
 	}

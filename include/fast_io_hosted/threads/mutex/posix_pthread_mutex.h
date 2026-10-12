@@ -15,6 +15,7 @@ struct posix_pthread_mutex
 	inline posix_pthread_mutex(posix_pthread_mutex const &) = delete;
 	inline posix_pthread_mutex &operator=(posix_pthread_mutex const &) = delete;
 	inline void lock()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto const res{::fast_io::noexcept_call(::pthread_mutex_lock, __builtin_addressof(mutex))};
 		if (res != 0) [[unlikely]]

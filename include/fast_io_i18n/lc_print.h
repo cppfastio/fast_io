@@ -1,1665 +1,667 @@
-﻿// #pragma once
+#pragma once
+
+
+// lc_print — dump a whole locale in the LC_* category text form
+// master's lc_print.h wrote through print_define, here over the rva
+// wire image. The raw lc_locale pointer stays non-printable — the
+// dump is an explicit manipulator, mnp::lc_dump(loc), printable on
+// any stream and an lc arg inside an imbued one. The section dumped
+// is the stream char_type's (char follows the file's declared
+// codeset, char8_t/16/32 their own sections).
 //
-// namespace fast_io
-// {
+// Compiled programs (d_t_fmt, name_fmt, postal_fmt, tel_*_fmt and the
+// era formats) have no text form in the file; they dump as \xNN
+// escapes inside quotes. Everything else mirrors master's layout:
+//   key\t"value"   /   strlist  key\t"a";"b"   /   key\t<int>
+// grouping bytes print as decimals with 0xFF -> -1; sections are
+// separated by a blank line.
 //
-// namespace details
-// {
+// The hooks are lc_dynamic_reserve_printable: the count and write
+// passes run the same emitters through the lc sinks (lc.h), so the
+// reserved size is the exact char count and the write is bounded by
+// it — they can never disagree.
+
+namespace fast_io
+{
+
+namespace details
+{
+
+// ---------------------------------------------------------------------------
+// line emitters — every line is key\t<value>\n; literals go through
+// char_literal so one source serves every char_type
+// ---------------------------------------------------------------------------
+
+// key\t"text"\n — a text member resolved to char_type units
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_str(sink &sk, ::fast_io::u8string_view key,
+								  ::fast_io::l10n::lc_scatter<char_type> m,
+								  ::fast_io::l10n::lc_locale const *loc)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	lc_put_cstr<char_type>(sk, key);
+	sk.put(::fast_io::char_literal_v<u8'\t', char_type>);
+	sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+	lc_put_scatter<char_type>(sk, ::fast_io::l10n::lc_get_scatter(loc, m));
+	sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+}
+
+// key\t<decimal>\n — an s32 member decoded from the LE file scalar
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_int(sink &sk, ::fast_io::u8string_view key,
+								  ::std::int_least32_t v) noexcept
+{
+	lc_put_cstr<char_type>(sk, key);
+	sk.put(::fast_io::char_literal_v<u8'\t', char_type>);
+	lc_put_num<char_type>(sk, v, 0, 0);
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+}
+
+// key\t<g;g;...>\n — a grouping byte list; empty prints -1 and a 0xFF
+// byte prints -1 like master's SIZE_MAX sentinel
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_bytes(sink &sk, ::fast_io::u8string_view key,
+									::fast_io::l10n::lc_scatter<char8_t> m,
+									::fast_io::l10n::lc_locale const *loc)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	auto const b{::fast_io::l10n::lc_get_scatter(loc, m)};
+	lc_put_cstr<char_type>(sk, key);
+	sk.put(::fast_io::char_literal_v<u8'\t', char_type>);
+	if (b.base == nullptr || b.len == 0)
+	{
+		lc_put_cstr<char_type>(sk, u8"-1");
+	}
+	else
+	{
+		for (::std::size_t i{}; i < b.len; ++i)
+		{
+			if (i != 0)
+			{
+				sk.put(::fast_io::char_literal_v<u8';', char_type>);
+			}
+			auto const v{static_cast<::std::uint_least8_t>(b.base[i])};
+			if (v == 0xFFu)
+			{
+				lc_put_cstr<char_type>(sk, u8"-1");
+			}
+			else
+			{
+				lc_put_num<char_type>(sk, v, 0, 0);
+			}
+		}
+	}
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+}
+
+// the compiled fmt bytes as \xNN escapes — programs have no text form
+// in the file, so the bytes are the field's only representation
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_prog_bytes(
+	sink &sk, ::fast_io::basic_io_scatter_t<char8_t> b) noexcept
+{
+	for (::std::size_t i{}; i < b.len; ++i)
+	{
+		auto const v{static_cast<::std::uint_least8_t>(b.base[i])};
+		sk.put(::fast_io::char_literal_v<u8'\\', char_type>);
+		sk.put(::fast_io::char_literal_v<u8'x', char_type>);
+		sk.put(::fast_io::char_literal<char_type>(
+			static_cast<char8_t>(u8"0123456789abcdef"[v >> 4])));
+		sk.put(::fast_io::char_literal<char_type>(
+			static_cast<char8_t>(u8"0123456789abcdef"[v & 0xFu])));
+	}
+}
+
+// key\t"\xNN..."\n — a compiled binfmt program member
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_prog(sink &sk, ::fast_io::u8string_view key,
+								   ::fast_io::l10n::lc_scatter<char8_t> m,
+								   ::fast_io::l10n::lc_locale const *loc)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	auto const b{::fast_io::l10n::lc_get_scatter(loc, m)};
+	lc_put_cstr<char_type>(sk, key);
+	sk.put(::fast_io::char_literal_v<u8'\t', char_type>);
+	sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+	lc_dump_prog_bytes<char_type>(sk, b);
+	sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+}
+
+// key\t"a";"b";...\n — a fixed inline scatter array (abday, am_pm
+// & friends); always emitted, absent elements print ""
+template <::std::integral char_type, typename sink, ::std::size_t n>
+inline constexpr void lc_dump_strs(
+	sink &sk, ::fast_io::u8string_view key,
+	::fast_io::l10n::lc_scatter<char_type> const (&arr)[n],
+	::fast_io::l10n::lc_locale const *loc) FAST_IO_HERBCEPTIONS_THROWS
+{
+	lc_put_cstr<char_type>(sk, key);
+	sk.put(::fast_io::char_literal_v<u8'\t', char_type>);
+	for (::std::size_t i{}; i < n; ++i)
+	{
+		if (i != 0)
+		{
+			sk.put(::fast_io::char_literal_v<u8';', char_type>);
+		}
+		sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+		lc_put_scatter<char_type>(
+			sk, ::fast_io::l10n::lc_get_scatter(loc, arr[i]));
+		sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+	}
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+}
+
+// a strref-table member's elements, without the key — the line is
+// key\t"a";"b";...\n when the list is present, absent lists emit
+// nothing at all (master's empty-list early return)
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_list_body(
+	sink &sk,
+	::fast_io::l10n::lc_scatter<::fast_io::l10n::lc_scatter<char_type>> m,
+	::fast_io::l10n::lc_locale const *loc) FAST_IO_HERBCEPTIONS_THROWS
+{
+	auto const tbl{::fast_io::l10n::lc_get_scatter(loc, m)};
+	if (tbl.base == nullptr || tbl.len == 0)
+	{
+		return;
+	}
+	for (::std::size_t i{}; i < tbl.len; ++i)
+	{
+		if (i != 0)
+		{
+			sk.put(::fast_io::char_literal_v<u8';', char_type>);
+		}
+		sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+		lc_put_scatter<char_type>(
+			sk, ::fast_io::l10n::lc_get_scatter(loc, tbl.base[i]));
+		sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+	}
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_list(
+	sink &sk, ::fast_io::u8string_view key,
+	::fast_io::l10n::lc_scatter<::fast_io::l10n::lc_scatter<char_type>> m,
+	::fast_io::l10n::lc_locale const *loc) FAST_IO_HERBCEPTIONS_THROWS
+{
+	if (::fast_io::l10n::lc_u32(m.ref.off) == 0)
+	{
+		return;
+	}
+	lc_put_cstr<char_type>(sk, key);
+	sk.put(::fast_io::char_literal_v<u8'\t', char_type>);
+	lc_dump_list_body<char_type>(sk, m, loc);
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+}
+
+// one era date — "+*" / "-*" are the open-ended sentinels (INT32
+// extremes like the parser writes), else yyyy/mm/dd
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_era_date(sink &sk, ::std::int_least32_t y,
+									   ::std::int_least32_t mo,
+									   ::std::int_least32_t d)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(sk.put(char_type{})) ||
+								   !noexcept(lc_put_num<char_type>(sk, y, 0, 0)))
+{
+	constexpr ::std::int_least32_t mx{::std::numeric_limits<::std::int_least32_t>::max()};
+	constexpr ::std::int_least32_t mn{::std::numeric_limits<::std::int_least32_t>::min()};
+	if (y == mx || y == mn)
+	{
+		sk.put(y == mx ? ::fast_io::char_literal_v<u8'+', char_type>
+					   : ::fast_io::char_literal_v<u8'-', char_type>);
+		sk.put(::fast_io::char_literal_v<u8'*', char_type>);
+		return;
+	}
+	lc_put_num<char_type>(sk, y, 0, 0);
+	sk.put(::fast_io::char_literal_v<u8'/', char_type>);
+	lc_put_num<char_type>(sk, mo, 0, 0);
+	sk.put(::fast_io::char_literal_v<u8'/', char_type>);
+	lc_put_num<char_type>(sk, d, 0, 0);
+}
+
+// era\t"dir:off:start:end:name:fmt";...\n — the record text master's
+// dump printed, rebuilt from the record's fields; the compiled fmt
+// shows as \xNN like every program field
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_dump_era(
+	sink &sk,
+	::fast_io::l10n::lc_scatter<::fast_io::l10n::basic_lc_time_era<char_type>> m,
+	::fast_io::l10n::lc_locale const *loc) FAST_IO_HERBCEPTIONS_THROWS
+{
+	namespace lc = ::fast_io::l10n;
+	auto const tbl{lc::lc_get_scatter(loc, m)};
+	if (tbl.base == nullptr || tbl.len == 0)
+	{
+		return;
+	}
+	lc_put_cstr<char_type>(sk, u8"era");
+	sk.put(::fast_io::char_literal_v<u8'\t', char_type>);
+	for (::std::size_t i{}; i < tbl.len; ++i)
+	{
+		auto const &e{tbl.base[i]};
+		if (i != 0)
+		{
+			sk.put(::fast_io::char_literal_v<u8';', char_type>);
+		}
+		sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+		sk.put(lc::lc_s32(static_cast<::std::uint_least32_t>(e.direction)) > 0
+				   ? ::fast_io::char_literal_v<u8'+', char_type>
+				   : ::fast_io::char_literal_v<u8'-', char_type>);
+		sk.put(::fast_io::char_literal_v<u8':', char_type>);
+		lc_put_num<char_type>(
+			sk, lc::lc_s32(static_cast<::std::uint_least32_t>(e.offset)), 0, 0);
+		sk.put(::fast_io::char_literal_v<u8':', char_type>);
+		lc_dump_era_date<char_type>(
+			sk, lc::lc_s32(static_cast<::std::uint_least32_t>(e.start_year)),
+			static_cast<::std::int_least32_t>(lc::lc_u32(e.start_month)),
+			static_cast<::std::int_least32_t>(lc::lc_u32(e.start_day)));
+		sk.put(::fast_io::char_literal_v<u8':', char_type>);
+		lc_dump_era_date<char_type>(
+			sk, lc::lc_s32(static_cast<::std::uint_least32_t>(e.end_year)),
+			static_cast<::std::int_least32_t>(lc::lc_u32(e.end_month)),
+			static_cast<::std::int_least32_t>(lc::lc_u32(e.end_day)));
+		sk.put(::fast_io::char_literal_v<u8':', char_type>);
+		lc_put_scatter<char_type>(sk, lc::lc_get_scatter(loc, e.name));
+		sk.put(::fast_io::char_literal_v<u8':', char_type>);
+		lc_dump_prog_bytes<char_type>(
+			sk, lc::lc_get_scatter(loc, e.era_format));
+		sk.put(::fast_io::char_literal_v<u8'\"', char_type>);
+	}
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+}
+
+// ---------------------------------------------------------------------------
+// category emitters — file member order, master's section text
+// ---------------------------------------------------------------------------
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_identification(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+					   ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	auto const &s{all->identification};
+	lc_put_cstr<char_type>(sk, u8"LC_IDENTIFICATION\n");
+	lc_dump_str<char_type>(sk, u8"name", s.name, loc);
+	lc_dump_str<char_type>(sk, u8"encoding", s.encoding, loc);
+	lc_dump_str<char_type>(sk, u8"title", s.title, loc);
+	lc_dump_str<char_type>(sk, u8"source", s.source, loc);
+	lc_dump_str<char_type>(sk, u8"address", s.address, loc);
+	lc_dump_str<char_type>(sk, u8"contact", s.contact, loc);
+	lc_dump_str<char_type>(sk, u8"email", s.email, loc);
+	lc_dump_str<char_type>(sk, u8"tel", s.tel, loc);
+	lc_dump_str<char_type>(sk, u8"fax", s.fax, loc);
+	lc_dump_str<char_type>(sk, u8"language", s.language, loc);
+	lc_dump_str<char_type>(sk, u8"territory", s.territory, loc);
+	lc_dump_str<char_type>(sk, u8"audience", s.audience, loc);
+	lc_dump_str<char_type>(sk, u8"application", s.application, loc);
+	lc_dump_str<char_type>(sk, u8"abbreviation", s.abbreviation, loc);
+	lc_dump_str<char_type>(sk, u8"revision", s.revision, loc);
+	lc_dump_str<char_type>(sk, u8"date", s.date, loc);
+	lc_put_cstr<char_type>(sk, u8"END LC_IDENTIFICATION");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_monetary(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+				 ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	namespace lc = ::fast_io::l10n;
+	auto const &s{all->monetary};
+	lc_put_cstr<char_type>(sk, u8"LC_MONETARY\n");
+	lc_dump_str<char_type>(sk, u8"int_curr_symbol", s.int_curr_symbol, loc);
+	lc_dump_str<char_type>(sk, u8"currency_symbol", s.currency_symbol, loc);
+	lc_dump_str<char_type>(sk, u8"mon_decimal_point", s.mon_decimal_point, loc);
+	lc_dump_str<char_type>(sk, u8"mon_thousands_sep", s.mon_thousands_sep, loc);
+	lc_dump_bytes<char_type>(sk, u8"mon_grouping", s.mon_grouping, loc);
+	lc_dump_str<char_type>(sk, u8"positive_sign", s.positive_sign, loc);
+	lc_dump_str<char_type>(sk, u8"negative_sign", s.negative_sign, loc);
+	lc_dump_int<char_type>(sk, u8"int_frac_digits", lc::lc_s32(static_cast<::std::uint_least32_t>(s.int_frac_digits)));
+	lc_dump_int<char_type>(sk, u8"frac_digits", lc::lc_s32(static_cast<::std::uint_least32_t>(s.frac_digits)));
+	lc_dump_int<char_type>(sk, u8"p_cs_precedes", lc::lc_s32(static_cast<::std::uint_least32_t>(s.p_cs_precedes)));
+	lc_dump_int<char_type>(sk, u8"p_sep_by_space", lc::lc_s32(static_cast<::std::uint_least32_t>(s.p_sep_by_space)));
+	lc_dump_int<char_type>(sk, u8"n_cs_precedes", lc::lc_s32(static_cast<::std::uint_least32_t>(s.n_cs_precedes)));
+	lc_dump_int<char_type>(sk, u8"n_sep_by_space", lc::lc_s32(static_cast<::std::uint_least32_t>(s.n_sep_by_space)));
+	lc_dump_int<char_type>(sk, u8"int_p_cs_precedes", lc::lc_s32(static_cast<::std::uint_least32_t>(s.int_p_cs_precedes)));
+	lc_dump_int<char_type>(sk, u8"int_p_sep_by_space", lc::lc_s32(static_cast<::std::uint_least32_t>(s.int_p_sep_by_space)));
+	lc_dump_int<char_type>(sk, u8"int_n_cs_precedes", lc::lc_s32(static_cast<::std::uint_least32_t>(s.int_n_cs_precedes)));
+	lc_dump_int<char_type>(sk, u8"int_n_sep_by_space", lc::lc_s32(static_cast<::std::uint_least32_t>(s.int_n_sep_by_space)));
+	lc_dump_int<char_type>(sk, u8"p_sign_posn", lc::lc_s32(static_cast<::std::uint_least32_t>(s.p_sign_posn)));
+	lc_dump_int<char_type>(sk, u8"n_sign_posn", lc::lc_s32(static_cast<::std::uint_least32_t>(s.n_sign_posn)));
+	lc_dump_int<char_type>(sk, u8"int_p_sign_posn", lc::lc_s32(static_cast<::std::uint_least32_t>(s.int_p_sign_posn)));
+	lc_dump_int<char_type>(sk, u8"int_n_sign_posn", lc::lc_s32(static_cast<::std::uint_least32_t>(s.int_n_sign_posn)));
+	lc_put_cstr<char_type>(sk, u8"END LC_MONETARY");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_numeric(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+				::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	auto const &s{all->numeric};
+	lc_put_cstr<char_type>(sk, u8"LC_NUMERIC\n");
+	lc_dump_str<char_type>(sk, u8"decimal_point", s.decimal_point, loc);
+	lc_dump_str<char_type>(sk, u8"thousands_sep", s.thousands_sep, loc);
+	lc_dump_bytes<char_type>(sk, u8"grouping", s.grouping, loc);
+	lc_put_cstr<char_type>(sk, u8"END LC_NUMERIC");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_time(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+			 ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	namespace lc = ::fast_io::l10n;
+	auto const &s{all->time};
+	lc_put_cstr<char_type>(sk, u8"LC_TIME\n");
+	lc_dump_strs<char_type>(sk, u8"abday", s.abday, loc);
+	lc_dump_strs<char_type>(sk, u8"day", s.day, loc);
+	lc_dump_strs<char_type>(sk, u8"abmon", s.abmon, loc);
+	lc_dump_strs<char_type>(sk, u8"ab_alt_mon", s.ab_alt_mon, loc);
+	lc_dump_strs<char_type>(sk, u8"mon", s.mon, loc);
+	lc_dump_strs<char_type>(sk, u8"alt_mon", s.alt_mon, loc);
+	lc_dump_prog<char_type>(sk, u8"d_t_fmt", s.d_t_fmt, loc);
+	lc_dump_prog<char_type>(sk, u8"d_fmt", s.d_fmt, loc);
+	lc_dump_prog<char_type>(sk, u8"t_fmt", s.t_fmt, loc);
+	lc_dump_prog<char_type>(sk, u8"t_fmt_ampm", s.t_fmt_ampm, loc);
+	lc_dump_prog<char_type>(sk, u8"date_fmt", s.date_fmt, loc);
+	lc_dump_strs<char_type>(sk, u8"am_pm", s.am_pm, loc);
+	lc_dump_era<char_type>(sk, s.era, loc);
+	lc_dump_prog<char_type>(sk, u8"era_d_fmt", s.era_d_fmt, loc);
+	lc_dump_prog<char_type>(sk, u8"era_d_t_fmt", s.era_d_t_fmt, loc);
+	lc_dump_prog<char_type>(sk, u8"era_t_fmt", s.era_t_fmt, loc);
+	lc_dump_list<char_type>(sk, u8"alt_digits", s.alt_digits, loc);
+	lc_put_cstr<char_type>(sk, u8"week");
+	sk.put(::fast_io::char_literal_v<u8'\t', char_type>);
+	lc_put_num<char_type>(sk, lc::lc_s32(static_cast<::std::uint_least32_t>(s.week.ndays)), 0, 0);
+	sk.put(::fast_io::char_literal_v<u8';', char_type>);
+	lc_put_num<char_type>(sk, lc::lc_s32(static_cast<::std::uint_least32_t>(s.week.first_day)), 0, 0);
+	sk.put(::fast_io::char_literal_v<u8';', char_type>);
+	lc_put_num<char_type>(sk, lc::lc_s32(static_cast<::std::uint_least32_t>(s.week.first_week)), 0, 0);
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+	lc_dump_int<char_type>(sk, u8"first_weekday", lc::lc_s32(static_cast<::std::uint_least32_t>(s.first_weekday)));
+	lc_dump_int<char_type>(sk, u8"first_workday", lc::lc_s32(static_cast<::std::uint_least32_t>(s.first_workday)));
+	lc_dump_int<char_type>(sk, u8"cal_direction", lc::lc_s32(static_cast<::std::uint_least32_t>(s.cal_direction)));
+	lc_dump_list<char_type>(sk, u8"timezone", s.timezone, loc);
+	lc_put_cstr<char_type>(sk, u8"END LC_TIME");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_messages(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+				 ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	auto const &s{all->messages};
+	lc_put_cstr<char_type>(sk, u8"LC_MESSAGES\n");
+	lc_dump_str<char_type>(sk, u8"yesexpr", s.yesexpr, loc);
+	lc_dump_str<char_type>(sk, u8"noexpr", s.noexpr, loc);
+	lc_dump_str<char_type>(sk, u8"yesstr", s.yesstr, loc);
+	lc_dump_str<char_type>(sk, u8"nostr", s.nostr, loc);
+	lc_put_cstr<char_type>(sk, u8"END LC_MESSAGES");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_paper(sink &sk, ::fast_io::l10n::lc_locale const *,
+			  ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	namespace lc = ::fast_io::l10n;
+	lc_put_cstr<char_type>(sk, u8"LC_PAPER\n");
+	lc_dump_int<char_type>(sk, u8"width", lc::lc_s32(static_cast<::std::uint_least32_t>(all->paper.width)));
+	lc_dump_int<char_type>(sk, u8"height", lc::lc_s32(static_cast<::std::uint_least32_t>(all->paper.height)));
+	lc_put_cstr<char_type>(sk, u8"END LC_PAPER");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_telephone(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+				  ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	auto const &s{all->telephone};
+	lc_put_cstr<char_type>(sk, u8"LC_TELEPHONE\n");
+	lc_dump_prog<char_type>(sk, u8"tel_int_fmt", s.tel_int_fmt, loc);
+	lc_dump_prog<char_type>(sk, u8"tel_dom_fmt", s.tel_dom_fmt, loc);
+	lc_dump_str<char_type>(sk, u8"int_select", s.int_select, loc);
+	lc_dump_str<char_type>(sk, u8"int_prefix", s.int_prefix, loc);
+	lc_put_cstr<char_type>(sk, u8"END LC_TELEPHONE");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_name(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+			 ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	auto const &s{all->name};
+	lc_put_cstr<char_type>(sk, u8"LC_NAME\n");
+	lc_dump_prog<char_type>(sk, u8"name_fmt", s.name_fmt, loc);
+	lc_dump_str<char_type>(sk, u8"name_gen", s.name_gen, loc);
+	lc_dump_str<char_type>(sk, u8"name_miss", s.name_miss, loc);
+	lc_dump_str<char_type>(sk, u8"name_mr", s.name_mr, loc);
+	lc_dump_str<char_type>(sk, u8"name_mrs", s.name_mrs, loc);
+	lc_dump_str<char_type>(sk, u8"name_ms", s.name_ms, loc);
+	lc_put_cstr<char_type>(sk, u8"END LC_NAME");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_address(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+				::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	namespace lc = ::fast_io::l10n;
+	auto const &s{all->address};
+	lc_put_cstr<char_type>(sk, u8"LC_ADDRESS\n");
+	lc_dump_prog<char_type>(sk, u8"postal_fmt", s.postal_fmt, loc);
+	lc_dump_str<char_type>(sk, u8"country_name", s.country_name, loc);
+	lc_dump_str<char_type>(sk, u8"country_post", s.country_post, loc);
+	lc_dump_str<char_type>(sk, u8"country_ab2", s.country_ab2, loc);
+	lc_dump_str<char_type>(sk, u8"country_ab3", s.country_ab3, loc);
+	lc_dump_int<char_type>(sk, u8"country_num", lc::lc_s32(static_cast<::std::uint_least32_t>(s.country_num)));
+	lc_dump_str<char_type>(sk, u8"country_car", s.country_car, loc);
+	lc_dump_str<char_type>(sk, u8"country_isbn", s.country_isbn, loc);
+	lc_dump_str<char_type>(sk, u8"lang_name", s.lang_name, loc);
+	lc_dump_str<char_type>(sk, u8"lang_ab", s.lang_ab, loc);
+	lc_dump_str<char_type>(sk, u8"lang_term", s.lang_term, loc);
+	lc_dump_str<char_type>(sk, u8"lang_lib", s.lang_lib, loc);
+	lc_put_cstr<char_type>(sk, u8"END LC_ADDRESS");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_measurement(sink &sk, ::fast_io::l10n::lc_locale const *,
+					::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	lc_put_cstr<char_type>(sk, u8"LC_MEASUREMENT\n");
+	lc_dump_int<char_type>(sk, u8"measurement",
+						   ::fast_io::l10n::lc_s32(static_cast<::std::uint_least32_t>(
+							   all->measurement.measurement)));
+	lc_put_cstr<char_type>(sk, u8"END LC_MEASUREMENT");
+}
+
+template <::std::integral char_type, typename sink>
+inline constexpr void
+lc_dump_keyboard(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+				 ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	lc_put_cstr<char_type>(sk, u8"LC_KEYBOARD\nkeyboards\t");
+	lc_dump_list_body<char_type>(sk, all->keyboard.keyboards, loc);
+	sk.put(::fast_io::char_literal_v<u8'\n', char_type>);
+	lc_put_cstr<char_type>(sk, u8"END LC_KEYBOARD");
+}
+
+// the whole section, blank line between categories — struct/file
+// order: identification, monetary, numeric, time, messages, paper,
+// telephone, name, address, measurement, keyboard
+template <::std::integral char_type, typename sink>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr void
+lc_dump_lc_all(sink &sk, ::fast_io::l10n::lc_locale const *loc,
+			   ::fast_io::l10n::basic_lc_all<char_type> const *all)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	lc_dump_identification<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_monetary<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_numeric<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_time<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_messages<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_paper<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_telephone<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_name<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_address<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_measurement<char_type>(sk, loc, all);
+	lc_put_cstr<char_type>(sk, u8"\n\n");
+	lc_dump_keyboard<char_type>(sk, loc, all);
+}
+
+// the shared count/write bodies every hook shape forwards to
+template <::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr ::std::size_t
+lc_dump_size(::fast_io::l10n::lc_locale const *loc)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	if (loc == nullptr)
+	{
+		return 0;
+	}
+	auto const *all{::fast_io::l10n::lc_get_all<char_type>(loc)};
+	if (all == nullptr)
+	{
+		return 0;
+	}
+	lc_count_sink<char_type> sk{};
+	lc_dump_lc_all<char_type>(sk, loc, all);
+	return sk.n;
+}
+
+template <::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr char_type *
+lc_dump_define(::fast_io::l10n::lc_locale const *loc, char_type *iter)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	if (loc == nullptr)
+	{
+		return iter;
+	}
+	auto const *all{::fast_io::l10n::lc_get_all<char_type>(loc)};
+	if (all == nullptr)
+	{
+		return iter;
+	}
+	lc_write_sink<char_type> sk{iter, iter + lc_dump_size<char_type>(loc)};
+	lc_dump_lc_all<char_type>(sk, loc, all);
+	return sk.it;
+}
+
+} // namespace details
+
+namespace manipulators
+{
+
+// the whole-locale dump, as a value — the raw lc_locale pointer stays
+// non-printable; wrapping it asks for the dump explicitly, like
+// master's print_define on basic_lc_all did for `loc`
+struct lc_dump_t
+{
+	using manip_tag = manip_tag_t;
+	::fast_io::l10n::lc_locale const *reference;
+};
+
+inline constexpr lc_dump_t
+lc_dump(::fast_io::l10n::lc_locale const *loc) noexcept
+{
+	return {loc};
+}
+
+} // namespace manipulators
+
+// ---------------------------------------------------------------------------
+// hooks — the dump is dynamic_reserve_printable on the manipulator:
+// the count pass is the exact size, the write pass fills the reserved
+// span. The section comes from the wrapped locale's own file, so a
+// dumped locale need not be the imbued one.
 //
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_identification(output bos, basic_lc_identification<char_type> const &identification)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos,
-// 						   "LC_IDENTIFICATION\n"
-// 						   "name\t\"",
-// 						   identification.name,
-// 						   "\"\n"
-// 						   "encoding\t\"",
-// 						   identification.encoding,
-// 						   "\"\n"
-// 						   "title\t\"",
-// 						   identification.title,
-// 						   "\"\n"
-// 						   "source\t\"",
-// 						   identification.source,
-// 						   "\"\n"
-// 						   "address\t\"",
-// 						   identification.address,
-// 						   "\"\n"
-// 						   "contact\t\"",
-// 						   identification.contact,
-// 						   "\"\n"
-// 						   "email\t\"",
-// 						   identification.email,
-// 						   "\"\n"
-// 						   "tel\t\"",
-// 						   identification.tel,
-// 						   "\"\n"
-// 						   "fax\t\"",
-// 						   identification.fax,
-// 						   "\"\n"
-// 						   "language\t\"",
-// 						   identification.language,
-// 						   "\"\n"
-// 						   "territory\t\"",
-// 						   identification.territory,
-// 						   "\"\n"
-// 						   "audience\t\"",
-// 						   identification.audience,
-// 						   "\"\n"
-// 						   "application\t\"",
-// 						   identification.application,
-// 						   "\"\n"
-// 						   "abbreviation\t\"",
-// 						   identification.abbreviation,
-// 						   "\"\n"
-// 						   "revision\t\"",
-// 						   identification.revision,
-// 						   "\"\n"
-// 						   "date\t\"",
-// 						   identification.date,
-// 						   "\"\n"
-// 						   "END LC_IDENTIFICATION");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   L"LC_IDENTIFICATION\n"
-// 						   L"name\t\"",
-// 						   identification.name,
-// 						   L"\"\n"
-// 						   L"encoding\t\"",
-// 						   identification.encoding,
-// 						   L"\"\n"
-// 						   L"title\t\"",
-// 						   identification.title,
-// 						   L"\"\n"
-// 						   L"source\t\"",
-// 						   identification.source,
-// 						   L"\"\n"
-// 						   L"address\t\"",
-// 						   identification.address,
-// 						   L"\"\n"
-// 						   L"contact\t\"",
-// 						   identification.contact,
-// 						   L"\"\n"
-// 						   L"email\t\"",
-// 						   identification.email,
-// 						   L"\"\n"
-// 						   L"tel\t\"",
-// 						   identification.tel,
-// 						   L"\"\n"
-// 						   L"fax\t\"",
-// 						   identification.fax,
-// 						   L"\"\n"
-// 						   L"language\t\"",
-// 						   identification.language,
-// 						   L"\"\n"
-// 						   L"territory\t\"",
-// 						   identification.territory,
-// 						   L"\"\n"
-// 						   L"audience\t\"",
-// 						   identification.audience,
-// 						   L"\"\n"
-// 						   L"application\t\"",
-// 						   identification.application,
-// 						   L"\"\n"
-// 						   L"abbreviation\t\"",
-// 						   identification.abbreviation,
-// 						   L"\"\n"
-// 						   L"revision\t\"",
-// 						   identification.revision,
-// 						   L"\"\n"
-// 						   L"date\t\"",
-// 						   identification.date,
-// 						   L"\"\n"
-// 						   L"END LC_IDENTIFICATION");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u"LC_IDENTIFICATION\n"
-// 						   u"name\t\"",
-// 						   identification.name,
-// 						   u"\"\n"
-// 						   u"encoding\t\"",
-// 						   identification.encoding,
-// 						   u"\"\n"
-// 						   u"title\t\"",
-// 						   identification.title,
-// 						   u"\"\n"
-// 						   u"source\t\"",
-// 						   identification.source,
-// 						   u"\"\n"
-// 						   u"address\t\"",
-// 						   identification.address,
-// 						   u"\"\n"
-// 						   u"contact\t\"",
-// 						   identification.contact,
-// 						   u"\"\n"
-// 						   u"email\t\"",
-// 						   identification.email,
-// 						   u"\"\n"
-// 						   u"tel\t\"",
-// 						   identification.tel,
-// 						   u"\"\n"
-// 						   u"fax\t\"",
-// 						   identification.fax,
-// 						   u"\"\n"
-// 						   u"language\t\"",
-// 						   identification.language,
-// 						   u"\"\n"
-// 						   u"territory\t\"",
-// 						   identification.territory,
-// 						   u"\"\n"
-// 						   u"audience\t\"",
-// 						   identification.audience,
-// 						   u"\"\n"
-// 						   u"application\t\"",
-// 						   identification.application,
-// 						   u"\"\n"
-// 						   u"abbreviation\t\"",
-// 						   identification.abbreviation,
-// 						   u"\"\n"
-// 						   u"revision\t\"",
-// 						   identification.revision,
-// 						   u"\"\n"
-// 						   u"date\t\"",
-// 						   identification.date,
-// 						   u"\"\n"
-// 						   u"END LC_IDENTIFICATION");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   U"LC_IDENTIFICATION\n"
-// 						   U"name\t\"",
-// 						   identification.name,
-// 						   U"\"\n"
-// 						   U"encoding\t\"",
-// 						   identification.encoding,
-// 						   U"\"\n"
-// 						   U"title\t\"",
-// 						   identification.title,
-// 						   U"\"\n"
-// 						   U"source\t\"",
-// 						   identification.source,
-// 						   U"\"\n"
-// 						   U"address\t\"",
-// 						   identification.address,
-// 						   U"\"\n"
-// 						   U"contact\t\"",
-// 						   identification.contact,
-// 						   U"\"\n"
-// 						   U"email\t\"",
-// 						   identification.email,
-// 						   U"\"\n"
-// 						   U"tel\t\"",
-// 						   identification.tel,
-// 						   U"\"\n"
-// 						   U"fax\t\"",
-// 						   identification.fax,
-// 						   U"\"\n"
-// 						   U"language\t\"",
-// 						   identification.language,
-// 						   U"\"\n"
-// 						   U"territory\t\"",
-// 						   identification.territory,
-// 						   U"\"\n"
-// 						   U"audience\t\"",
-// 						   identification.audience,
-// 						   U"\"\n"
-// 						   U"application\t\"",
-// 						   identification.application,
-// 						   U"\"\n"
-// 						   U"abbreviation\t\"",
-// 						   identification.abbreviation,
-// 						   U"\"\n"
-// 						   U"revision\t\"",
-// 						   identification.revision,
-// 						   U"\"\n"
-// 						   U"date\t\"",
-// 						   identification.date,
-// 						   U"\"\n"
-// 						   U"END LC_IDENTIFICATION");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u8"LC_IDENTIFICATION\n"
-// 						   u8"name\t\"",
-// 						   identification.name,
-// 						   u8"\"\n"
-// 						   u8"encoding\t\"",
-// 						   identification.encoding,
-// 						   u8"\"\n"
-// 						   u8"title\t\"",
-// 						   identification.title,
-// 						   u8"\"\n"
-// 						   u8"source\t\"",
-// 						   identification.source,
-// 						   u8"\"\n"
-// 						   u8"address\t\"",
-// 						   identification.address,
-// 						   u8"\"\n"
-// 						   u8"contact\t\"",
-// 						   identification.contact,
-// 						   u8"\"\n"
-// 						   u8"email\t\"",
-// 						   identification.email,
-// 						   u8"\"\n"
-// 						   u8"tel\t\"",
-// 						   identification.tel,
-// 						   u8"\"\n"
-// 						   u8"fax\t\"",
-// 						   identification.fax,
-// 						   u8"\"\n"
-// 						   u8"language\t\"",
-// 						   identification.language,
-// 						   u8"\"\n"
-// 						   u8"territory\t\"",
-// 						   identification.territory,
-// 						   u8"\"\n"
-// 						   u8"audience\t\"",
-// 						   identification.audience,
-// 						   u8"\"\n"
-// 						   u8"application\t\"",
-// 						   identification.application,
-// 						   u8"\"\n"
-// 						   u8"abbreviation\t\"",
-// 						   identification.abbreviation,
-// 						   u8"\"\n"
-// 						   u8"revision\t\"",
-// 						   identification.revision,
-// 						   u8"\"\n"
-// 						   u8"date\t\"",
-// 						   identification.date,
-// 						   u8"\"\n"
-// 						   u8"END LC_IDENTIFICATION");
-// 	}
-// }
-//
-// } // namespace details
-//
-// namespace details
-// {
-// template <typename output>
-// constexpr void print_grouping(output bos, basic_io_scatter_t<::std::size_t> grouping)
-// {
-// 	using char_type = typename output::char_type;
-// 	if (grouping.len == 0)
-// 	{
-// 		if constexpr (::std::same_as<char, char_type>)
-// 		{
-// 			print_freestanding(bos, "-1");
-// 		}
-// 		else if constexpr (::std::same_as<wchar_t, char_type>)
-// 		{
-// 			print_freestanding(bos, L"-1");
-// 		}
-// 		else if constexpr (::std::same_as<char16_t, char_type>)
-// 		{
-// 			print_freestanding(bos, u"-1");
-// 		}
-// 		else if constexpr (::std::same_as<char32_t, char_type>)
-// 		{
-// 			print_freestanding(bos, U"-1");
-// 		}
-// 		else if constexpr (::std::same_as<char8_t, char_type>)
-// 		{
-// 			print_freestanding(bos, u8"-1");
-// 		}
-// 		return;
-// 	}
-// 	for (::std::size_t i{}; i != grouping.len; ++i)
-// 	{
-// 		if (i)
-// 		{
-// 			put(bos, char_literal_v<u8';', char_type>);
-// 		}
-// 		if (grouping.base[i] == ::std::numeric_limits<::std::size_t>::max())
-// 		{
-// 			if constexpr (::std::same_as<char, char_type>)
-// 			{
-// 				print_freestanding(bos, "-1");
-// 			}
-// 			else if constexpr (::std::same_as<wchar_t, char_type>)
-// 			{
-// 				print_freestanding(bos, L"-1");
-// 			}
-// 			else if constexpr (::std::same_as<char16_t, char_type>)
-// 			{
-// 				print_freestanding(bos, u"-1");
-// 			}
-// 			else if constexpr (::std::same_as<char32_t, char_type>)
-// 			{
-// 				print_freestanding(bos, U"-1");
-// 			}
-// 			else if constexpr (::std::same_as<char8_t, char_type>)
-// 			{
-// 				print_freestanding(bos, u8"-1");
-// 			}
-// 		}
-// 		else
-// 		{
-// 			print_freestanding(bos, grouping.base[i]);
-// 		}
-// 	}
-// }
-//
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_monetary(output bos, basic_lc_monetary<char_type> const &monetary)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos,
-// 						   "LC_MONETARY\n"
-// 						   "int_curr_symbol\t\"",
-// 						   monetary.int_curr_symbol,
-// 						   "\"\n"
-// 						   "currency_symbol\t\"",
-// 						   monetary.currency_symbol,
-// 						   "\"\n"
-// 						   "mon_decimal_point\t\"",
-// 						   monetary.mon_decimal_point,
-// 						   "\"\n"
-// 						   "mon_thousands_sep\t\"",
-// 						   monetary.mon_thousands_sep,
-// 						   "\"\n"
-// 						   "mon_grouping\t");
-// 		::fast_io::details::print_grouping(bos, monetary.mon_grouping);
-// 		print_freestanding(bos,
-// 						   "\n"
-// 						   "positive_sign\t\"",
-// 						   monetary.positive_sign,
-// 						   "\"\n"
-// 						   "negative_sign\t\"",
-// 						   monetary.negative_sign,
-// 						   "\"\n"
-// 						   "int_frac_digits\t",
-// 						   monetary.int_frac_digits,
-// 						   "\n"
-// 						   "frac_digits\t",
-// 						   monetary.frac_digits,
-// 						   "\n"
-// 						   "p_cs_precedes\t",
-// 						   monetary.p_cs_precedes,
-// 						   "\n"
-// 						   "p_sep_by_space\t",
-// 						   monetary.p_sep_by_space,
-// 						   "\n"
-// 						   "n_cs_precedes\t",
-// 						   monetary.n_cs_precedes,
-// 						   "\n"
-// 						   "n_sep_by_space\t",
-// 						   monetary.n_sep_by_space,
-// 						   "\n"
-// 						   "int_p_cs_precedes\t",
-// 						   monetary.int_p_cs_precedes,
-// 						   "\n"
-// 						   "int_p_sep_by_space\t",
-// 						   monetary.int_p_sep_by_space,
-// 						   "\n"
-// 						   "int_n_cs_precedes\t",
-// 						   monetary.int_n_cs_precedes,
-// 						   "\n"
-// 						   "int_n_sep_by_space\t",
-// 						   monetary.int_n_sep_by_space,
-// 						   "\n"
-// 						   "p_sign_posn\t",
-// 						   monetary.p_sign_posn,
-// 						   "\n"
-// 						   "n_sign_posn\t",
-// 						   monetary.n_sign_posn,
-// 						   "\n"
-// 						   "int_p_sign_posn\t",
-// 						   monetary.int_p_sign_posn,
-// 						   "\n"
-// 						   "int_n_sign_posn\t",
-// 						   monetary.int_n_sign_posn,
-// 						   "\n"
-// 						   "END LC_MONETARY");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   L"LC_MONETARY\n"
-// 						   L"int_curr_symbol\t\"",
-// 						   monetary.int_curr_symbol,
-// 						   L"\"\n"
-// 						   L"currency_symbol\t\"",
-// 						   monetary.currency_symbol,
-// 						   L"\"\n"
-// 						   L"mon_decimal_point\t\"",
-// 						   monetary.mon_decimal_point,
-// 						   L"\"\n"
-// 						   L"mon_thousands_sep\t\"",
-// 						   monetary.mon_thousands_sep,
-// 						   L"\"\n"
-// 						   L"mon_grouping\t");
-// 		::fast_io::details::print_grouping(bos, monetary.mon_grouping);
-// 		print_freestanding(bos,
-// 						   L"\n"
-// 						   L"positive_sign\t\"",
-// 						   monetary.positive_sign,
-// 						   L"\"\n"
-// 						   L"negative_sign\t\"",
-// 						   monetary.negative_sign,
-// 						   L"\"\n"
-// 						   L"int_frac_digits\t",
-// 						   monetary.int_frac_digits,
-// 						   L"\n"
-// 						   L"frac_digits\t",
-// 						   monetary.frac_digits,
-// 						   L"\n"
-// 						   L"p_cs_precedes\t",
-// 						   monetary.p_cs_precedes,
-// 						   L"\n"
-// 						   L"p_sep_by_space\t",
-// 						   monetary.p_sep_by_space,
-// 						   L"\n"
-// 						   L"n_cs_precedes\t",
-// 						   monetary.n_cs_precedes,
-// 						   L"\n"
-// 						   L"n_sep_by_space\t",
-// 						   monetary.n_sep_by_space,
-// 						   L"\n"
-// 						   L"int_p_cs_precedes\t",
-// 						   monetary.int_p_cs_precedes,
-// 						   L"\n"
-// 						   L"int_p_sep_by_space\t",
-// 						   monetary.int_p_sep_by_space,
-// 						   L"\n"
-// 						   L"int_n_cs_precedes\t",
-// 						   monetary.int_n_cs_precedes,
-// 						   L"\n"
-// 						   L"int_n_sep_by_space\t",
-// 						   monetary.int_n_sep_by_space,
-// 						   L"\n"
-// 						   L"p_sign_posn\t",
-// 						   monetary.p_sign_posn,
-// 						   L"\n"
-// 						   L"n_sign_posn\t",
-// 						   monetary.n_sign_posn,
-// 						   L"\n"
-// 						   L"int_p_sign_posn\t",
-// 						   monetary.int_p_sign_posn,
-// 						   L"\n"
-// 						   L"int_n_sign_posn\t",
-// 						   monetary.int_n_sign_posn,
-// 						   L"\n"
-// 						   L"END LC_MONETARY");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u"LC_MONETARY\n"
-// 						   u"int_curr_symbol\t\"",
-// 						   monetary.int_curr_symbol,
-// 						   u"\"\n"
-// 						   u"currency_symbol\t\"",
-// 						   monetary.currency_symbol,
-// 						   u"\"\n"
-// 						   u"mon_decimal_point\t\"",
-// 						   monetary.mon_decimal_point,
-// 						   u"\"\n"
-// 						   u"mon_thousands_sep\t\"",
-// 						   monetary.mon_thousands_sep,
-// 						   u"\"\n"
-// 						   u"mon_grouping\t");
-// 		::fast_io::details::print_grouping(bos, monetary.mon_grouping);
-// 		print_freestanding(bos,
-// 						   u"\n"
-// 						   u"positive_sign\t\"",
-// 						   monetary.positive_sign,
-// 						   u"\"\n"
-// 						   u"negative_sign\t\"",
-// 						   monetary.negative_sign,
-// 						   u"\"\n"
-// 						   u"int_frac_digits\t",
-// 						   monetary.int_frac_digits,
-// 						   u"\n"
-// 						   u"frac_digits\t",
-// 						   monetary.frac_digits,
-// 						   u"\n"
-// 						   u"p_cs_precedes\t",
-// 						   monetary.p_cs_precedes,
-// 						   u"\n"
-// 						   u"p_sep_by_space\t",
-// 						   monetary.p_sep_by_space,
-// 						   u"\n"
-// 						   u"n_cs_precedes\t",
-// 						   monetary.n_cs_precedes,
-// 						   u"\n"
-// 						   u"n_sep_by_space\t",
-// 						   monetary.n_sep_by_space,
-// 						   u"\n"
-// 						   u"int_p_cs_precedes\t",
-// 						   monetary.int_p_cs_precedes,
-// 						   u"\n"
-// 						   u"int_p_sep_by_space\t",
-// 						   monetary.int_p_sep_by_space,
-// 						   u"\n"
-// 						   u"int_n_cs_precedes\t",
-// 						   monetary.int_n_cs_precedes,
-// 						   u"\n"
-// 						   u"int_n_sep_by_space\t",
-// 						   monetary.int_n_sep_by_space,
-// 						   u"\n"
-// 						   u"p_sign_posn\t",
-// 						   monetary.p_sign_posn,
-// 						   u"\n"
-// 						   u"n_sign_posn\t",
-// 						   monetary.n_sign_posn,
-// 						   u"\n"
-// 						   u"int_p_sign_posn\t",
-// 						   monetary.int_p_sign_posn,
-// 						   u"\n"
-// 						   u"int_n_sign_posn\t",
-// 						   monetary.int_n_sign_posn,
-// 						   u"\n"
-// 						   u"END LC_MONETARY");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   U"LC_MONETARY\n"
-// 						   U"int_curr_symbol\t\"",
-// 						   monetary.int_curr_symbol,
-// 						   U"\"\n"
-// 						   U"currency_symbol\t\"",
-// 						   monetary.currency_symbol,
-// 						   U"\"\n"
-// 						   U"mon_decimal_point\t\"",
-// 						   monetary.mon_decimal_point,
-// 						   U"\"\n"
-// 						   U"mon_thousands_sep\t\"",
-// 						   monetary.mon_thousands_sep,
-// 						   U"\"\n"
-// 						   U"mon_grouping\t");
-// 		::fast_io::details::print_grouping(bos, monetary.mon_grouping);
-// 		print_freestanding(bos,
-// 						   U"\n"
-// 						   U"positive_sign\t\"",
-// 						   monetary.positive_sign,
-// 						   U"\"\n"
-// 						   U"negative_sign\t\"",
-// 						   monetary.negative_sign,
-// 						   U"\"\n"
-// 						   U"int_frac_digits\t",
-// 						   monetary.int_frac_digits,
-// 						   U"\n"
-// 						   U"frac_digits\t",
-// 						   monetary.frac_digits,
-// 						   U"\n"
-// 						   U"p_cs_precedes\t",
-// 						   monetary.p_cs_precedes,
-// 						   U"\n"
-// 						   U"p_sep_by_space\t",
-// 						   monetary.p_sep_by_space,
-// 						   U"\n"
-// 						   U"n_cs_precedes\t",
-// 						   monetary.n_cs_precedes,
-// 						   U"\n"
-// 						   U"n_sep_by_space\t",
-// 						   monetary.n_sep_by_space,
-// 						   U"\n"
-// 						   U"int_p_cs_precedes\t",
-// 						   monetary.int_p_cs_precedes,
-// 						   U"\n"
-// 						   U"int_p_sep_by_space\t",
-// 						   monetary.int_p_sep_by_space,
-// 						   U"\n"
-// 						   U"int_n_cs_precedes\t",
-// 						   monetary.int_n_cs_precedes,
-// 						   U"\n"
-// 						   U"int_n_sep_by_space\t",
-// 						   monetary.int_n_sep_by_space,
-// 						   U"\n"
-// 						   U"p_sign_posn\t",
-// 						   monetary.p_sign_posn,
-// 						   U"\n"
-// 						   U"n_sign_posn\t",
-// 						   monetary.n_sign_posn,
-// 						   U"\n"
-// 						   U"int_p_sign_posn\t",
-// 						   monetary.int_p_sign_posn,
-// 						   U"\n"
-// 						   U"int_n_sign_posn\t",
-// 						   monetary.int_n_sign_posn,
-// 						   U"\n"
-// 						   U"END LC_MONETARY");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u8"LC_MONETARY\n"
-// 						   u8"int_curr_symbol\t\"",
-// 						   monetary.int_curr_symbol,
-// 						   u8"\"\n"
-// 						   u8"currency_symbol\t\"",
-// 						   monetary.currency_symbol,
-// 						   u8"\"\n"
-// 						   u8"mon_decimal_point\t\"",
-// 						   monetary.mon_decimal_point,
-// 						   u8"\"\n"
-// 						   u8"mon_thousands_sep\t\"",
-// 						   monetary.mon_thousands_sep,
-// 						   u8"\"\n"
-// 						   u8"mon_grouping\t");
-// 		::fast_io::details::print_grouping(bos, monetary.mon_grouping);
-// 		print_freestanding(bos,
-// 						   u8"\n"
-// 						   u8"positive_sign\t\"",
-// 						   monetary.positive_sign,
-// 						   u8"\"\n"
-// 						   u8"negative_sign\t\"",
-// 						   monetary.negative_sign,
-// 						   u8"\"\n"
-// 						   u8"int_frac_digits\t",
-// 						   monetary.int_frac_digits,
-// 						   u8"\n"
-// 						   u8"frac_digits\t",
-// 						   monetary.frac_digits,
-// 						   u8"\n"
-// 						   u8"p_cs_precedes\t",
-// 						   monetary.p_cs_precedes,
-// 						   u8"\n"
-// 						   u8"p_sep_by_space\t",
-// 						   monetary.p_sep_by_space,
-// 						   u8"\n"
-// 						   u8"n_cs_precedes\t",
-// 						   monetary.n_cs_precedes,
-// 						   u8"\n"
-// 						   u8"n_sep_by_space\t",
-// 						   monetary.n_sep_by_space,
-// 						   u8"\n"
-// 						   u8"int_p_cs_precedes\t",
-// 						   monetary.int_p_cs_precedes,
-// 						   u8"\n"
-// 						   u8"int_p_sep_by_space\t",
-// 						   monetary.int_p_sep_by_space,
-// 						   u8"\n"
-// 						   u8"int_n_cs_precedes\t",
-// 						   monetary.int_n_cs_precedes,
-// 						   u8"\n"
-// 						   u8"int_n_sep_by_space\t",
-// 						   monetary.int_n_sep_by_space,
-// 						   u8"\n"
-// 						   u8"p_sign_posn\t",
-// 						   monetary.p_sign_posn,
-// 						   u8"\n"
-// 						   u8"n_sign_posn\t",
-// 						   monetary.n_sign_posn,
-// 						   u8"\n"
-// 						   u8"int_p_sign_posn\t",
-// 						   monetary.int_p_sign_posn,
-// 						   u8"\n"
-// 						   u8"int_n_sign_posn\t",
-// 						   monetary.int_n_sign_posn,
-// 						   u8"\n"
-// 						   u8"END LC_MONETARY");
-// 	}
-// }
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_numeric(output bos, basic_lc_numeric<char_type> const &numeric)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos,
-// 						   "LC_NUMERIC\n"
-// 						   "decimal_point\t\"",
-// 						   numeric.decimal_point,
-// 						   "\"\n"
-// 						   "thousands_sep\t\"",
-// 						   numeric.thousands_sep,
-// 						   "\"\n"
-// 						   "grouping\t");
-// 		::fast_io::details::print_grouping(bos, numeric.grouping);
-// 		print_freestanding(bos, "\n"
-// 								"END LC_NUMERIC");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   L"LC_NUMERIC\n"
-// 						   L"decimal_point\t\"",
-// 						   numeric.decimal_point,
-// 						   L"\"\n"
-// 						   L"thousands_sep\t\"",
-// 						   numeric.thousands_sep,
-// 						   L"\"\n"
-// 						   L"grouping\t");
-// 		::fast_io::details::print_grouping(bos, numeric.grouping);
-// 		print_freestanding(bos, L"\n"
-// 								L"END LC_NUMERIC");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u"LC_NUMERIC\n"
-// 						   u"decimal_point\t\"",
-// 						   numeric.decimal_point,
-// 						   u"\"\n"
-// 						   u"thousands_sep\t\"",
-// 						   numeric.thousands_sep,
-// 						   u"\"\n"
-// 						   u"grouping\t");
-// 		::fast_io::details::print_grouping(bos, numeric.grouping);
-// 		print_freestanding(bos, u"\n"
-// 								u"END LC_NUMERIC");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   U"LC_NUMERIC\n"
-// 						   U"decimal_point\t\"",
-// 						   numeric.decimal_point,
-// 						   U"\"\n"
-// 						   U"thousands_sep\t\"",
-// 						   numeric.thousands_sep,
-// 						   U"\"\n"
-// 						   U"grouping\t");
-// 		::fast_io::details::print_grouping(bos, numeric.grouping);
-// 		print_freestanding(bos, U"\n"
-// 								U"END LC_NUMERIC");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u8"LC_NUMERIC\n"
-// 						   u8"decimal_point\t\"",
-// 						   numeric.decimal_point,
-// 						   u8"\"\n"
-// 						   u8"thousands_sep\t\"",
-// 						   numeric.thousands_sep,
-// 						   u8"\"\n"
-// 						   u8"grouping\t");
-// 		::fast_io::details::print_grouping(bos, numeric.grouping);
-// 		print_freestanding(bos, u8"\n"
-// 								u8"END LC_NUMERIC");
-// 	}
-// }
-// } // namespace details
-//
-// namespace details
-//{
-// template <typename output>
-// constexpr void print_loc_days_real_impl(output bos, typename output::char_type const *category_name,
-//										::std::size_t category_name_len,
-//										basic_io_scatter_t<typename output::char_type> const *day_strings,
-//										::std::size_t day_strings_len)
-//{
-//	using char_type = typename output::char_type;
-//	if (day_strings_len == 0 || day_strings_len == 0)
-//	{
-//		return;
-//	}
-//	print_freestanding(bos, basic_io_scatter_t<char_type>{category_name, category_name_len});
-//	put(bos, char_literal_v<u8'\t', char_type>);
-//	for (::std::size_t i{}; i != day_strings_len; ++i)
-//	{
-//		if (i)
-//		{
-//			put(bos, char_literal_v<u8';', char_type>);
-//		}
-//		put(bos, char_literal_v<u8'\"', char_type>);
-//		print_freestanding(bos, day_strings[i]);
-//		put(bos, char_literal_v<u8'\"', char_type>);
-//	}
-//	put(bos, char_literal_v<u8'\n', char_type>);
-//}
-//
-// template <::std::size_t n, typename output>
-// constexpr void print_loc_days_impl(output bos, typename output::char_type const (&category_name)[n],
-//								   basic_io_scatter_t<basic_io_scatter_t<typename output::char_type>> day_strings)
-//{
-//	print_loc_days_real_impl(bos, category_name, n - 1, day_strings.base, day_strings.len);
-//}
-//
-// template <typename output>
-// constexpr void print_loc_era_impl(output bos, basic_lc_time_era<typename output::char_type> const *eras_ptr,
-//								  ::std::size_t n)
-//{
-//	using char_type = typename output::char_type;
-//	if (n == 0)
-//	{
-//		return;
-//	}
-//	if constexpr (::std::same_as<char_type, char>)
-//	{
-//		print(bos, "era\t");
-//	}
-//	else if constexpr (::std::same_as<char_type, wchar_t>)
-//	{
-//		print(bos, L"era\t");
-//	}
-//	else if constexpr (::std::same_as<char_type, char16_t>)
-//	{
-//		print(bos, u"era\t");
-//	}
-//	else if constexpr (::std::same_as<char_type, char32_t>)
-//	{
-//		print(bos, U"era\t");
-//	}
-//	else
-//	{
-//		print(bos, u8"era\t");
-//	}
-//	for (::std::size_t i{}; i != n; ++i)
-//	{
-//		if (i)
-//		{
-//			put(bos, char_literal_v<u8';', char_type>);
-//		}
-//		put(bos, char_literal_v<u8'\"', char_type>);
-//		print_freestanding(bos, eras_ptr[i].era);
-//		put(bos, char_literal_v<u8'\"', char_type>);
-//	}
-//	put(bos, char_literal_v<u8'\n', char_type>);
-//}
-//
-// template <typename output, ::std::integral ch_type1, ::std::size_t n1, ::std::integral ch_type2,
-//		  ::std::size_t n2>
-// constexpr void print_loc_days_impl_const(output bos, ch_type1 const (&category_name)[n1],
-//										 basic_io_scatter_t<ch_type2> const (&day_strings)[n2])
-//{
-//	print_loc_days_real_impl(bos, category_name, n1 - 1, day_strings, n2);
-//}
-//
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_time(output bos, basic_lc_time<char_type> const &time)
-// {
-// 	if constexpr (::std::same_as<char, char_type>)
-// 	{
-// 		print_freestanding(bos, "LC_TIME\n");
-// 		::fast_io::details::print_loc_days_impl_const(bos, "abday", time.abday);
-// 		::fast_io::details::print_loc_days_impl_const(bos, "day", time.day);
-// 		::fast_io::details::print_loc_days_impl_const(bos, "abmon", time.abmon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, "ab_alt_mon", time.ab_alt_mon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, "mon", time.mon);
-// 		print_freestanding(bos, "d_t_fmt\t\"", time.d_t_fmt, "\"\n", "d_fmt\t\"", time.d_fmt, "\"\n", "t_fmt\t\"",
-// 						   time.t_fmt, "\"\n", "t_fmt_ampm\t\"", time.t_fmt_ampm, "\"\n", "date_fmt\t\"", time.date_fmt,
-// 						   "\"\n", "am_pm\t\"", time.am_pm[0], "\";\"", time.am_pm[1], "\"\n");
-// 		::fast_io::details::print_loc_era_impl(bos, time.era.base, time.era.len);
-// 		print_freestanding(bos, "era_d_fmt\t\"", time.era_d_fmt, "\"\n", "era_d_t_fmt\t\"", time.era_d_t_fmt, "\"\n",
-// 						   "era_t_fmt\t\"", time.era_t_fmt, "\"\n");
-// 		::fast_io::details::print_loc_days_impl(bos, "alt_digits", time.alt_digits);
-// 		println_freestanding(bos, "week\t", time.week.ndays, ";", time.week.first_day, ";", time.week.first_week, "\n",
-// 							 "first_weekday\t", time.first_weekday,
-// 							 "\n"
-// 							 "first_workday\t",
-// 							 time.first_workday,
-// 							 "\n"
-// 							 "cal_direction\t",
-// 							 time.cal_direction);
-// 		::fast_io::details::print_loc_days_impl(bos, "timezone", time.timezone);
-// 		print_freestanding(bos, "END LC_TIME");
-// 	}
-// 	else if constexpr (::std::same_as<wchar_t, char_type>)
-// 	{
-// 		print_freestanding(bos, L"LC_TIME\n");
-// 		::fast_io::details::print_loc_days_impl_const(bos, L"abday", time.abday);
-// 		::fast_io::details::print_loc_days_impl_const(bos, L"day", time.day);
-// 		::fast_io::details::print_loc_days_impl_const(bos, L"abmon", time.abmon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, L"ab_alt_mon", time.ab_alt_mon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, L"mon", time.mon);
-// 		print_freestanding(bos, L"d_t_fmt\t\"", time.d_t_fmt, L"\"\n", L"d_fmt\t\"", time.d_fmt, L"\"\n", L"t_fmt\t\"",
-// 						   time.t_fmt, L"\"\n", L"t_fmt_ampm\t\"", time.t_fmt_ampm, L"\"\n", L"date_fmt\t\"",
-// 						   time.date_fmt, L"\"\n", L"am_pm\t\"", time.am_pm[0], L"\";\"", time.am_pm[1], L"\"\n");
-// 		::fast_io::details::print_loc_era_impl(bos, time.era.base, time.era.len);
-// 		print_freestanding(bos, L"era_d_fmt\t\"", time.era_d_fmt, L"\"\n", L"era_d_t_fmt\t\"", time.era_d_t_fmt,
-// 						   L"\"\n", L"era_t_fmt\t\"", time.era_t_fmt, L"\"\n");
-// 		::fast_io::details::print_loc_days_impl(bos, L"alt_digits", time.alt_digits);
-// 		println_freestanding(bos, L"week\t", time.week.ndays, L";", time.week.first_day, L";", time.week.first_week,
-// 							 L"\n", L"first_weekday\t", time.first_weekday,
-// 							 L"\n"
-// 							 L"first_workday\t",
-// 							 time.first_workday,
-// 							 L"\n"
-// 							 L"cal_direction\t",
-// 							 time.cal_direction);
-// 		::fast_io::details::print_loc_days_impl(bos, L"timezone", time.timezone);
-// 		print_freestanding(bos, L"END LC_TIME");
-// 	}
-// 	else if constexpr (::std::same_as<char16_t, char_type>)
-// 	{
-// 		print_freestanding(bos, u"LC_TIME\n");
-// 		::fast_io::details::print_loc_days_impl_const(bos, u"abday", time.abday);
-// 		::fast_io::details::print_loc_days_impl_const(bos, u"day", time.day);
-// 		::fast_io::details::print_loc_days_impl_const(bos, u"abmon", time.abmon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, u"ab_alt_mon", time.ab_alt_mon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, u"mon", time.mon);
-// 		print_freestanding(bos, u"d_t_fmt\t\"", time.d_t_fmt, u"\"\n", u"d_fmt\t\"", time.d_fmt, u"\"\n", u"t_fmt\t\"",
-// 						   time.t_fmt, u"\"\n", u"t_fmt_ampm\t\"", time.t_fmt_ampm, u"\"\n", u"date_fmt\t\"",
-// 						   time.date_fmt, u"\"\n", u"am_pm\t\"", time.am_pm[0], u"\";\"", time.am_pm[1], u"\"\n");
-// 		::fast_io::details::print_loc_era_impl(bos, time.era.base, time.era.len);
-// 		print_freestanding(bos, u"era_d_fmt\t\"", time.era_d_fmt, u"\"\n", u"era_d_t_fmt\t\"", time.era_d_t_fmt,
-// 						   u"\"\n", u"era_t_fmt\t\"", time.era_t_fmt, u"\"\n");
-// 		::fast_io::details::print_loc_days_impl(bos, u"alt_digits", time.alt_digits);
-// 		println_freestanding(bos, u"week\t", time.week.ndays, u";", time.week.first_day, u";", time.week.first_week,
-// 							 u"\n", u"first_weekday\t", time.first_weekday,
-// 							 u"\n"
-// 							 u"first_workday\t",
-// 							 time.first_workday,
-// 							 u"\n"
-// 							 u"cal_direction\t",
-// 							 time.cal_direction);
-// 		::fast_io::details::print_loc_days_impl(bos, u"timezone", time.timezone);
-// 		print_freestanding(bos, u"END LC_TIME");
-// 	}
-// 	else if constexpr (::std::same_as<char32_t, char_type>)
-// 	{
-// 		print_freestanding(bos, U"LC_TIME\n");
-// 		::fast_io::details::print_loc_days_impl_const(bos, U"abday", time.abday);
-// 		::fast_io::details::print_loc_days_impl_const(bos, U"day", time.day);
-// 		::fast_io::details::print_loc_days_impl_const(bos, U"abmon", time.abmon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, U"ab_alt_mon", time.ab_alt_mon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, U"mon", time.mon);
-// 		print_freestanding(bos, U"d_t_fmt\t\"", time.d_t_fmt, U"\"\n", U"d_fmt\t\"", time.d_fmt, U"\"\n", U"t_fmt\t\"",
-// 						   time.t_fmt, U"\"\n", U"t_fmt_ampm\t\"", time.t_fmt_ampm, U"\"\n", U"date_fmt\t\"",
-// 						   time.date_fmt, U"\"\n", U"am_pm\t\"", time.am_pm[0], U"\";\"", time.am_pm[1], U"\"\n");
-// 		::fast_io::details::print_loc_era_impl(bos, time.era.base, time.era.len);
-// 		print_freestanding(bos, U"era_d_fmt\t\"", time.era_d_fmt, U"\"\n", U"era_d_t_fmt\t\"", time.era_d_t_fmt,
-// 						   U"\"\n", U"era_t_fmt\t\"", time.era_t_fmt, U"\"\n");
-// 		::fast_io::details::print_loc_days_impl(bos, U"alt_digits", time.alt_digits);
-// 		println_freestanding(bos, U"week\t", time.week.ndays, U";", time.week.first_day, U";", time.week.first_week,
-// 							 U"\n", U"first_weekday\t", time.first_weekday,
-// 							 U"\n"
-// 							 U"first_workday\t",
-// 							 time.first_workday,
-// 							 U"\n"
-// 							 U"cal_direction\t",
-// 							 time.cal_direction);
-// 		::fast_io::details::print_loc_days_impl(bos, U"timezone", time.timezone);
-// 		print_freestanding(bos, U"END LC_TIME");
-// 	}
-// 	else if constexpr (::std::same_as<char8_t, char_type>)
-// 	{
-// 		print_freestanding(bos, u8"LC_TIME\n");
-// 		::fast_io::details::print_loc_days_impl_const(bos, u8"abday", time.abday);
-// 		::fast_io::details::print_loc_days_impl_const(bos, u8"day", time.day);
-// 		::fast_io::details::print_loc_days_impl_const(bos, u8"abmon", time.abmon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, u8"ab_alt_mon", time.ab_alt_mon);
-// 		::fast_io::details::print_loc_days_impl_const(bos, u8"mon", time.mon);
-// 		print_freestanding(bos, u8"d_t_fmt\t\"", time.d_t_fmt, u8"\"\n", u8"d_fmt\t\"", time.d_fmt, u8"\"\n",
-// 						   u8"t_fmt\t\"", time.t_fmt, u8"\"\n", u8"t_fmt_ampm\t\"", time.t_fmt_ampm, u8"\"\n",
-// 						   u8"date_fmt\t\"", time.date_fmt, u8"\"\n", u8"am_pm\t\"", time.am_pm[0], u8"\";\"",
-// 						   time.am_pm[1], u8"\"\n");
-// 		::fast_io::details::print_loc_era_impl(bos, time.era.base, time.era.len);
-// 		print_freestanding(bos, u8"era_d_fmt\t\"", time.era_d_fmt, u8"\"\n", u8"era_d_t_fmt\t\"", time.era_d_t_fmt,
-// 						   u8"\"\n", u8"era_t_fmt\t\"", time.era_t_fmt, u8"\"\n");
-// 		::fast_io::details::print_loc_days_impl(bos, u8"alt_digits", time.alt_digits);
-// 		println_freestanding(bos, u8"week\t", time.week.ndays, u8";", time.week.first_day, u8";", time.week.first_week,
-// 							 u8"\n", u8"first_weekday\t", time.first_weekday,
-// 							 u8"\n"
-// 							 u8"first_workday\t",
-// 							 time.first_workday,
-// 							 u8"\n"
-// 							 u8"cal_direction\t",
-// 							 time.cal_direction);
-// 		::fast_io::details::print_loc_days_impl(bos, u8"timezone", time.timezone);
-// 		print_freestanding(bos, u8"END LC_TIME");
-// 	}
-// }
-//
-// template <typename output>
-// constexpr void print_loc_keyboards_impl(output bos,
-//										basic_io_scatter_t<typename output::char_type> const *keyboards_strings,
-//										::std::size_t keyboards_strings_len)
-//{
-//	for (::std::size_t i{}; i != keyboards_strings_len; ++i)
-//	{
-//		if (i)
-//		{
-//			put(bos, char_literal_v<u8';', typename output::char_type>);
-//		}
-//		put(bos, char_literal_v<u8'\"', typename output::char_type>);
-//		print(bos, keyboards_strings[i]);
-//		put(bos, char_literal_v<u8'\"', typename output::char_type>);
-//	}
-//}
-//
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_messages(output bos, basic_lc_messages<char_type> const &messages)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos,
-// 						   "LC_MESSAGES\n"
-// 						   "yesexpr\t\"",
-// 						   messages.yesexpr,
-// 						   "\"\n"
-// 						   "noexpr\t\"",
-// 						   messages.noexpr,
-// 						   "\"\n"
-// 						   "yesstr\t\"",
-// 						   messages.yesstr,
-// 						   "\"\n"
-// 						   "nostr\t\"",
-// 						   messages.nostr,
-// 						   "\"\n"
-// 						   "END LC_MESSAGES");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   L"LC_MESSAGES\n"
-// 						   L"yesexpr\t\"",
-// 						   messages.yesexpr,
-// 						   L"\"\n"
-// 						   L"noexpr\t\"",
-// 						   messages.noexpr,
-// 						   L"\"\n"
-// 						   L"yesstr\t\"",
-// 						   messages.yesstr,
-// 						   L"\"\n"
-// 						   L"nostr\t\"",
-// 						   messages.nostr,
-// 						   L"\"\n"
-// 						   L"END LC_MESSAGES");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u"LC_MESSAGES\n"
-// 						   u"yesexpr\t\"",
-// 						   messages.yesexpr,
-// 						   u"\"\n"
-// 						   u"noexpr\t\"",
-// 						   messages.noexpr,
-// 						   u"\"\n"
-// 						   u"yesstr\t\"",
-// 						   messages.yesstr,
-// 						   u"\"\n"
-// 						   u"nostr\t\"",
-// 						   messages.nostr,
-// 						   u"\"\n"
-// 						   u"END LC_MESSAGES");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   U"LC_MESSAGES\n"
-// 						   U"yesexpr\t\"",
-// 						   messages.yesexpr,
-// 						   U"\"\n"
-// 						   U"noexpr\t\"",
-// 						   messages.noexpr,
-// 						   U"\"\n"
-// 						   U"yesstr\t\"",
-// 						   messages.yesstr,
-// 						   U"\"\n"
-// 						   U"nostr\t\"",
-// 						   messages.nostr,
-// 						   U"\"\n"
-// 						   U"END LC_MESSAGES");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u8"LC_MESSAGES\n"
-// 						   u8"yesexpr\t\"",
-// 						   messages.yesexpr,
-// 						   u8"\"\n"
-// 						   u8"noexpr\t\"",
-// 						   messages.noexpr,
-// 						   u8"\"\n"
-// 						   u8"yesstr\t\"",
-// 						   messages.yesstr,
-// 						   u8"\"\n"
-// 						   u8"nostr\t\"",
-// 						   messages.nostr,
-// 						   u8"\"\n"
-// 						   u8"END LC_MESSAGES");
-// 	}
-// }
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_paper(output bos, basic_lc_paper<char_type> const &paper)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos,
-// 						   "LC_PAPER\n"
-// 						   "width\t",
-// 						   paper.width,
-// 						   "\n"
-// 						   "height\t",
-// 						   paper.height,
-// 						   "\n"
-// 						   "END LC_PAPER");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   L"LC_PAPER\n"
-// 						   L"width\t",
-// 						   paper.width,
-// 						   L"\n"
-// 						   L"height\t",
-// 						   paper.height,
-// 						   L"\n"
-// 						   L"END LC_PAPER");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u"LC_PAPER\n"
-// 						   u"width\t",
-// 						   paper.width,
-// 						   u"\n"
-// 						   u"height\t",
-// 						   paper.height,
-// 						   u"\n"
-// 						   u"END LC_PAPER");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   U"LC_PAPER\n"
-// 						   U"width\t",
-// 						   paper.width,
-// 						   U"\n"
-// 						   U"height\t",
-// 						   paper.height,
-// 						   U"\n"
-// 						   U"END LC_PAPER");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u8"LC_PAPER\n"
-// 						   u8"width\t",
-// 						   paper.width,
-// 						   u8"\n"
-// 						   u8"height\t",
-// 						   paper.height,
-// 						   u8"\n"
-// 						   u8"END LC_PAPER");
-// 	}
-// }
-//
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_telephone(output bos, basic_lc_telephone<char_type> const &telephone)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos,
-// 						   "LC_TELEPHONE\n"
-// 						   "tel_int_fmt\t\"",
-// 						   telephone.tel_int_fmt,
-// 						   "\"\n"
-// 						   "tel_dom_fmt\t\"",
-// 						   telephone.tel_dom_fmt,
-// 						   "\"\n"
-// 						   "int_select\t\"",
-// 						   telephone.int_select,
-// 						   "\"\n"
-// 						   "int_prefix\t\"",
-// 						   telephone.int_prefix,
-// 						   "\"\n"
-// 						   "END LC_TELEPHONE");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   L"LC_TELEPHONE\n"
-// 						   L"tel_int_fmt\t\"",
-// 						   telephone.tel_int_fmt,
-// 						   L"\"\n"
-// 						   L"tel_dom_fmt\t\"",
-// 						   telephone.tel_dom_fmt,
-// 						   L"\"\n"
-// 						   L"int_select\t\"",
-// 						   telephone.int_select,
-// 						   L"\"\n"
-// 						   L"int_prefix\t\"",
-// 						   telephone.int_prefix,
-// 						   L"\"\n"
-// 						   L"END LC_TELEPHONE");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u"LC_TELEPHONE\n"
-// 						   u"tel_int_fmt\t\"",
-// 						   telephone.tel_int_fmt,
-// 						   u"\"\n"
-// 						   u"tel_dom_fmt\t\"",
-// 						   telephone.tel_dom_fmt,
-// 						   u"\"\n"
-// 						   u"int_select\t\"",
-// 						   telephone.int_select,
-// 						   u"\"\n"
-// 						   u"int_prefix\t\"",
-// 						   telephone.int_prefix,
-// 						   u"\"\n"
-// 						   u"END LC_TELEPHONE");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   U"LC_TELEPHONE\n"
-// 						   U"tel_int_fmt\t\"",
-// 						   telephone.tel_int_fmt,
-// 						   U"\"\n"
-// 						   U"tel_dom_fmt\t\"",
-// 						   telephone.tel_dom_fmt,
-// 						   U"\"\n"
-// 						   U"int_select\t\"",
-// 						   telephone.int_select,
-// 						   U"\"\n"
-// 						   U"int_prefix\t\"",
-// 						   telephone.int_prefix,
-// 						   U"\"\n"
-// 						   U"END LC_TELEPHONE");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u8"LC_TELEPHONE\n"
-// 						   u8"tel_int_fmt\t\"",
-// 						   telephone.tel_int_fmt,
-// 						   u8"\"\n"
-// 						   u8"tel_dom_fmt\t\"",
-// 						   telephone.tel_dom_fmt,
-// 						   u8"\"\n"
-// 						   u8"int_select\t\"",
-// 						   telephone.int_select,
-// 						   u8"\"\n"
-// 						   u8"int_prefix\t\"",
-// 						   telephone.int_prefix,
-// 						   u8"\"\n"
-// 						   u8"END LC_TELEPHONE");
-// 	}
-// }
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_name(output bos, basic_lc_name<char_type> const &name)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos,
-// 						   "LC_NAME\n"
-// 						   "name_fmt\t\"",
-// 						   name.name_fmt,
-// 						   "\"\n"
-// 						   "name_gen\t\"",
-// 						   name.name_gen,
-// 						   "\"\n"
-// 						   "name_miss\t\"",
-// 						   name.name_miss,
-// 						   "\"\n"
-// 						   "name_mr\t\"",
-// 						   name.name_mr,
-// 						   "\"\n"
-// 						   "name_mrs\t\"",
-// 						   name.name_mrs,
-// 						   "\"\n"
-// 						   "name_ms\t\"",
-// 						   name.name_ms,
-// 						   "\"\n"
-// 						   "END LC_NAME");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   L"LC_NAME\n"
-// 						   L"name_fmt\t\"",
-// 						   name.name_fmt,
-// 						   L"\"\n"
-// 						   L"name_gen\t\"",
-// 						   name.name_gen,
-// 						   L"\"\n"
-// 						   L"name_miss\t\"",
-// 						   name.name_miss,
-// 						   L"\"\n"
-// 						   L"name_mr\t\"",
-// 						   name.name_mr,
-// 						   L"\"\n"
-// 						   L"name_mrs\t\"",
-// 						   name.name_mrs,
-// 						   L"\"\n"
-// 						   L"name_ms\t\"",
-// 						   name.name_ms,
-// 						   L"\"\n"
-// 						   L"END LC_NAME");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u"LC_NAME\n"
-// 						   u"name_fmt\t\"",
-// 						   name.name_fmt,
-// 						   u"\"\n"
-// 						   u"name_gen\t\"",
-// 						   name.name_gen,
-// 						   u"\"\n"
-// 						   u"name_miss\t\"",
-// 						   name.name_miss,
-// 						   u"\"\n"
-// 						   u"name_mr\t\"",
-// 						   name.name_mr,
-// 						   u"\"\n"
-// 						   u"name_mrs\t\"",
-// 						   name.name_mrs,
-// 						   u"\"\n"
-// 						   u"name_ms\t\"",
-// 						   name.name_ms,
-// 						   u"\"\n"
-// 						   u"END LC_NAME");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   U"LC_NAME\n"
-// 						   U"name_fmt\t\"",
-// 						   name.name_fmt,
-// 						   U"\"\n"
-// 						   U"name_gen\t\"",
-// 						   name.name_gen,
-// 						   U"\"\n"
-// 						   U"name_miss\t\"",
-// 						   name.name_miss,
-// 						   U"\"\n"
-// 						   U"name_mr\t\"",
-// 						   name.name_mr,
-// 						   U"\"\n"
-// 						   U"name_mrs\t\"",
-// 						   name.name_mrs,
-// 						   U"\"\n"
-// 						   U"name_ms\t\"",
-// 						   name.name_ms,
-// 						   U"\"\n"
-// 						   U"END LC_NAME");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u8"LC_NAME\n"
-// 						   u8"name_fmt\t\"",
-// 						   name.name_fmt,
-// 						   u8"\"\n"
-// 						   u8"name_gen\t\"",
-// 						   name.name_gen,
-// 						   u8"\"\n"
-// 						   u8"name_miss\t\"",
-// 						   name.name_miss,
-// 						   u8"\"\n"
-// 						   u8"name_mr\t\"",
-// 						   name.name_mr,
-// 						   u8"\"\n"
-// 						   u8"name_mrs\t\"",
-// 						   name.name_mrs,
-// 						   u8"\"\n"
-// 						   u8"name_ms\t\"",
-// 						   name.name_ms,
-// 						   u8"\"\n"
-// 						   u8"END LC_NAME");
-// 	}
-// }
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_measurement(output bos, basic_lc_measurement<char_type> measurement)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos,
-// 						   "LC_MEASUREMENT\n"
-// 						   "measurement\t",
-// 						   measurement.measurement,
-// 						   "\n"
-// 						   "END LC_MEASUREMENT");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   L"LC_MEASUREMENT\n"
-// 						   L"measurement\t",
-// 						   measurement.measurement,
-// 						   L"\n"
-// 						   L"END LC_MEASUREMENT");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u"LC_MEASUREMENT\n"
-// 						   u"measurement\t",
-// 						   measurement.measurement,
-// 						   u"\n"
-// 						   u"END LC_MEASUREMENT");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   U"LC_MEASUREMENT\n"
-// 						   U"measurement\t",
-// 						   measurement.measurement,
-// 						   U"\n"
-// 						   U"END LC_MEASUREMENT");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos,
-// 						   u8"LC_MEASUREMENT\n"
-// 						   u8"measurement\t",
-// 						   measurement.measurement,
-// 						   u8"\n"
-// 						   u8"END LC_MEASUREMENT");
-// 	}
-// }
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_keyboard(output bos, basic_lc_keyboard<char_type> const &keyboard)
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		print_freestanding(bos, "LC_KEYBOARD\nkeyboards\t");
-// 		::fast_io::details::print_loc_keyboards_impl(bos, keyboard.keyboards.base, keyboard.keyboards.len);
-// 		print_freestanding(bos, "\nEND LC_KEYBOARD");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		print_freestanding(bos, L"LC_KEYBOARD\nkeyboards\t");
-// 		::fast_io::details::print_loc_keyboards_impl(bos, keyboard.keyboards.base, keyboard.keyboards.len);
-// 		print_freestanding(bos, L"\nEND LC_KEYBOARD");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		print_freestanding(bos, u"LC_KEYBOARD\nkeyboards\t");
-// 		::fast_io::details::print_loc_keyboards_impl(bos, keyboard.keyboards.base, keyboard.keyboards.len);
-// 		print_freestanding(bos, u"\nEND LC_KEYBOARD");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		print_freestanding(bos, U"LC_KEYBOARD\nkeyboards\t");
-// 		::fast_io::details::print_loc_keyboards_impl(bos, keyboard.keyboards.base, keyboard.keyboards.len);
-// 		print_freestanding(bos, U"\nEND LC_KEYBOARD");
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char8_t>)
-// 	{
-// 		print_freestanding(bos, u8"LC_KEYBOARD\nkeyboards\t");
-// 		::fast_io::details::print_loc_keyboards_impl(bos, keyboard.keyboards.base, keyboard.keyboards.len);
-// 		print_freestanding(bos, u8"\nEND LC_KEYBOARD");
-// 	}
-// }
-//
-// template <::std::integral char_type>
-// inline constexpr char_type const *lc_all_create_nn() noexcept
-// {
-// 	if constexpr (::std::same_as<char_type, char>)
-// 	{
-// 		return "\n\n";
-// 	}
-// 	else if constexpr (::std::same_as<char_type, wchar_t>)
-// 	{
-// 		return L"\n\n";
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char16_t>)
-// 	{
-// 		return u"\n\n";
-// 	}
-// 	else if constexpr (::std::same_as<char_type, char32_t>)
-// 	{
-// 		return U"\n\n";
-// 	}
-// 	else
-// 	{
-// 		return u8"\n\n";
-// 	}
-// }
-//
-// template <typename output, ::std::integral char_type>
-// #if __has_cpp_attribute(__gnu__::__cold__)
-// [[__gnu__::__cold__]]
-// #endif
-// constexpr void print_define_impl_lc_all(output bos, basic_lc_all<char_type> const &all)
-// {
-// 	constexpr char_type const *first{lc_all_create_nn<char_type>()};
-// 	constexpr char_type const *last{first + 2};
-// 	print_define_impl_lc_identification(bos, all.identification);
-// 	write(bos, first, last);
-// 	print_define_impl_lc_monetary(bos, all.monetary);
-// 	write(bos, first, last);
-// 	print_define_impl_lc_time(bos, all.time);
-// 	write(bos, first, last);
-// 	print_define_impl_lc_messages(bos, all.messages);
-// 	write(bos, first, last);
-// 	print_define_impl_lc_paper(bos, all.paper);
-// 	write(bos, first, last);
-// 	print_define_impl_lc_telephone(bos, all.telephone);
-// 	write(bos, first, last);
-// 	print_define_impl_lc_name(bos, all.name);
-// 	write(bos, first, last);
-// 	print_define_impl_lc_measurement(bos, all.measurement);
-// 	write(bos, first, last);
-// 	print_define_impl_lc_keyboard(bos, all.keyboard);
-// }
-//
-// } // namespace details
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_identification<char_type>>, output bos,
-//							basic_lc_identification<char_type> const &identification)
-//{
-//	::fast_io::details::print_define_impl_lc_identification(bos, identification);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_monetary<char_type>>, output bos,
-//							basic_lc_monetary<char_type> const &monetary)
-//{
-//	::fast_io::details::print_define_impl_lc_monetary(bos, monetary);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_numeric<char_type>>, output bos,
-//							basic_lc_numeric<char_type> const &numeric)
-//{
-//	::fast_io::details::print_define_impl_lc_numeric(bos, numeric);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_time<char_type>>, output bos,
-//							basic_lc_time<char_type> const &time)
-//{
-//	::fast_io::details::print_define_impl_lc_time(bos, time);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_messages<char_type>>, output bos,
-//							basic_lc_messages<char_type> const &messages)
-//{
-//	::fast_io::details::print_define_impl_lc_messages(bos, messages);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_paper<char_type>>, output bos,
-//							basic_lc_paper<char_type> const &paper)
-//{
-//	::fast_io::details::print_define_impl_lc_paper(bos, paper);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_telephone<char_type>>, output bos,
-//							basic_lc_telephone<char_type> const &telephone)
-//{
-//	::fast_io::details::print_define_impl_lc_telephone(bos, telephone);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_name<char_type>>, output bos,
-//							basic_lc_name<char_type> const &name)
-//{
-//	::fast_io::details::print_define_impl_lc_name(bos, name);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_measurement<char_type>>, output bos,
-//							basic_lc_measurement<char_type> measurement)
-//{
-//	::fast_io::details::print_define_impl_lc_measurement(bos, measurement);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_keyboard<char_type>>, output bos,
-//							basic_lc_keyboard<char_type> keyboard)
-//{
-//	::fast_io::details::print_define_impl_lc_keyboard(bos, keyboard);
-//}
-//
-// template <typename output, ::std::integral char_type>
-//	requires(::std::same_as<typename output::char_type, char_type> && ::std::is_trivially_copyable_v<output>)
-// constexpr void print_define(io_reserve_type_t<char_type, basic_lc_all<char_type>>, output bos,
-//							basic_lc_all<char_type> const &all)
-//{
-//	::fast_io::details::print_define_impl_lc_all(bos, all);
-//}
-//
-// template <::std::integral char_type>
-// constexpr ::fast_io::parameter<basic_lc_all<char_type> const &> status_io_print_forward(io_alias_type_t<char_type>,
-// 																						lc_locale const &ln) noexcept
-// {
-// 	return {*get_all<char_type>(ln)};
-// }
-//
-// } // namespace fast_io
+// The plain pair makes the manipulator printable on any stream (and
+// lets println(imbue(loc, out), mnp::lc_dump(loc)) pass the
+// print_freestanding_okay stream check); the lc_ctx pair makes it an
+// lc arg inside an imbued stream so it goes through the obuffer
+// reserve path like the other lc hooks.
+// ---------------------------------------------------------------------------
+
+template <::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr ::std::size_t
+print_reserve_size(
+	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::lc_dump_t>,
+	::fast_io::manipulators::lc_dump_t t) FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::details::lc_dump_size<char_type>(t.reference);
+}
+
+template <::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr char_type *
+print_reserve_define(
+	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::lc_dump_t>,
+	char_type *iter, ::fast_io::manipulators::lc_dump_t t)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::details::lc_dump_define<char_type>(t.reference, iter);
+}
+
+template <::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr ::std::size_t
+print_reserve_size(lc_ctx<char_type> const *,
+				   ::fast_io::manipulators::lc_dump_t t)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::details::lc_dump_size<char_type>(t.reference);
+}
+
+template <::std::integral char_type>
+#if __has_cpp_attribute(__gnu__::__cold__)
+[[__gnu__::__cold__]]
+#endif
+inline constexpr char_type *
+print_reserve_define(lc_ctx<char_type> const *, char_type *iter,
+					 ::fast_io::manipulators::lc_dump_t t)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	return ::fast_io::details::lc_dump_define<char_type>(t.reference, iter);
+}
+
+} // namespace fast_io

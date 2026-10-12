@@ -14,7 +14,7 @@ struct basic_nt_api_encoding_converter
 		requires(sizeof(from_char_type) != 2)
 	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
-	constexpr
+		constexpr
 #endif
 		basic_nt_api_encoding_converter(from_char_type const *p, ::std::size_t sz) noexcept
 		: buffer_capacity(details::cal_decorated_reserve_size<sizeof(from_char_type), sizeof(char_type)>(sz)),
@@ -28,7 +28,7 @@ struct basic_nt_api_encoding_converter
 		requires(sizeof(from_char_type) == 2)
 	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
-	constexpr
+		constexpr
 #endif
 		basic_nt_api_encoding_converter(from_char_type const *p, ::std::size_t sz) noexcept
 		: buffer_capacity(sz), buffer_data(details::allocate_iobuf_space<char_type, allocator_type>(
@@ -62,12 +62,12 @@ struct basic_nt_api_encoding_converter
 	inline basic_nt_api_encoding_converter &operator=(basic_nt_api_encoding_converter const &) = delete;
 	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
-	constexpr
+		constexpr
 #endif
-		~basic_nt_api_encoding_converter()
+		~basic_nt_api_encoding_converter() noexcept
 	{
 		details::deallocate_iobuf_space<false, char_type, allocator_type>(buffer_data, buffer_capacity + 1);
-		
+
 		buffer_data = nullptr;
 		buffer_data_end = nullptr;
 	}

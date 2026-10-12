@@ -357,7 +357,11 @@ inline constexpr encoding_scheme execution_charset_encoding_scheme() noexcept
 	}
 }
 
-template <::std::integral char_type, encoding_scheme scheme = execution_charset_encoding_scheme<char_type>()>
+template <::std::integral char_type>
+inline constexpr ::fast_io::encoding_scheme execution_charset_encoding{
+	::fast_io::execution_charset_encoding_scheme<char_type>()};
+
+template <::std::integral char_type, ::fast_io::encoding_scheme scheme = ::fast_io::execution_charset_encoding_scheme<char_type>()>
 using basic_mb_state = basic_utf_mb_state<char_type>;
 
 template <::std::integral src_char_type, ::std::integral dest_char_type>
@@ -634,7 +638,7 @@ inline constexpr advance_with_big_table_unchecked_result<T> advance_with_big_tab
 {
 	char8_t const *info{first_unit_info[static_cast<char8_t>(*it)]};
 	char32_t cdpt{static_cast<char32_t>(static_cast<::std::uint_least32_t>(*info))}; //- From it, get the initial code point value
-	::std::int_least32_t curr{info[1]};          //- From it, get the second state
+	::std::int_least32_t curr{info[1]};                                              //- From it, get the second state
 	for (++it; 12 < curr;)
 	{
 		char8_t const unit{static_cast<char8_t>(*it)};
@@ -664,7 +668,7 @@ inline constexpr advance_with_big_table_result<T> advance_with_big_table(T const
 {
 	char8_t const *info{first_unit_info[static_cast<char8_t>(*first)]};
 	char32_t cdpt{static_cast<char32_t>(static_cast<::std::uint_least32_t>(*info))}; //- From it, get the initial code point value
-	::std::int_least32_t curr{info[1]};          //- From it, get the second state
+	::std::int_least32_t curr{info[1]};                                              //- From it, get the second state
 	auto it{first};
 	for (++it; 12 < curr;)
 	{

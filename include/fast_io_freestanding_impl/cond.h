@@ -130,6 +130,7 @@ template <::std::integral char_type, typename T1, typename T2>
 inline constexpr basic_io_scatter_t<char_type>
 print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>,
 					 ::fast_io::manipulators::condition<T1, T2> c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (c.pred)
 	{
@@ -147,6 +148,7 @@ template <::std::integral char_type, typename T1, typename T2>
 inline constexpr basic_io_scatter_t<char_type>
 print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>,
 					 ::fast_io::manipulators::condition<T1, T2> const &c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (c.pred)
 	{
@@ -172,6 +174,7 @@ template <::std::integral char_type, typename T1>
 inline constexpr basic_io_scatter_t<char_type>
 print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>,
 					 ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (c.pred)
 	{
@@ -188,6 +191,7 @@ template <::std::integral char_type, typename T1>
 inline constexpr basic_io_scatter_t<char_type>
 print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>,
 					 ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> const &c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (c.pred)
 	{
@@ -213,6 +217,7 @@ template <::std::integral char_type, typename T2>
 inline constexpr basic_io_scatter_t<char_type>
 print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>,
 					 ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!c.pred)
 	{
@@ -229,6 +234,7 @@ template <::std::integral char_type, typename T2>
 inline constexpr basic_io_scatter_t<char_type>
 print_scatter_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>,
 					 ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> const &c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!c.pred)
 	{
@@ -253,6 +259,7 @@ concept cond_ok_printable_impl = cond_ok_dynamic_rsv_printable_impl<char_type, T
 template <::std::integral char_type, typename T1>
 	requires(cond_value_transferable<T1>)
 inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 t1)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (scatter_printable<char_type, T1>)
 	{
@@ -272,6 +279,7 @@ inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 t1)
 template <::std::integral char_type, typename T1>
 	requires(!cond_value_transferable<T1>)
 inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 const &t1)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (scatter_printable<char_type, T1>)
 	{
@@ -291,6 +299,7 @@ inline constexpr ::std::size_t cond_print_reserve_size_impl(T1 const &t1)
 template <::std::integral char_type, typename T1>
 	requires(cond_value_transferable<T1>)
 inline constexpr char_type *cond_print_reserve_define_impl(char_type *iter, T1 t1)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (scatter_printable<char_type, T1>)
 	{
@@ -305,6 +314,7 @@ inline constexpr char_type *cond_print_reserve_define_impl(char_type *iter, T1 t
 template <::std::integral char_type, typename T1>
 	requires(!cond_value_transferable<T1>)
 inline constexpr char_type *cond_print_reserve_define_impl(char_type *iter, T1 const &t1)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (scatter_printable<char_type, T1>)
 	{
@@ -537,6 +547,7 @@ template <::std::integral char_type, typename T1, typename T2, typename bop>
 			 details::cond_transferable_value<T1, T2>)
 inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>, bop b,
 								   ::fast_io::manipulators::condition<T1, T2> c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (c.pred)
 	{
@@ -555,6 +566,7 @@ template <::std::integral char_type, typename T1, typename T2, typename bop>
 			 !details::cond_transferable_value<T1, T2>)
 inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, T2>>, bop b,
 								   ::fast_io::manipulators::condition<T1, T2> const &c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (c.pred)
 	{
@@ -571,6 +583,7 @@ template <::std::integral char_type, typename T1, typename bop>
 			 details::cond_value_transferable<T1>)
 inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>, bop b,
 								   ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (c.pred)
 	{
@@ -583,6 +596,7 @@ template <::std::integral char_type, typename T1, typename bop>
 			 !details::cond_value_transferable<T1>)
 inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t>>, bop b,
 								   ::fast_io::manipulators::condition<T1, ::fast_io::io_null_t> const &c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (c.pred)
 	{
@@ -595,6 +609,7 @@ template <::std::integral char_type, typename T2, typename bop>
 			 details::cond_value_transferable<T2>)
 inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>, bop b,
 								   ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!c.pred)
 	{
@@ -607,6 +622,7 @@ template <::std::integral char_type, typename T2, typename bop>
 			 !details::cond_value_transferable<T2>)
 inline constexpr void print_define(io_reserve_type_t<char_type, ::fast_io::manipulators::condition<::fast_io::io_null_t, T2>>, bop b,
 								   ::fast_io::manipulators::condition<::fast_io::io_null_t, T2> const &c)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!c.pred)
 	{

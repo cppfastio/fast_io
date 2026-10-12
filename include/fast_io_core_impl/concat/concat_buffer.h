@@ -18,7 +18,7 @@ struct basic_concat_buffer
 	inline basic_concat_buffer &operator=(basic_concat_buffer const &) = delete;
 	inline
 #if __cpp_constexpr_dynamic_alloc >= 201907L
-	constexpr
+		constexpr
 #endif
 		~basic_concat_buffer()
 	{

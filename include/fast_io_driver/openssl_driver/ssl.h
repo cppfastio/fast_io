@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io
 {
@@ -8,6 +8,8 @@ class basic_ssl_io_observer
 {
 public:
 	using char_type = ch_type;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	using native_handle_type = SSL *;
 	native_handle_type ssl{};
 	constexpr native_handle_type const &native_handle() const noexcept
@@ -42,22 +44,25 @@ inline void set_bio(basic_ssl_io_observer<ch_type> siob, basic_bio_file<ch_type1
 template <::std::integral ch_type>
 inline ::std::size_t use_count(basic_ssl_io_observer<ch_type> siob)
 {
-	return static_cast<::std::size_t>(SSL_up_ref(siob.s));
+	return static_cast<::std::size_t>(SSL_up_ref(siob.ssl));
 }
 
 template <::std::integral ch_type>
-inline void connect(basic_ssl_io_observer<ch_type> siob)
+inline void connect(basic_ssl_io_observer<ch_type> siob) FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (::fast_io::noexcept_call(SSL_connect, siob.ssl) == -1)
+	if (::fast_io::noexcept_call(SSL_connect, siob.ssl) != 1)
 	{
 		throw_openssl_error();
 	}
 }
 
-template <::std::integral ch_type, zero_copy_io_stream stm>
-inline void attach(basic_ssl_io_observer<ch_type> siob, stm &sm)
+template <::std::integral ch_type, typename stm>
+	requires ::fast_io::operations::decay::defines::has_input_transmit_handle_define<
+		decltype(::fast_io::operations::input_stream_ref(::std::declval<stm &>()))>
+inline void attach(basic_ssl_io_observer<ch_type> siob, stm &sm) FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (!SSL_set_fd(siob.native_handle(), zero_copy_in_handle(sm)))
+	if (!SSL_set_fd(siob.native_handle(),
+					input_transmit_handle_define(::fast_io::operations::input_stream_ref(sm)).fd))
 	{
 		throw_openssl_error();
 	}
@@ -80,7 +85,7 @@ public:
 	constexpr basic_ssl_io_handle(native_handle_type s)
 		: basic_ssl_io_observer<ch_type>(s)
 	{}
-	basic_ssl_io_handle(basic_ssl_io_handle const &h)
+	basic_ssl_io_handle(basic_ssl_io_handle const &h) FAST_IO_HERBCEPTIONS_THROWS
 		: basic_ssl_io_observer<ch_type>(SSL_dup(h.native_handle()))
 	{
 		if (this->native_handle() == nullptr) [[unlikely]]
@@ -88,7 +93,7 @@ public:
 			throw_openssl_error();
 		}
 	}
-	basic_ssl_io_handle &operator=(basic_ssl_io_handle const &h)
+	basic_ssl_io_handle &operator=(basic_ssl_io_handle const &h) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto temp{SSL_dup(h.native_handle())};
 		if (temp == nullptr) [[unlikely]]
@@ -145,7 +150,7 @@ public:
 	constexpr basic_ssl_file(native_handle_type s)
 		: basic_ssl_io_handle<ch_type>(s)
 	{}
-	basic_ssl_file(io_cookie_t, ssl_context_observer ssl_ctx_ob)
+	basic_ssl_file(io_cookie_t, ssl_context_observer ssl_ctx_ob) FAST_IO_HERBCEPTIONS_THROWS
 		: basic_ssl_io_handle<ch_type>(SSL_new(ssl_ctx_ob.native_handle()))
 	{
 		if (this->native_handle() == nullptr)
@@ -154,7 +159,7 @@ public:
 		}
 	}
 	template <typename... Args>
-	basic_ssl_file(ssl_context_observer ssl_ctx_ob, Args &&...args)
+	basic_ssl_file(ssl_context_observer ssl_ctx_ob, Args &&...args) FAST_IO_HERBCEPTIONS_THROWS
 		: basic_ssl_io_handle<ch_type>(SSL_new(ssl_ctx_ob.native_handle()))
 	{
 		if (this->native_handle() == nullptr)
@@ -179,40 +184,42 @@ public:
 	}
 };
 
-template <::std::integral ch_type, ::std::contiguous_iterator Iter>
-inline Iter read(basic_ssl_io_observer<ch_type> iob, Iter begin, Iter end)
+template <::std::integral ch_type>
+inline ::std::byte *read_some_bytes_underflow_define(basic_ssl_io_observer<ch_type> iob, ::std::byte *first,
+													 ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t read_bytes{};
-	auto ret(SSL_read_ex(iob.native_handle(), ::std::to_address(begin), sizeof(*begin) * (end - begin),
-						 __builtin_addressof(read_bytes)));
+	auto ret(SSL_read_ex(iob.native_handle(), first, count, __builtin_addressof(read_bytes)));
 	if (ret <= 0)
 	{
 		int error{SSL_get_error(iob.native_handle(), ret)};
-		if (error == SSL_ERROR_ZERO_RETURN || error == SSL_ERROR_NONE || error == SSL_ERROR_WANT_READ)
+		if (error == SSL_ERROR_ZERO_RETURN)
 		{
-			throw_openssl_error();
+			return first; /* close_notify */
 		}
-		read_bytes = 0;
+		throw_openssl_error();
 	}
-	return begin + read_bytes / sizeof(*begin);
+	return first + read_bytes;
 }
 
-template <::std::integral ch_type, ::std::contiguous_iterator Iter>
-inline Iter write(basic_ssl_io_observer<ch_type> iob, Iter begin, Iter end)
+template <::std::integral ch_type>
+inline ::std::byte const *write_some_bytes_overflow_define(basic_ssl_io_observer<ch_type> iob,
+														   ::std::byte const *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t written_bytes{};
-	auto ret(SSL_write_ex(iob.native_handle(), ::std::to_address(begin), sizeof(*begin) * (end - begin),
+	auto ret(SSL_write_ex(iob.native_handle(), first, count,
 						  __builtin_addressof(written_bytes)));
 	if (ret <= 0)
 	{
 		int error{SSL_get_error(iob.native_handle(), ret)};
-		if (error == SSL_ERROR_ZERO_RETURN || error == SSL_ERROR_NONE || error == SSL_ERROR_WANT_WRITE)
+		if (error == SSL_ERROR_ZERO_RETURN)
 		{
-			throw_openssl_error();
+			return first; /* close_notify */
 		}
-		written_bytes = 0;
+		throw_openssl_error();
 	}
-	return begin + written_bytes / sizeof(*begin);
+	return first + written_bytes;
 }
 
 using ssl_io_observer = basic_ssl_io_observer<char>;

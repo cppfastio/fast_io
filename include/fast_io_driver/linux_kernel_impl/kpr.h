@@ -1,4 +1,6 @@
-﻿#pragma once
+#pragma once
+
+#include "../../fast_io_dsal/impl/misc/push_macros.h"
 
 namespace fast_io
 {
@@ -22,8 +24,21 @@ template <::std::integral ch_type>
 struct basic_kpr
 {
 	using char_type = ch_type;
+	using input_char_type = ch_type;
+	using output_char_type = ch_type;
+	using output_allocator_type =
+		::fast_io::generic_allocator_adapter<::fast_io::linux_kmalloc_allocator,
+											 ::fast_io::allocator_adapter_flags::throws_on_allocation_failure>;
 	kern level{kern::default_value};
+	typename output_allocator_type::handle_type allochdl{::fast_io::linux_kernel_gfp_kernel};
 };
+
+template <::std::integral ch_type>
+inline constexpr typename basic_kpr<ch_type>::output_allocator_type::handle_type
+output_stream_allocator_handle_define(basic_kpr<ch_type> kpr) noexcept
+{
+	return kpr.allochdl;
+}
 
 template <bool line>
 inline constexpr char8_t const *kern_to_fmt(kern k) noexcept
@@ -112,6 +127,7 @@ inline void linux_kpr_raw_write(::fast_io::kern k, void const *start, void const
 
 template <bool line, ::std::integral ch_type, typename T>
 inline constexpr void status_print_define_single_line_impl(basic_kpr<ch_type> kpr, T t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	basic_io_scatter_t<ch_type> scatter{print_scatter_define(io_reserve_type<ch_type, T>, t)};
 	auto base{scatter.base};
@@ -194,6 +210,7 @@ struct kpr_scatter_struct
 
 template <::std::integral char_type, typename T, typename... Args>
 inline void kpr_scatter_print_recursive(kpr_scatter_struct *p, T t, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto scatter{print_scatter_define(io_reserve_type<char_type, T>, t)};
 	::std::size_t len{scatter.len * sizeof(char_type)};
@@ -211,6 +228,7 @@ inline void kpr_scatter_print_recursive(kpr_scatter_struct *p, T t, Args... args
 
 template <::std::integral char_type, typename T, typename... Args>
 inline void kpr_scatter_reserve_print_recursive(kpr_scatter_struct *p, char_type *buffer, T t, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (scatter_printable<char_type, T>)
 	{
@@ -295,6 +313,7 @@ inline constexpr bool kpr_total_print_reserve_size_less_or_equal_than512(::std::
 
 template <::std::integral char_type, typename... Args>
 inline void deal_with_kpr_ignore_line(char const *fmt_str, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr ::std::size_t n{sizeof...(Args)};
 	if constexpr (n == 0)
@@ -322,6 +341,7 @@ inline void deal_with_kpr_ignore_line(char const *fmt_str, Args... args)
 
 template <bool line, ::std::integral char_type, typename... Args>
 inline void deal_with_kpr_common(basic_kpr<char_type> kpr, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr ::std::size_t n{sizeof...(Args)};
 	if constexpr (n == 0 && !line)
@@ -337,13 +357,6 @@ inline void deal_with_kpr_common(basic_kpr<char_type> kpr, Args... args)
 } // namespace details
 
 
-template <::std::integral char_type>
-inline void write_all_bytes_overflow_define(basic_kpr<char_type> kpr, ::std::byte const *first, ::std::byte const *last) noexcept
-{
-	::fast_io::details::linux_kpr_raw_write<false>(kpr.level, first, last);
-}
-#endif
-
 template <::std::integral ch_type>
 inline constexpr basic_kpr<ch_type> io_stream_ref_define(basic_kpr<ch_type> other) noexcept
 {
@@ -357,15 +370,15 @@ inline constexpr basic_kpr<ch_type> io_bytes_stream_ref_define(basic_kpr<ch_type
 }
 
 template <::std::integral ch_type>
-inline constexpr void write_all_bytes_overflow_define(basic_kpr<ch_type> d, ::std::byte const *first, ::std::byte const *last) noexcept
+inline constexpr void write_all_bytes_overflow_define(basic_kpr<ch_type> d, ::std::byte const *first, ::std::size_t count) noexcept
 {
-	details::linux_kpr_raw_write<false>(kpr.level, first, last);
+	::fast_io::details::linux_kpr_raw_write<false>(d.level, first, count);
 }
 
 template <::std::integral ch_type>
-inline constexpr void pwrite_all_bytes_overflow_define(basic_kpr<ch_type> d, ::std::byte const *first, ::std::byte const *last) noexcept
+inline constexpr void pwrite_all_bytes_overflow_define(basic_kpr<ch_type> d, ::std::byte const *first, ::std::size_t count) noexcept
 {
-	details::linux_kpr_raw_write<false>(kpr.level, first, last);
+	::fast_io::details::linux_kpr_raw_write<false>(d.level, first, count);
 }
 
 template <::std::integral ch_type>
@@ -388,6 +401,7 @@ print_freestanding_decay_okay_character_type_no_status<ch_type, Args...> &&
 		sizeof(ch_type) == 1 &&
 		(!::fast_io::details::is_ebcdic<ch_type>))
 inline constexpr void print_status_define(basic_kpr<ch_type> k, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr ((::fast_io::details::kpr_total_print_reserve_size_less_or_equal_than512<ch_type, Args...>(0)))
 	{
@@ -400,3 +414,5 @@ inline constexpr void print_status_define(basic_kpr<ch_type> k, Args... args)
 }
 
 } // namespace fast_io
+
+#include "../../fast_io_dsal/impl/misc/pop_macros.h"

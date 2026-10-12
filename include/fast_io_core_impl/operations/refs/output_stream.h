@@ -19,21 +19,21 @@ concept has_status_print_define = requires(T optstm) { status_print_define<true>
 
 template <typename T>
 concept has_write_some_overflow_define = requires(T instm, typename decltype(instm)::output_char_type const *ptr) {
-	write_some_overflow_define(instm, ptr, ptr);
+	write_some_overflow_define(instm, ptr, ::std::size_t{0});
 };
 
 template <typename T>
 concept has_write_all_overflow_define = requires(T instm, typename decltype(instm)::output_char_type const *ptr) {
-	write_all_overflow_define(instm, ptr, ptr);
+	write_all_overflow_define(instm, ptr, ::std::size_t{0});
 };
 
 template <typename T>
 concept has_write_some_bytes_overflow_define =
-	requires(T instm, ::std::byte *ptr) { write_some_bytes_overflow_define(instm, ptr, ptr); };
+	requires(T instm, ::std::byte *ptr) { write_some_bytes_overflow_define(instm, ptr, ::std::size_t{0}); };
 
 template <typename T>
 concept has_write_all_bytes_overflow_define =
-	requires(T instm, ::std::byte *ptr) { write_all_bytes_overflow_define(instm, ptr, ptr); };
+	requires(T instm, ::std::byte *ptr) { write_all_bytes_overflow_define(instm, ptr, ::std::size_t{0}); };
 
 template <typename T>
 concept has_scatter_write_some_bytes_overflow_define =
@@ -66,11 +66,11 @@ concept has_output_stream_char_put_overflow_define =
 
 template <typename T>
 concept has_pwrite_some_bytes_overflow_define =
-	requires(T instm, ::std::byte *ptr) { pwrite_some_bytes_overflow_define(instm, ptr, ptr, 0); };
+	requires(T instm, ::std::byte *ptr) { pwrite_some_bytes_overflow_define(instm, ptr, ::std::size_t{0}, 0); };
 
 template <typename T>
 concept has_pwrite_all_bytes_overflow_define =
-	requires(T instm, ::std::byte *ptr) { pwrite_all_bytes_overflow_define(instm, ptr, ptr, 0); };
+	requires(T instm, ::std::byte *ptr) { pwrite_all_bytes_overflow_define(instm, ptr, ::std::size_t{0}, 0); };
 
 template <typename T>
 concept has_scatter_pwrite_some_bytes_overflow_define =
@@ -86,12 +86,12 @@ concept has_scatter_pwrite_all_bytes_overflow_define =
 
 template <typename T>
 concept has_pwrite_some_overflow_define = requires(T instm, typename decltype(instm)::output_char_type const *ptr) {
-	pwrite_some_overflow_define(instm, ptr, ptr, 0);
+	pwrite_some_overflow_define(instm, ptr, ::std::size_t{0}, 0);
 };
 
 template <typename T>
 concept has_pwrite_all_overflow_define = requires(T instm, typename decltype(instm)::output_char_type const *ptr) {
-	pwrite_all_overflow_define(instm, ptr, ptr, 0);
+	pwrite_all_overflow_define(instm, ptr, ::std::size_t{0}, 0);
 };
 
 
@@ -140,25 +140,25 @@ concept has_any_of_pwrite_operations =
 template <typename stmtype>
 concept has_any_of_write_or_seek_pwrite_bytes_operations =
 	::fast_io::operations::decay::defines::has_any_of_write_bytes_operations<stmtype> ||
-	(::fast_io::operations::decay::defines::has_output_stream_seek_bytes_define<stmtype> &&
+	(::fast_io::operations::decay::defines::has_output_or_io_stream_seek_bytes_define<stmtype> &&
 	 ::fast_io::operations::decay::defines::has_any_of_pwrite_bytes_operations<stmtype>);
 
 template <typename stmtype>
 concept has_any_of_pwrite_or_seek_write_bytes_operations =
 	::fast_io::operations::decay::defines::has_any_of_pwrite_bytes_operations<stmtype> ||
-	(::fast_io::operations::decay::defines::has_output_stream_seek_bytes_define<stmtype> &&
+	(::fast_io::operations::decay::defines::has_output_or_io_stream_seek_bytes_define<stmtype> &&
 	 ::fast_io::operations::decay::defines::has_any_of_write_bytes_operations<stmtype>);
 
 template <typename stmtype>
 concept has_any_of_write_or_seek_pwrite_operations =
 	::fast_io::operations::decay::defines::has_any_of_write_operations<stmtype> ||
-	(::fast_io::operations::decay::defines::has_output_stream_seek_define<stmtype> &&
+	(::fast_io::operations::decay::defines::has_output_or_io_stream_seek_define<stmtype> &&
 	 ::fast_io::operations::decay::defines::has_any_of_pwrite_operations<stmtype>);
 
 template <typename stmtype>
 concept has_any_of_pwrite_or_seek_write_operations =
 	::fast_io::operations::decay::defines::has_any_of_pwrite_operations<stmtype> ||
-	(::fast_io::operations::decay::defines::has_output_stream_seek_define<stmtype> &&
+	(::fast_io::operations::decay::defines::has_output_or_io_stream_seek_define<stmtype> &&
 	 ::fast_io::operations::decay::defines::has_any_of_write_operations<stmtype>);
 
 template <typename stmtype>
@@ -193,7 +193,13 @@ template <typename T>
 concept has_obuffer_flush_reserve_define = requires(T outstm, ::std::size_t to_reserve) {
 	obuffer_flush_reserve_define(outstm, to_reserve);
 };
-
+#if 0
+template <typename T>
+concept has_obuffer_strlike_reserve_define = ::fast_io::operations::decay::defines::has_obuffer_flush_reserve_define<T> ||
+requires(T outstm, ::std::size_t to_reserve) {
+	obuffer_strlike_reserve_define(outstm, to_reserve);
+};
+#endif
 } // namespace operations::decay::defines
 
 } // namespace fast_io

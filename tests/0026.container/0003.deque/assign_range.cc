@@ -33,7 +33,7 @@ inline void test_assign_count_value()
 		{
 			if (dq[i] != ref[i])
 			{
-				::fast_io::io::panicln("value mismatch at ", i, " after assign(count, value)");
+				::fast_io::io::panic("value mismatch at ", i, " after assign(count, value)\n");
 			}
 		}
 	}
@@ -47,7 +47,7 @@ inline void test_assign_count_value()
 		}
 
 		dq.assign(0u, 999u);
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::fast_io::io::panic("deque should be empty after assign(0, val)\n");
 		}
@@ -114,7 +114,7 @@ inline void test_assign_range()
 		{
 			if (dq[i] != ref[i])
 			{
-				::fast_io::io::panicln("value mismatch at ", i, " after assign_range");
+				::fast_io::io::panic("value mismatch at ", i, " after assign_range\n");
 			}
 		}
 	}

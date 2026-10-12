@@ -49,89 +49,54 @@ inline constexpr auto compute_libcxx_stdinoutbufname() noexcept
 	};
 	if constexpr (ismsvcabi)
 	{
+		/*
+		MSVC decorated names (type_info::raw_name() / .?AV...). libc++'s ABI namespace
+		is part of the mangled name and appears twice for basic_filebuf since
+		char_traits lives in the same namespace.
+		*/
+		constexpr ::std::size_t charsymbsz{::fast_io::details::msvc_char_type_symbol_size<char_type>};
 		if constexpr (streambuftype == 2)
 		{
-			if constexpr (::std::same_as<char_type, char>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::basic_filebuf<char,struct std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::char_traits<char> >");
-			}
-			else if constexpr (::std::same_as<char_type, wchar_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::basic_filebuf<wchar_t,struct std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::char_traits<wchar_t> >");
-			}
-			else if constexpr (::std::same_as<char_type, char8_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::basic_filebuf<char8_t,struct std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::char_traits<char8_t> >");
-			}
-			else if constexpr (::std::same_as<char_type, char16_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::basic_filebuf<char16_t,struct std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::char_traits<char16_t> >");
-			}
-			else
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::basic_filebuf<char32_t,struct std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::char_traits<char32_t> >");
-			}
-		}
-		else if constexpr (streambuftype == 1)
-		{
-			if constexpr (::std::same_as<char_type, char>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char>");
-			}
-			else if constexpr (::std::same_as<char_type, wchar_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<wchar_t>");
-			}
-			else if constexpr (::std::same_as<char_type, char8_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char8_t>");
-			}
-			else if constexpr (::std::same_as<char_type, char16_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char16_t>");
-			}
-			else
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdoutbuf<char32_t>");
-			}
+			// .?AV?$basic_filebuf@<c>U?$char_traits@<c>@<ns>@std@@@<ns>@std@@
+			constexpr ::std::size_t buffersize{sizeof(u8".?AV?$basic_filebuf@") +
+											   sizeof(u8"U?$char_traits@") + sizeof(u8"@") +
+											   sizeof(u8"@std@@") + sizeof(u8"@") + sizeof(u8"@std@@") +
+											   charsymbsz * 2 + libcxx_symbol_len * 2 - 6};
+			::fast_io::freestanding::array<char8_t, buffersize> buffer;
+			auto it{buffer.data()};
+			it = ::fast_io::details::copy_string_literal(u8".?AV?$basic_filebuf@", it);
+			it = ::fast_io::details::compute_msvc_char_type_identification<char_type>(it);
+			it = ::fast_io::details::copy_string_literal(u8"U?$char_traits@", it);
+			it = ::fast_io::details::compute_msvc_char_type_identification<char_type>(it);
+			it = ::fast_io::details::copy_string_literal(u8"@", it);
+			it = ::fast_io::details::copy_string_literal(FAST_IO_LIBCPP_ABI_NAMESPACE_STR, it);
+			it = ::fast_io::details::copy_string_literal(u8"@std@@", it);
+			it = ::fast_io::details::copy_string_literal(u8"@", it);
+			it = ::fast_io::details::copy_string_literal(FAST_IO_LIBCPP_ABI_NAMESPACE_STR, it);
+			::fast_io::details::copy_string_literal(u8"@std@@", it);
+			return buffer;
 		}
 		else
 		{
-			if constexpr (::std::same_as<char_type, char>)
+			// .?AV?$__stdinbuf@<c>@<ns>@std@@ / .?AV?$__stdoutbuf@<c>@<ns>@std@@
+			constexpr ::std::size_t prefixsz{(streambuftype == 1 ? sizeof(u8".?AV?$__stdoutbuf@") : sizeof(u8".?AV?$__stdinbuf@")) - 1};
+			constexpr ::std::size_t buffersize{prefixsz + sizeof(u8"@") + sizeof(u8"@std@@") +
+											   charsymbsz + libcxx_symbol_len - 2};
+			::fast_io::freestanding::array<char8_t, buffersize> buffer;
+			auto it{buffer.data()};
+			if constexpr (streambuftype == 1)
 			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char>");
-			}
-			else if constexpr (::std::same_as<char_type, wchar_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<wchar_t>");
-			}
-			else if constexpr (::std::same_as<char_type, char8_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char8_t>");
-			}
-			else if constexpr (::std::same_as<char_type, char16_t>)
-			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char16_t>");
+				it = ::fast_io::details::copy_string_literal(u8".?AV?$__stdoutbuf@", it);
 			}
 			else
 			{
-				return ::fast_io::details::compute_symbol_name(
-					u8"class std::" FAST_IO_LIBCPP_ABI_NAMESPACE_STR u8"::__stdinbuf<char32_t>");
+				it = ::fast_io::details::copy_string_literal(u8".?AV?$__stdinbuf@", it);
 			}
+			it = ::fast_io::details::compute_msvc_char_type_identification<char_type>(it);
+			it = ::fast_io::details::copy_string_literal(u8"@", it);
+			it = ::fast_io::details::copy_string_literal(FAST_IO_LIBCPP_ABI_NAMESPACE_STR, it);
+			::fast_io::details::copy_string_literal(u8"@std@@", it);
+			return buffer;
 		}
 	}
 	else

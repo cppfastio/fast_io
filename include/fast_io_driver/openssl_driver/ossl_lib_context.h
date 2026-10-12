@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io
 {
@@ -8,7 +8,7 @@ using ossl_lib_context_observer = details::observer<OSSL_LIB_CTX *>;
 class openssl_context : public ossl_lib_context_observer
 {
 public:
-	openssl_context()
+	openssl_context() FAST_IO_HERBCEPTIONS_THROWS
 		: ossl_lib_context_observer(OSSL_LIB_CTX_new())
 	{
 		if (this->native_handle() == nullptr)

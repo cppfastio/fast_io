@@ -8,7 +8,7 @@ int main()
 {
 #if 0
 	fast_io::vector<char> q;
-	fast_io::native_l10n l10n{"en_US.UTF-8"};
+	auto const *l10n{::fast_io::l10n::load_l10n(u8"en_US.UTF-8")};
 	println(imbue(l10n, fast_io::c_stdout()), "Maximum size of a std::vector is ", q.max_size());
 #endif
 }

@@ -11,7 +11,7 @@ int main()
 	{
 		fast_io::timer t(u8"input");
 		fast_io::u8ibuf_file ibf(u8"ibuf_white_hole_engine.txt");
-		for (std::u8string str; scan<true>(ibf, fast_io::mnp::line_get(str));)
+		for (std::u8string str; scan_some(ibf, fast_io::mnp::line_get(str));)
 		{
 			++lines;
 		}

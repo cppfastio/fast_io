@@ -8,7 +8,7 @@ int main()
 	std::string_view str;
 	fast_io::ibuffer_view ibv(str);
 	std::size_t a;
-	if (scan<true>(ibv, a))
+	if (scan_some(ibv, a))
 	{
 		println("not eof:", a);
 	}

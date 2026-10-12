@@ -14,7 +14,7 @@ struct win32_9xa_dirent
 
 	inline constexpr ~win32_9xa_dirent()
 	{
-		if (file_struct && file_struct != reinterpret_cast<void*>(-1)) [[likely]]
+		if (file_struct && file_struct != reinterpret_cast<void *>(-1)) [[likely]]
 		{
 			::fast_io::win32::FindClose(file_struct);
 		}
@@ -24,13 +24,14 @@ struct win32_9xa_dirent
 namespace win32::details
 {
 inline bool set_win32_9xa_dirent(win32_9xa_dirent &entry, bool start)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::win32_find_dataa wfda{};
 	if (start)
 	{
 		entry.find_path = ::fast_io::win32::details::concat_win32_9xa_dir_handle_path_str(::fast_io::mnp::code_cvt(entry.d_handle.path), u8"\\*");
 		entry.file_struct = ::fast_io::win32::FindFirstFileA(reinterpret_cast<char const *>(entry.find_path.c_str()), __builtin_addressof(wfda));
-		if (entry.file_struct == reinterpret_cast<void*>(-1)) [[unlikely]]
+		if (entry.file_struct == reinterpret_cast<void *>(-1)) [[unlikely]]
 		{
 			entry.file_struct = nullptr;
 			return false;
@@ -38,7 +39,7 @@ inline bool set_win32_9xa_dirent(win32_9xa_dirent &entry, bool start)
 	}
 	else
 	{
-		if (entry.file_struct == nullptr || entry.file_struct == reinterpret_cast<void*>(-1) ||
+		if (entry.file_struct == nullptr || entry.file_struct == reinterpret_cast<void *>(-1) ||
 			::fast_io::win32::FindNextFileA(entry.file_struct, __builtin_addressof(wfda)) == 0) [[unlikely]]
 		{
 			return false;
@@ -72,11 +73,13 @@ inline bool set_win32_9xa_dirent(win32_9xa_dirent &entry, bool start)
 }
 
 inline bool set_win32_9xa_dirent_first(win32_9xa_dirent &entry)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return set_win32_9xa_dirent(entry, true);
 }
 
 inline bool win32_9xa_dirent_next(win32_9xa_dirent &entry)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return set_win32_9xa_dirent(entry, false);
 }
@@ -155,6 +158,7 @@ inline win32_9xa_directory_entry operator*(win32_9xa_family_directory_iterator p
 }
 
 inline win32_9xa_family_directory_iterator &operator++(win32_9xa_family_directory_iterator &pdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!win32::details::win32_9xa_dirent_next(*pdit.entry)) [[unlikely]]
 	{
@@ -212,6 +216,7 @@ struct basic_win32_9xa_directory_generator
 };
 
 inline win32_9xa_family_directory_iterator begin(basic_win32_9xa_directory_generator &pdg)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	bool ok{win32::details::set_win32_9xa_dirent_first(pdg.entry)};
 	return {__builtin_addressof(pdg.entry), !ok};
@@ -309,7 +314,7 @@ struct win32_9xa_dir_file_stack_type
 
 		if (this->file_struct) [[likely]]
 		{
-			if (this->file_struct != reinterpret_cast<void*>(-1))
+			if (this->file_struct != reinterpret_cast<void *>(-1))
 			{
 				::fast_io::win32::FindClose(this->file_struct);
 			}
@@ -323,7 +328,7 @@ struct win32_9xa_dir_file_stack_type
 
 	inline ~win32_9xa_dir_file_stack_type()
 	{
-		if (file_struct && file_struct != reinterpret_cast<void*>(-1)) [[likely]]
+		if (file_struct && file_struct != reinterpret_cast<void *>(-1)) [[likely]]
 		{
 			::fast_io::win32::FindClose(file_struct);
 		}
@@ -331,7 +336,9 @@ struct win32_9xa_dir_file_stack_type
 };
 
 using win32_9xa_recursive_directory_generator =
-	basic_win32_9xa_recursive_directory_generator<::fast_io::containers::vector<win32_9xa_dir_file_stack_type, ::fast_io::win32_family_api_encoding_converter<win32_family::ansi_9x>::allocator_type>>;
+	basic_win32_9xa_recursive_directory_generator<::fast_io::containers::deque<win32_9xa_dir_file_stack_type,
+																			   ::fast_io::generic_allocator_adapter<::fast_io::win32_heapalloc_allocator,
+																													::fast_io::allocator_adapter_flags::throws_on_allocation_failure>>>;
 
 template <typename StackType>
 inline ::std::size_t depth(basic_win32_9xa_recursive_directory_iterator<StackType> const &prdit) noexcept
@@ -341,11 +348,12 @@ inline ::std::size_t depth(basic_win32_9xa_recursive_directory_iterator<StackTyp
 
 template <typename StackType>
 inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic_win32_9xa_recursive_directory_iterator<StackType> &prdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (;;)
 	{
 		prdit.finish = false;
-		if (prdit.stack.empty())
+		if (prdit.stack.is_empty())
 		{
 			prdit.entry->d_handle = prdit.root_handle;
 			prdit.entry->file_struct = prdit.root_file_struct;
@@ -367,14 +375,14 @@ inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic
 				if (!ok)
 				{
 					prdit.finish = true;
-					prdit.stack.pop_back();
+					prdit.stack.pop_back_unchecked();
 					continue;
 				}
 			}
 			else if (!win32::details::win32_9xa_dirent_next(*prdit.entry))
 			{
 				prdit.finish = true;
-				prdit.stack.pop_back();
+				prdit.stack.pop_back_unchecked();
 				continue;
 			}
 		}
@@ -388,7 +396,7 @@ inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic
 				continue;
 			}
 			prdit.stack.emplace_back(
-				win32_9xa_dir_file{win32_9xa_at_entry{prdit.stack.empty() ? prdit.root_handle : prdit.stack.back().dirf.handle},
+				win32_9xa_dir_file{win32_9xa_at_entry{prdit.stack.is_empty() ? prdit.root_handle : prdit.stack.back().dirf.handle},
 								   ::fast_io::manipulators::basic_os_c_str_with_known_size<char8_t>{native_d_name_ptr, native_d_namlen},
 								   open_mode::directory},
 				nullptr);
@@ -400,21 +408,23 @@ inline basic_win32_9xa_recursive_directory_iterator<StackType> &operator++(basic
 
 template <typename StackType>
 inline void pop(basic_win32_9xa_recursive_directory_iterator<StackType> &prdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (prdit.stack.empty())
+	if (prdit.stack.is_empty())
 	{
 		prdit.entry = nullptr;
 	}
 	else
 	{
-		prdit.stack.pop_back();
+		prdit.stack.pop_back_unchecked();
 		++prdit;
 	}
 }
 
 template <typename StackType>
 inline basic_win32_9xa_recursive_directory_iterator<StackType>
-begin(basic_win32_9xa_recursive_directory_generator<StackType> &prg) noexcept
+begin(basic_win32_9xa_recursive_directory_generator<StackType> &prg)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	basic_win32_9xa_recursive_directory_iterator<StackType> prdit{prg.root_handle, __builtin_addressof(prg.entry)};
 
@@ -463,28 +473,28 @@ template <typename StackType>
 inline bool operator==(::std::default_sentinel_t,
 					   basic_win32_9xa_recursive_directory_iterator<StackType> const &b) noexcept
 {
-	return b.stack.empty() && b.finish;
+	return b.stack.is_empty() && b.finish;
 }
 
 template <typename StackType>
 inline bool operator==(basic_win32_9xa_recursive_directory_iterator<StackType> const &b,
 					   [[maybe_unused]] ::std::default_sentinel_t sntnl) noexcept
 {
-	return b.stack.empty() && b.finish;
+	return b.stack.is_empty() && b.finish;
 }
 
 template <typename StackType>
 inline bool operator!=([[maybe_unused]] ::std::default_sentinel_t sntnl,
 					   basic_win32_9xa_recursive_directory_iterator<StackType> const &b) noexcept
 {
-	return !(b.stack.empty() && b.finish);
+	return !(b.stack.is_empty() && b.finish);
 }
 
 template <typename StackType>
 inline bool operator!=(basic_win32_9xa_recursive_directory_iterator<StackType> const &b,
 					   [[maybe_unused]] ::std::default_sentinel_t sntnl) noexcept
 {
-	return !(b.stack.empty() && b.finish);
+	return !(b.stack.is_empty() && b.finish);
 }
 
 inline win32_9xa_recursive_directory_generator recursive(win32_9xa_at_entry nate)

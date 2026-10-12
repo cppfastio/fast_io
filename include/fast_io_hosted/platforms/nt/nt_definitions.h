@@ -1391,3 +1391,8 @@ struct file_allocation_information
 };
 
 } // namespace fast_io::win32::nt
+
+namespace fast_io
+{
+namespace nt = ::fast_io::win32::nt;
+} // namespace fast_io

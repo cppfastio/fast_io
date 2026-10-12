@@ -11,7 +11,7 @@ int main()
 		for (;;)
 		{
 
-			auto end = ::fast_io::operations::read_some(pipe.in(), ptr, ptr + 4096);
+			auto end = ::fast_io::operations::read_some(pipe.in(), ptr, 4096);
 			if (end == last)
 			{
 				break;

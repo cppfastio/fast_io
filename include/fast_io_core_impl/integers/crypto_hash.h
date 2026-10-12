@@ -105,10 +105,9 @@ inline constexpr void require_secure_clear(basic_crypto_hash_as_file<char_type, 
 }
 
 template <::std::integral ch_type, typename T>
-inline constexpr void write_all_bytes_overflow_define(basic_crypto_hash_as_file<ch_type, T> t, ::std::byte const *first,
-													  ::std::byte const *last) noexcept
+inline constexpr void write_all_bytes_overflow_define(basic_crypto_hash_as_file<ch_type, T> t, ::std::byte const *first, ::std::size_t count) noexcept
 {
-	t.ptr->update(first, last);
+	t.ptr->update(first, first + count);
 }
 
 namespace manipulators
@@ -352,7 +351,7 @@ inline constexpr char_type *copy_to_hash_df_commom_impl(char_type *iter, ::std::
 	}
 	else
 	{
-		return ::fast_io::details::crypto_hash_pr_df_impl < d == ::fast_io::manipulators::digest_format::upper > (buffer, buffer + digest_size, iter);
+		return ::fast_io::details::crypto_hash_pr_df_impl<d == ::fast_io::manipulators::digest_format::upper>(buffer, buffer + digest_size, iter);
 	}
 }
 
@@ -477,8 +476,8 @@ inline constexpr char_type *prv_srv_hash_compress_df_impl(char_type *iter, ::std
 			{
 				::std::byte buffer[digest_size];
 				auto ret{cal_hash_internal_impl<T>(base, len, buffer)};
-				return ::fast_io::details::copy_to_hash_df_commom_impl < d ==
-					   ::fast_io::manipulators::digest_format::upper > (iter, buffer, static_cast<::std::size_t>(ret - buffer));
+				return ::fast_io::details::copy_to_hash_df_commom_impl<d ==
+																	   ::fast_io::manipulators::digest_format::upper>(iter, buffer, static_cast<::std::size_t>(ret - buffer));
 			}
 			else
 			{
@@ -511,8 +510,8 @@ inline constexpr char_type *prv_srv_hash_compress_df_impl(char_type *iter, ::std
 			{
 				::std::byte buffer[digest_size];
 				cal_hash_internal<T>(base, len, buffer);
-				return ::fast_io::details::copy_to_hash_df_commom_impl < d ==
-					   ::fast_io::manipulators::digest_format::upper > (iter, buffer, digest_size);
+				return ::fast_io::details::copy_to_hash_df_commom_impl<d ==
+																	   ::fast_io::manipulators::digest_format::upper>(iter, buffer, digest_size);
 			}
 			else
 			{

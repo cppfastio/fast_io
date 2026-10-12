@@ -14,6 +14,7 @@ template <typename CharT, typename Traits>
 [[nodiscard]]
 #endif
 inline ::std::basic_filebuf<CharT, Traits> *open_hacked_basic_filebuf(FILE *, ::fast_io::open_mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	throw_posix_error(EINVAL);
 }

@@ -20,7 +20,12 @@ try
 	auto t0{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 	fast_io::native_hash_file ctx(::fast_io::mnp::os_c_str(argv[1]));
 	fast_io::ibuf_file ibf(os_c_str(argv[2]));
-	auto transmitted{::fast_io::operations::transmit_bytes_until_eof(as_file(ctx), ibf)};
+	::std::size_t transmitted{};
+	for (::std::size_t n{}; (n = ::fast_io::operations::transmit_some_bytes(
+								   as_file(ctx), {}, ibf, {}, ::std::numeric_limits<::std::size_t>::max())) != 0;)
+	{
+		transmitted += n;
+	}
 	ctx.do_final();
 	println(hash_digest(ctx), " *", os_c_str(argv[2]), "\nAlgorithm:", ::fast_io::mnp::os_c_str(argv[1]),
 			"\nTransmitted:", transmitted,

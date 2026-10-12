@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io
 {
@@ -17,7 +17,7 @@ enum class tls_method
 
 namespace details
 {
-inline SSL_METHOD const *get_method(tls_method m)
+inline SSL_METHOD const *get_method(tls_method m) FAST_IO_HERBCEPTIONS_THROWS
 {
 	switch (m)
 	{
@@ -43,6 +43,7 @@ class ssl_context : public ssl_context_observer
 {
 public:
 	ssl_context(ossl_lib_context_observer ocob, cstring_view view, tls_method m)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: ssl_context_observer(SSL_CTX_new_ex(ocob.native_handle(), view.data(), details::get_method(m)))
 	{
 		if (this->native_handle() == nullptr)
@@ -50,7 +51,7 @@ public:
 			throw_openssl_error();
 		}
 	}
-	ssl_context(tls_method m)
+	ssl_context(tls_method m) FAST_IO_HERBCEPTIONS_THROWS
 		: ssl_context_observer(SSL_CTX_new(details::get_method(m)))
 	{
 		if (this->native_handle() == nullptr)

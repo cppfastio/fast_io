@@ -70,7 +70,7 @@ struct md5_sha_common_impl
 	}
 	inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
-	constexpr
+		constexpr
 #endif
 		void
 		append_sentinal(::std::size_t final_block_offset) noexcept
@@ -129,7 +129,7 @@ struct md5_sha_common_impl
 
 	inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
-	constexpr
+		constexpr
 #endif
 		void
 		do_final() noexcept
@@ -174,6 +174,7 @@ public:
 		this->reset();
 	}
 	static inline constexpr ::std::size_t digest_size{initializer::digest_size};
+	static inline constexpr ::std::size_t block_size{T::block_size};
 	inline constexpr void update(::std::byte const *block_first, ::std::byte const *block_last) noexcept
 	{
 		hasher.update(block_first, block_last);
@@ -208,7 +209,7 @@ inline
 		for (::std::size_t i{}; i != n; ++i)
 		{
 			U v{digest[i]};
-			if constexpr (::std::endian::native == end)
+			if constexpr (::std::endian::native != end)
 			{
 				v = ::fast_io::byte_swap(v);
 			}

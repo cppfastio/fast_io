@@ -5,6 +5,7 @@ namespace fast_io
 namespace details
 {
 inline ::fast_io::intfpos_t posix_seek_impl(int fd, ::fast_io::intfpos_t offset, seekdir s)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__MSDOS__)
 	if constexpr (sizeof(off_t) < sizeof(::fast_io::intfpos_t))
@@ -87,6 +88,7 @@ inline ::fast_io::intfpos_t posix_seek_impl(int fd, ::fast_io::intfpos_t offset,
 template <::fast_io::posix_family family, ::std::integral char_type>
 inline ::fast_io::intfpos_t io_stream_seek_bytes_define(::fast_io::basic_posix_family_io_observer<family, char_type> bpiob,
 														::fast_io::intfpos_t off, ::fast_io::seekdir sdir)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::posix_seek_impl(bpiob.fd, off, sdir);
 }

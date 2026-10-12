@@ -18,7 +18,7 @@ template <::std::integral CharT, typename Allocator = native_global_allocator>
 inline constexpr basic_string<CharT, Allocator> &
 trim_right(basic_string<CharT, Allocator> &str) noexcept
 {
-	if (str.empty())
+	if (str.is_empty())
 	{
 		return str;
 	}

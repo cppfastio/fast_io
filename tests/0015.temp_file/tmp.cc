@@ -10,5 +10,12 @@ int main()
 		print(file, "Hello World\n");
 	}
 	rewind(file);
-	println("transmitted:", transmit(fast_io::c_stdout(), file));
+	::std::size_t transmitted{};
+	for (::std::size_t n{}; (n = ::fast_io::operations::transmit_some_bytes(
+								   fast_io::c_stdout(), {}, file, {},
+								   ::std::numeric_limits<::std::size_t>::max())) != 0;)
+	{
+		transmitted += n;
+	}
+	println("transmitted:", transmitted);
 }

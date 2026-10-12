@@ -181,6 +181,7 @@ namespace details
 {
 
 inline iconv_t my_iconv_open(char const *tocode, char const *fromcode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto cd{iconv_open(tocode, fromcode)};
 	if (cd == ::std::bit_cast<iconv_t>(static_cast<size_t>(-1)))
@@ -202,10 +203,12 @@ public:
 	{}
 
 	posix_iconv_file(cstring_view tocode, cstring_view fromcode)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_iconv_io_observer{details::my_iconv_open(tocode.c_str(), fromcode.c_str())}
 	{
 	}
 	posix_iconv_file(u8cstring_view tocode, u8cstring_view fromcode)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_iconv_io_observer{details::my_iconv_open(reinterpret_cast<char const *>(tocode.c_str()),
 														 reinterpret_cast<char const *>(fromcode.c_str()))}
 	{
@@ -223,6 +226,7 @@ public:
 		return *this;
 	}
 	void close()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (iconv_close(this->cd) == -1)
 		{
@@ -239,6 +243,7 @@ namespace details
 {
 inline ::std::size_t do_iconv_impl(iconv_t cd, char **__restrict__ inbuf, ::std::size_t *__restrict__ inbytesleft,
 								   char **__restrict__ outbuf, ::std::size_t *__restrict__ outbytesleft)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t res{iconv(cd, inbuf, inbytesleft, outbuf, outbytesleft)};
 	if (res == static_cast<::std::size_t>(-1))
@@ -252,11 +257,13 @@ inline ::std::size_t do_iconv_impl(iconv_t cd, char **__restrict__ inbuf, ::std:
 inline ::std::size_t do_iconv(posix_iconv_io_observer piciob, char **__restrict__ inbuf,
 							  ::std::size_t *__restrict__ inbytesleft, char **__restrict__ outbuf,
 							  ::std::size_t *__restrict__ outbytesleft)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::do_iconv_impl(piciob.cd, inbuf, inbytesleft, outbuf, outbytesleft);
 }
 
 inline void reset_state(posix_iconv_io_observer piciob)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (iconv(piciob.cd, nullptr, 0, nullptr, nullptr) == static_cast<::std::size_t>(-1))
 	{

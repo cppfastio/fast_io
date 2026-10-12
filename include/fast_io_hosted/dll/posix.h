@@ -82,6 +82,7 @@ namespace details
 {
 
 [[noreturn]] inline void throw_posix_rtld_error(int err = EINVAL)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	int en{errno};
 	if (!en)
@@ -92,6 +93,7 @@ namespace details
 }
 
 inline void *create_posix_rtld(char const *filename, dll_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	errno = {};
 	auto hd{noexcept_call(::dlopen, filename, ::fast_io::dll_mode_to_posix_rtld_mode(mode))};
@@ -109,7 +111,7 @@ inline void *create_posix_rtld(char const *filename, dll_mode mode)
 struct posix_rtld_impl_context
 {
 	dll_mode mode{};
-	inline void *operator()(char const *filename) const
+	inline void *operator()(char const *filename) const FAST_IO_HERBCEPTIONS_THROWS
 	{
 		return create_posix_rtld(filename, mode);
 	}
@@ -117,6 +119,7 @@ struct posix_rtld_impl_context
 
 template <typename T>
 inline void *create_posix_rtld_impl(T const &t, dll_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::posix_api_common(t, posix_rtld_impl_context{mode});
 }
@@ -140,6 +143,7 @@ public:
 	inline constexpr posix_dll_file &operator=(posix_dll_io_observer) noexcept = delete;
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit posix_dll_file(T const &t, dll_mode mode)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_dll_io_observer{::fast_io::details::create_posix_rtld_impl(t, mode)}
 	{
 	}
@@ -165,6 +169,7 @@ public:
 		return *this;
 	}
 	inline void close()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->rtld_handle) [[likely]]
 		{
@@ -190,6 +195,7 @@ namespace details
 {
 
 inline void *posix_dll_load_symbol_impl(void *rtld_handle, char const *symbol)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto ptr{noexcept_call(::dlsym, rtld_handle, symbol)};
 	if (ptr == nullptr) [[unlikely]]
@@ -202,7 +208,7 @@ inline void *posix_dll_load_symbol_impl(void *rtld_handle, char const *symbol)
 struct posix_dll_load_impl_context
 {
 	void *rtld_handle{};
-	inline void *operator()(char const *symbol) const
+	inline void *operator()(char const *symbol) const FAST_IO_HERBCEPTIONS_THROWS
 	{
 		return posix_dll_load_symbol_impl(rtld_handle, symbol);
 	}
@@ -211,6 +217,7 @@ struct posix_dll_load_impl_context
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 0)
 inline void *posix_dll_load_vers_symbol_impl(void *rtld_handle, char const *symbol, char const *vers)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto ptr{noexcept_call(::dlvsym, rtld_handle, symbol, vers)};
 	if (ptr == nullptr) [[unlikely]]
@@ -224,7 +231,7 @@ struct posix_dll_load_versioned_symbol_impl_context
 {
 	void *rtld_handle{};
 	char const *vers{};
-	inline void *operator()(char const *symbol) const
+	inline void *operator()(char const *symbol) const FAST_IO_HERBCEPTIONS_THROWS
 	{
 		return posix_dll_load_vers_symbol_impl(rtld_handle, symbol, vers);
 	}
@@ -257,19 +264,20 @@ struct is_zero_default_constructible<posix_dll_file>
 } // namespace freestanding
 
 template <::fast_io::constructible_to_os_c_str T>
-inline void *dll_load_symbol(posix_dll_io_observer pdliob, T const &symbol)
+inline void *dll_load_symbol(posix_dll_io_observer pdliob, T const &symbol) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::posix_api_common(symbol, ::fast_io::details::posix_dll_load_impl_context{pdliob.rtld_handle});
 }
 
 template <::fast_io::constructible_to_os_c_str T, ::fast_io::constructible_to_os_c_str T1>
 inline void *dll_load_versioned_symbol(posix_dll_io_observer pdliob, T const &symbol, [[maybe_unused]] T1 const &vers)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
 #if __GLIBC_PREREQ(2, 0)
 	return ::fast_io::posix_api_common(
 		vers,
-		[&](char const *ver) {
+		[&](char const *ver) FAST_IO_HERBCEPTIONS_THROWS {
 			return ::fast_io::posix_api_common(
 				symbol, ::fast_io::details::posix_dll_load_versioned_symbol_impl_context{pdliob.rtld_handle, ver});
 		});

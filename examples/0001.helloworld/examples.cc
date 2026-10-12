@@ -16,13 +16,13 @@ void print_define(::fast_io::io_reserve_type_t<char_type, point>, output out, po
 {
 	if constexpr (::std::is_same_v<char_type, char>)
 	{
-		::fast_io::println(out, "(", p.x, ",", p.y, ")");
+		::fast_io::print(out, "(", p.x, ",", p.y, ")\n");
 	}
 }
 
 int main()
 {
-	::fast_io::println("Hello world!");
+	::fast_io::print("Hello world!\n");
 	::fast_io::string str{"string"};
 	::fast_io::println(str);
 	::fast_io::println(::fast_io::mnp::os_c_str(str.data()));

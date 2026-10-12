@@ -18,9 +18,9 @@ int main(int argc, char **argv)
 #endif
 	{
 
-		::fast_io::unix_timestamp_option creation_time;
-		::fast_io::unix_timestamp_option last_access_time;
-		::fast_io::unix_timestamp_option last_modification_time;
+		::fast_io::statx_timestamp_option creation_time;
+		::fast_io::statx_timestamp_option last_access_time;
+		::fast_io::statx_timestamp_option last_modification_time;
 
 		::fast_io::iso8601_timestamp iso8601_ts{};
 
@@ -30,14 +30,14 @@ int main(int argc, char **argv)
 			iso8601_ts = ::fast_io::to<::fast_io::iso8601_timestamp>(fast_io::mnp::os_c_str(argv[2]));
 			succussed = true;
 		}
-		catch (::fast_io::error)
+		catch throws(::std::error)
 		{
 			succussed = false;
 		}
 		if (succussed)
 		{
 			creation_time.flags = ::fast_io::utime_flags::none;
-			creation_time.timestamp = ::fast_io::to_timestamp(iso8601_ts);
+			creation_time.timestamp = ::fast_io::to_posix_statx_timestamp64(iso8601_ts);
 		}
 		else if (::fast_io::u8cstring_view{fast_io::mnp::os_c_str(reinterpret_cast<char8_t *>(argv[2]))} == u8"now")
 		{
@@ -58,14 +58,14 @@ int main(int argc, char **argv)
 			iso8601_ts = ::fast_io::to<::fast_io::iso8601_timestamp>(fast_io::mnp::os_c_str(argv[3]));
 			succussed = true;
 		}
-		catch (::fast_io::error)
+		catch throws(::std::error)
 		{
 			succussed = false;
 		}
 		if (succussed)
 		{
 			last_access_time.flags = ::fast_io::utime_flags::none;
-			last_access_time.timestamp = ::fast_io::to_timestamp(iso8601_ts);
+			last_access_time.timestamp = ::fast_io::to_posix_statx_timestamp64(iso8601_ts);
 		}
 		else if (::fast_io::u8cstring_view{fast_io::mnp::os_c_str(reinterpret_cast<char8_t *>(argv[3]))} == u8"now")
 		{
@@ -86,14 +86,14 @@ int main(int argc, char **argv)
 			iso8601_ts = ::fast_io::to<::fast_io::iso8601_timestamp>(fast_io::mnp::os_c_str(argv[4]));
 			succussed = true;
 		}
-		catch (::fast_io::error)
+		catch throws(::std::error)
 		{
 			succussed = false;
 		}
 		if (succussed)
 		{
 			last_modification_time.flags = ::fast_io::utime_flags::none;
-			last_modification_time.timestamp = ::fast_io::to_timestamp(iso8601_ts);
+			last_modification_time.timestamp = ::fast_io::to_posix_statx_timestamp64(iso8601_ts);
 		}
 		else if (::fast_io::u8cstring_view{fast_io::mnp::os_c_str(reinterpret_cast<char8_t *>(argv[4]))} == u8"now")
 		{
@@ -111,10 +111,8 @@ int main(int argc, char **argv)
 
 		::fast_io::native_utimensat(::fast_io::at_fdcwd(), fast_io::mnp::os_c_str(argv[1]), creation_time, last_access_time, last_modification_time);
 	}
-#if __cpp_exceptions
-	catch (fast_io::error e)
+	catch throws(::std::error e)
 	{
 		::fast_io::io::perrln(e);
 	}
-#endif
 }

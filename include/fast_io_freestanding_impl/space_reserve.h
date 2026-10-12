@@ -28,6 +28,8 @@ inline constexpr ::std::size_t print_reserve_size(::fast_io::io_reserve_type_t<c
 template <::std::integral char_type, typename T>
 inline constexpr char_type *print_reserve_define(::fast_io::io_reserve_type_t<char_type, ::fast_io::space_reserve<T>>,
 												 char_type *iter, ::fast_io::space_reserve<T> const &t)
+
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(t.func(iter, iter + t.size)))
 {
 	return t.func(iter, iter + t.size);
 }

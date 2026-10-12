@@ -1,6 +1,10 @@
 ﻿#pragma once
+#include "impl/misc/push_macros.h"
+#include "impl/misc/push_warnings.h"
 #include "deque.h"
 #include "impl/queue.h"
+#include "impl/misc/pop_warnings.h"
+#include "impl/misc/pop_macros.h"
 
 #if ((__STDC_HOSTED__ == 1 && (!defined(_GLIBCXX_HOSTED) || _GLIBCXX_HOSTED == 1) && \
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
@@ -12,11 +16,15 @@ namespace fast_io
 template <typename T, typename Container = ::fast_io::deque<T>>
 using queue = ::fast_io::containers::queue<Container>;
 
+using zu_queue = ::fast_io::containers::queue<::fast_io::deque<::std::size_t>>;
+
 namespace tlc
 {
 template <typename T, typename Container = ::fast_io::tlc::deque<T>>
 using queue = ::fast_io::containers::queue<Container>;
-}
+
+using zu_queue = ::fast_io::containers::queue<::fast_io::tlc::deque<::std::size_t>>;
+} // namespace tlc
 
 } // namespace fast_io
 #endif

@@ -24,7 +24,12 @@ int main(int argc, char **argv)
 	auto t0{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 	fast_io::sha256_context ctx;
 	fast_io::ibuf_file ibf(os_c_str(argv[1]));
-	auto transmitted{::fast_io::operations::transmit_bytes_until_eof(as_file(ctx), ibf)};
+	::std::size_t transmitted{};
+	for (::std::size_t n{}; (n = ::fast_io::operations::transmit_some_bytes(
+								   as_file(ctx), {}, ibf, {}, ::std::numeric_limits<::std::size_t>::max())) != 0;)
+	{
+		transmitted += n;
+	}
 	ctx.do_final();
 	println(hash_digest(ctx), " *", os_c_str(argv[1]), "\nTransmitted:", transmitted,
 			" bytes\tElapsed Time:", fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime) - t0);

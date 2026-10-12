@@ -11,7 +11,7 @@ int main()
 	{
 		fast_io::timer t(u8"output");
 		fast_io::obuf_file obf("iobuf_file_l10n.txt");
-		fast_io::native_l10n loc("");
+		auto const *loc{::fast_io::l10n::load_l10n(u8"")};
 		for (std::size_t i{}; i != N; ++i)
 		{
 			println(imbue(loc, obf), fast_io::mnp::hex(i));

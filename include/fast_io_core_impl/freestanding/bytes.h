@@ -12,7 +12,7 @@ struct overlapped_copy_buffer_ptr
 	{}
 	inline overlapped_copy_buffer_ptr(overlapped_copy_buffer_ptr const &) = delete;
 	inline overlapped_copy_buffer_ptr &operator=(overlapped_copy_buffer_ptr const &) = delete;
-	inline constexpr ~overlapped_copy_buffer_ptr()
+	inline constexpr ~overlapped_copy_buffer_ptr() noexcept
 	{
 		::delete[] ptr;
 	}

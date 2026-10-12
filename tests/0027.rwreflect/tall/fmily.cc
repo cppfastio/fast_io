@@ -20,9 +20,9 @@ inline constexpr foo output_stream_ref_define(foo f) noexcept
 extern "C" void fake_scatters_write(
 	::fast_io::io_scatter_t const *base, ::std::size_t len) noexcept;
 
-inline ::std::byte const *write_some_bytes_overflow_define(foo f, ::std::byte const *first, ::std::byte const *last)
+inline ::std::byte const *write_some_bytes_overflow_define(foo f, ::std::byte const *first, ::std::size_t count)
 {
-	auto res{::fast_io::noexcept_call(::write, f.fd, first, static_cast<::std::size_t>(last - first))};
+	auto res{::fast_io::noexcept_call(::write, f.fd, first, count)};
 	if (res < 0)
 	{
 		::std::abort();

@@ -30,12 +30,14 @@ strlike_construct_define(io_strlike_type_t<cross_ch_type, ::ATL::CStringT<ch_typ
 
 template <typename... Args>
 inline CString concat_atl_cstring(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::basic_general_concat<false, char, CString>(::std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline CString concatln_atl_cstring(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::basic_general_concat<true, char, CString>(::std::forward<Args>(args)...);
 }

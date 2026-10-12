@@ -109,7 +109,7 @@ int main()
 		}
 		print(fast_io::u8c_stdout(), rounds, u8"/", correct_rounds, u8": Romaji of ", fast_io::mnp::os_c_str(s),
 			  u8" is??\n");
-		if (!scan<true>(fast_io::u8c_stdin(), buffer))
+		if (!scan_some(fast_io::u8c_stdin(), buffer))
 		{
 			break;
 		}

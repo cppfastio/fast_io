@@ -20,7 +20,7 @@ int main()
 		fast_io::ibuf_file ibf(u8"iobuf_file_bin.txt");
 		for (auto it{vec.begin()}; it != vec.cend(); ++it)
 		{
-			::fast_io::read_all(ibf, it, it + 1);
+			::fast_io::read_all(ibf, it, 1);
 		}
 	}
 }

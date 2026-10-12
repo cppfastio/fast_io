@@ -49,13 +49,15 @@ struct file_lock_guard
 	file_lock_type lock;
 	request_type request;
 	inline explicit constexpr file_lock_guard(file_lock_type const &lk, request_type const &flk)
-		: lock(lk), request(flk)
+		FAST_IO_HERBCEPTIONS_THROWS
+		: lock(lk),
+		  request(flk)
 	{
 		lock.lock(request);
 	}
 	inline file_lock_guard(file_lock_guard const &) = delete;
 	inline file_lock_guard &operator=(file_lock_guard const &) = delete;
-	inline constexpr ~file_lock_guard()
+	inline constexpr ~file_lock_guard() noexcept
 	{
 		lock.unlock(request);
 	}

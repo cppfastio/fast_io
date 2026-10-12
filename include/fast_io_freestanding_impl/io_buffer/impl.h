@@ -1,10 +1,16 @@
-﻿#pragma once
+#pragma once
 
 #include "mode.h"
 #include "io_buffer.h"
 #include "io_buffer_ref.h"
 #include "output.h"
 #include "input.h"
+#if defined(__HERBCEPTIONS__)
+#include "input_async.h"
+#include "output_async.h"
+#include "close_async.h"
+#include "print_async.h"
+#endif
 #include "destroy.h"
 
 namespace fast_io

@@ -20,7 +20,7 @@ namespace manipulators
 
 template <typename... Args>
 	requires(sizeof...(Args) != 0)
-inline ::std::string operator_output(Args const &...args)
+inline ::std::string operator_output(Args const &...args) FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{(::fast_io::details::printable_to_cxx_ostringstream<char, Args> && ...)};
 	if constexpr (type_error)
@@ -40,7 +40,7 @@ inline ::std::string operator_output(Args const &...args)
 #if (!defined(_LIBCPP_VERSION)) || _LIBCPP_HAS_WIDE_CHARACTERS
 template <typename... Args>
 	requires(sizeof...(Args) != 0)
-inline ::std::basic_string<wchar_t> woperator_output(Args const &...args)
+inline ::std::basic_string<wchar_t> woperator_output(Args const &...args) FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{(::fast_io::details::printable_to_cxx_ostringstream<wchar_t, Args> && ...)};
 	if constexpr (type_error)

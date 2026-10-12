@@ -12,7 +12,6 @@
 
 #if 1
 #include "ostring_ref.h"
-#include "concat.h"
 #endif
 #include "scan_str_ctx_impl.h"
 #include "concat_std.h"

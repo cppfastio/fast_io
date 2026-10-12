@@ -58,6 +58,10 @@ public:
 private:
 	template <::fast_io::details::boolean_testable_for_range R>
 	static inline constexpr bitvec construct_from_range(R &&r)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any ||
+									   !noexcept(static_cast<bool>(*::std::declval<::std::ranges::iterator_t<R> &>())) ||
+									   !noexcept(++::std::declval<::std::ranges::iterator_t<R> &>()) ||
+									   !noexcept(::std::declval<::std::ranges::iterator_t<R> &>() != ::std::declval<::std::ranges::sentinel_t<R>>()))
 	{
 		// default empty
 		if constexpr (::std::ranges::sized_range<R>)
@@ -103,12 +107,16 @@ private:
 
 public:
 	template <::fast_io::details::boolean_testable_for_range R>
-	explicit constexpr bitvec(::fast_io::freestanding::from_range_t, R &&r) : bitvec(construct_from_range(::std::forward<R>(r)))
+	explicit constexpr bitvec(::fast_io::freestanding::from_range_t, R &&r)
+		FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(construct_from_range(::std::declval<R &&>()))
+		: bitvec(construct_from_range(::std::forward<R>(r)))
 	{
 	}
 	template <typename T>
 		requires ::fast_io::details::boolean_testable_for_range<::std::initializer_list<T>>
-	explicit constexpr bitvec(::std::initializer_list<T> il) : bitvec(::fast_io::freestanding::from_range, il)
+	explicit constexpr bitvec(::std::initializer_list<T> il)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !noexcept(static_cast<bool>(::std::declval<T const &>())))
+		: bitvec(::fast_io::freestanding::from_range, il)
 	{}
 
 	static inline constexpr ::std::size_t max_size() noexcept
@@ -125,7 +133,12 @@ public:
 
 private:
 	using typed_allocator = ::fast_io::typed_generic_allocator_adapter<allocator, underlying_type>;
-	inline constexpr void grow_to_new_capacity(size_type n) noexcept
+	static inline constexpr bool throwing_allocation{typed_allocator::throws_on_allocation_failure};
+	static inline constexpr bool throwing_violations{typed_allocator::throws_on_violations};
+	static inline constexpr bool throwing_overflow{typed_allocator::throws_on_overflow};
+	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations || throwing_overflow};
+	inline constexpr void grow_to_new_capacity(size_type n)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation)
 	{
 		::std::size_t current_capacity{this->imp.end_pos};
 		if constexpr (underlying_digits == 8)
@@ -154,7 +167,8 @@ private:
 		}
 		this->imp.end_pos = new_capacity;
 	}
-	inline constexpr void grow_twice() noexcept
+	inline constexpr void grow_twice()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		::std::size_t current_capacity{this->imp.end_pos};
 		if constexpr (underlying_digits == 8)
@@ -168,7 +182,7 @@ private:
 		constexpr ::std::size_t mxbyteshalf{max_size() >> 1};
 		if (mxbyteshalf < current_capacity)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		::std::size_t toallocate{current_capacity << 1u};
 		if (current_capacity == 0)
@@ -177,7 +191,8 @@ private:
 		}
 		this->grow_to_new_capacity(toallocate);
 	}
-	inline static constexpr ::fast_io::details::bitvec_rep allocate_new_bytes(size_type to_allocate_bytes) noexcept
+	inline static constexpr ::fast_io::details::bitvec_rep allocate_new_bytes(size_type to_allocate_bytes)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		constexpr ::std::size_t mxbytes{max_size_bytes()};
 		if (to_allocate_bytes == 0)
@@ -186,7 +201,7 @@ private:
 		}
 		if (mxbytes < to_allocate_bytes)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
 		}
 		auto [new_begin_ptr, new_capacity] = typed_allocator::allocate_zero_at_least(to_allocate_bytes);
 		if (mxbytes < new_capacity)
@@ -204,7 +219,8 @@ private:
 
 		return {new_begin_ptr, 0, new_capacity};
 	}
-	inline static constexpr ::fast_io::details::bitvec_rep allocate_new_bits(size_type n) noexcept
+	inline static constexpr ::fast_io::details::bitvec_rep allocate_new_bits(size_type n)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		if (n == 0)
 		{
@@ -217,7 +233,8 @@ private:
 		return rep;
 	}
 	inline static constexpr ::fast_io::details::bitvec_rep
-	clone_imp(::fast_io::details::bitvec_rep const &other) noexcept
+	clone_imp(::fast_io::details::bitvec_rep const &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		using U = underlying_type;
 		size_type const n{other.curr_pos};
@@ -261,11 +278,13 @@ private:
 	}
 
 public:
-	inline constexpr bitvec(size_type n) noexcept : imp{allocate_new_bits(n)}
+	inline constexpr bitvec(size_type n)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any) : imp{allocate_new_bits(n)}
 	{
 	}
 
-	inline constexpr void push_back(bool v) noexcept
+	inline constexpr void push_back(bool v)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		if (this->imp.curr_pos == this->imp.end_pos) [[unlikely]]
 		{
@@ -335,11 +354,12 @@ public:
 			return (byteval >> bit_index) & 1u;
 		}
 	}
-	inline constexpr bool test(size_type pos) const noexcept
+	inline constexpr bool test(size_type pos) const
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->imp.curr_pos <= pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return this->test_unchecked(pos);
 	}
@@ -370,11 +390,12 @@ public:
 					  (static_cast<underlying_type>(value) * mask);
 		}
 	}
-	inline constexpr void set(size_type pos, bool value = true) noexcept
+	inline constexpr void set(size_type pos, bool value = true)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->imp.curr_pos <= pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->set_unchecked(pos, value);
 	}
@@ -403,11 +424,12 @@ public:
 			imp.begin_ptr[byte_index] &= static_cast<underlying_type>(~mask);
 		}
 	}
-	inline constexpr void reset(size_type pos) noexcept
+	inline constexpr void reset(size_type pos)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->imp.curr_pos <= pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->reset_unchecked(pos);
 	}
@@ -430,11 +452,12 @@ public:
 		return old;
 	}
 
-	inline constexpr bool pop_back() noexcept
+	inline constexpr bool pop_back()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!(this->imp.curr_pos)) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return this->pop_back_unchecked();
 	}
@@ -445,11 +468,12 @@ public:
 		return (*this->imp.begin_ptr) & 1u;
 	}
 
-	inline constexpr bool test_front() const noexcept
+	inline constexpr bool test_front() const
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!this->imp.curr_pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return this->test_front_unchecked();
 	}
@@ -462,11 +486,12 @@ public:
 
 		byteval = (byteval & invmask) | (static_cast<underlying_type>(value));
 	}
-	inline constexpr void set_front(bool value = true) noexcept
+	inline constexpr void set_front(bool value = true)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!this->imp.curr_pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->set_front_unchecked(value);
 	}
@@ -478,11 +503,12 @@ public:
 		(*imp.begin_ptr) &= invmask;
 	}
 
-	inline constexpr void reset_front() noexcept
+	inline constexpr void reset_front()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!this->imp.curr_pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->reset_front_unchecked();
 	}
@@ -510,11 +536,12 @@ public:
 		}
 	}
 
-	inline constexpr bool test_back() const noexcept
+	inline constexpr bool test_back() const
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!this->imp.curr_pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return this->test_back_unchecked();
 	}
@@ -547,11 +574,12 @@ public:
 		}
 	}
 
-	inline constexpr void set_back(bool value = true) noexcept
+	inline constexpr void set_back(bool value = true)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!this->imp.curr_pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->set_back_unchecked(value);
 	}
@@ -564,11 +592,12 @@ public:
 		(this->imp.begin_ptr[byte_index]) &= static_cast<underlying_type>(~mask);
 	}
 
-	inline constexpr void reset_back() noexcept
+	inline constexpr void reset_back()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!this->imp.curr_pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->reset_back_unchecked();
 	}
@@ -583,11 +612,12 @@ public:
 		byteval ^= mask;
 	}
 
-	inline constexpr void flip(size_type pos) noexcept
+	inline constexpr void flip(size_type pos)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->imp.curr_pos <= pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->flip_unchecked(pos);
 	}
@@ -598,11 +628,12 @@ public:
 		constexpr underlying_type mask = static_cast<underlying_type>(1u);
 		(*imp.begin_ptr) ^= mask;
 	}
-	inline constexpr void flip_front() noexcept
+	inline constexpr void flip_front()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!this->imp.curr_pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->flip_front_unchecked();
 	}
@@ -616,11 +647,12 @@ public:
 		byteval ^= mask;
 	}
 
-	inline constexpr void flip_back() noexcept
+	inline constexpr void flip_back()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!this->imp.curr_pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->flip_back_unchecked();
 	}
@@ -640,9 +672,11 @@ public:
 		other.imp = {};
 		return *this;
 	}
-	constexpr bitvec(bitvec const &other) noexcept : imp{clone_imp(other.imp)}
+	constexpr bitvec(bitvec const &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any) : imp{clone_imp(other.imp)}
 	{}
-	constexpr bitvec &operator=(bitvec const &other) noexcept
+	constexpr bitvec &operator=(bitvec const &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
@@ -653,7 +687,7 @@ public:
 		this->imp = newimp;
 		return *this;
 	}
-	constexpr ~bitvec()
+	constexpr ~bitvec() noexcept
 	{
 		this->destroy_bitvec();
 	}
@@ -713,8 +747,13 @@ private:
 	}
 
 public:
-	constexpr void reserve(size_type n) noexcept
+	constexpr void reserve(size_type n)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
+		if (max_size() - (underlying_digits - 1u) < n) [[unlikely]]
+		{
+			::fast_io::containers::details::contract_violation_report<throwing_overflow>(::std::errc::value_too_large);
+		}
 		if (this->imp.end_pos < n)
 		{
 			this->grow_to_new_capacity(bits_to_blocks(n));
@@ -724,11 +763,8 @@ public:
 	{
 		return !this->imp.curr_pos;
 	}
-	constexpr bool empty() const noexcept
-	{
-		return !this->imp.curr_pos;
-	}
-	constexpr void shrink_to_fit() noexcept
+	constexpr void shrink_to_fit()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation)
 	{
 		size_type currpos{this->imp.curr_pos};
 		size_type endpos{this->imp.end_pos};
@@ -804,11 +840,12 @@ public:
 		}
 	}
 
-	constexpr bitvec &operator&=(bitvec const &other) noexcept
+	constexpr bitvec &operator&=(bitvec const &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->imp.curr_pos != other.imp.curr_pos)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 
 		std::size_t bits = this->imp.curr_pos;
@@ -843,11 +880,12 @@ public:
 	}
 
 
-	constexpr bitvec &operator|=(bitvec const &other) noexcept
+	constexpr bitvec &operator|=(bitvec const &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->imp.curr_pos != other.imp.curr_pos)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 
 		std::size_t bits = this->imp.curr_pos;
@@ -877,11 +915,12 @@ public:
 		return *this;
 	}
 
-	constexpr bitvec &operator^=(bitvec const &other) noexcept
+	constexpr bitvec &operator^=(bitvec const &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->imp.curr_pos != other.imp.curr_pos)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 
 		std::size_t bits = this->imp.curr_pos;
@@ -1066,14 +1105,16 @@ public:
 		return *this;
 	}
 
-	constexpr bitvec operator~() const noexcept
+	constexpr bitvec operator~() const
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		bitvec tmp(*this);
 		tmp.flip_all();
 		return tmp;
 	}
 
-	constexpr bitvec &rotl_assign(difference_type shift) noexcept
+	constexpr bitvec &rotl_assign(difference_type shift)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		size_type bits = this->imp.curr_pos;
 		if (bits == 0)
@@ -1113,7 +1154,8 @@ public:
 		return *this;
 	}
 
-	constexpr bitvec &rotr_assign(difference_type shift) noexcept
+	constexpr bitvec &rotr_assign(difference_type shift)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		size_type bits = this->imp.curr_pos;
 		if (bits == 0)
@@ -1241,7 +1283,7 @@ public:
 		this->reset_all();
 
 		// Set only the highest bit
-		this->set(highest - 1);
+		this->set_unchecked(highest - 1);
 
 		return *this;
 	}
@@ -1304,7 +1346,7 @@ public:
 		if (this->is_all_zero())
 		{
 			this->reset_all();
-			this->set(0);
+			this->set_unchecked(0);
 			return *this;
 		}
 
@@ -1318,7 +1360,7 @@ public:
 		size_type w = this->bit_width();
 
 		this->reset_all();
-		this->set(w - 1);
+		this->set_unchecked(w - 1);
 
 		return *this;
 	}
@@ -1684,7 +1726,8 @@ public:
 		return total;
 	}
 
-	constexpr void resize(size_type n) noexcept
+	constexpr void resize(size_type n)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		size_type old = this->imp.curr_pos;
 
@@ -1902,22 +1945,24 @@ public:
 		}
 	}
 
-	inline constexpr size_type erase_index(size_type firstpos, size_type lastpos) noexcept
+	inline constexpr size_type erase_index(size_type firstpos, size_type lastpos)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		// [firstpos, lastpos) must be a valid subrange of [0, imp.curr_pos)
 		if (lastpos < firstpos || this->imp.curr_pos < lastpos)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 
 		return this->erase_index_unchecked(firstpos, lastpos);
 	}
-	inline constexpr size_type erase_index(size_type idx) noexcept
+	inline constexpr size_type erase_index(size_type idx)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		// idx must be a valid bit index
 		if (this->imp.curr_pos <= idx)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 
 		// erase the single bit [idx, idx+1)
@@ -1931,6 +1976,10 @@ public:
 
 	template <::fast_io::details::boolean_testable_for_range R>
 	inline constexpr void append_range(R &&r)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any ||
+									   !noexcept(static_cast<bool>(*::std::declval<::std::ranges::iterator_t<R> &>())) ||
+									   !noexcept(++::std::declval<::std::ranges::iterator_t<R> &>()) ||
+									   !noexcept(::std::declval<::std::ranges::iterator_t<R> &>() != ::std::declval<::std::ranges::sentinel_t<R>>()))
 	{
 		using U = underlying_type;
 		// Rollback guard created AFTER reserve succeeds
@@ -2002,11 +2051,12 @@ public:
 		}
 	}
 
-	inline constexpr size_type insert_index(size_type idx, bool value) noexcept
+	inline constexpr size_type insert_index(size_type idx, bool value)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any)
 	{
 		if (this->imp.curr_pos < idx)
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		if (this->imp.curr_pos == this->imp.end_pos)
 		{
@@ -2332,7 +2382,7 @@ inline constexpr bool operator==(
 	auto [full_bytes, rem] = ::fast_io::details::bitvec_split_bits<::fast_io::containers::bitvec<allocator>::underlying_digits>(bits);
 
 	// --- Compare full bytes ---
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		// constexpr path: byte-by-byte
 		for (size_type i{}; i != full_bytes; ++i)
@@ -2443,63 +2493,63 @@ constexpr void swap(::fast_io::containers::bitvec<allocator> &lhs, ::fast_io::co
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> operator&(::fast_io::containers::bitvec<allocator> lhs, ::fast_io::containers::bitvec<allocator> const &rhs) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> operator&(::fast_io::containers::bitvec<allocator> lhs, ::fast_io::containers::bitvec<allocator> const &rhs) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	lhs &= rhs;
 	return lhs;
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> operator|(::fast_io::containers::bitvec<allocator> lhs, ::fast_io::containers::bitvec<allocator> const &rhs) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> operator|(::fast_io::containers::bitvec<allocator> lhs, ::fast_io::containers::bitvec<allocator> const &rhs) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	lhs |= rhs;
 	return lhs;
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> operator^(::fast_io::containers::bitvec<allocator> lhs, ::fast_io::containers::bitvec<allocator> const &rhs) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> operator^(::fast_io::containers::bitvec<allocator> lhs, ::fast_io::containers::bitvec<allocator> const &rhs) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	lhs ^= rhs;
 	return lhs;
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> operator<<(::fast_io::containers::bitvec<allocator> lhs, typename ::fast_io::containers::bitvec<allocator>::size_type shift) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> operator<<(::fast_io::containers::bitvec<allocator> lhs, typename ::fast_io::containers::bitvec<allocator>::size_type shift) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	lhs <<= shift;
 	return lhs;
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> operator>>(::fast_io::containers::bitvec<allocator> lhs, typename ::fast_io::containers::bitvec<allocator>::size_type shift) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> operator>>(::fast_io::containers::bitvec<allocator> lhs, typename ::fast_io::containers::bitvec<allocator>::size_type shift) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	lhs >>= shift;
 	return lhs;
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> bitvec_rotl(::fast_io::containers::bitvec<allocator> v, typename ::fast_io::containers::bitvec<allocator>::difference_type shift) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> bitvec_rotl(::fast_io::containers::bitvec<allocator> v, typename ::fast_io::containers::bitvec<allocator>::difference_type shift) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	v.rotl_assign(shift);
 	return v;
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> bitvec_rotr(::fast_io::containers::bitvec<allocator> v, typename ::fast_io::containers::bitvec<allocator>::difference_type shift) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> bitvec_rotr(::fast_io::containers::bitvec<allocator> v, typename ::fast_io::containers::bitvec<allocator>::difference_type shift) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	v.rotr_assign(shift);
 	return v;
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> bitvec_bit_floor(::fast_io::containers::bitvec<allocator> v) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> bitvec_bit_floor(::fast_io::containers::bitvec<allocator> v) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	v.bit_floor_assign();
 	return v;
 }
 
 template <typename allocator>
-constexpr ::fast_io::containers::bitvec<allocator> bitvec_bit_ceil(::fast_io::containers::bitvec<allocator> v) noexcept
+constexpr ::fast_io::containers::bitvec<allocator> bitvec_bit_ceil(::fast_io::containers::bitvec<allocator> v) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_any<allocator>)
 {
 	v.bit_ceil_assign();
 	return v;

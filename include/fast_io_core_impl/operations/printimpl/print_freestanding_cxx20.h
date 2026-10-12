@@ -1,7 +1,43 @@
-#pragma once
+﻿#pragma once
 
 namespace fast_io
 {
+
+/// @brief      reserve_scatters_printable
+/// @details    That a type is reserve scatters printable
+///             is that it's composed of seperate parts
+///             that can be printed to several scatters with a compile-time-known size.
+/// @warning    Deprecated concept kept for the pre-C++26 implementation only.
+template <typename char_type, typename T>
+concept reserve_scatters_printable =
+	::std::integral<char_type> && requires(T t, ::fast_io::basic_io_scatter_t<char_type> *scatters, char_type *ptr) {
+		{
+			print_reserve_scatters_size(io_reserve_type<char_type, ::std::remove_cvref_t<T>>)
+		} -> ::std::same_as<reserve_scatters_size_result>;
+		{
+			print_reserve_scatters_define(io_reserve_type<char_type, ::std::remove_cvref_t<T>>, scatters, ptr, t)
+		} -> ::std::same_as<::fast_io::basic_reserve_scatters_define_result<char_type>>;
+	};
+
+/// @brief      Pre-C++26 scatter_printable: no runtime-reserve-size precondition.
+///             Kept local so the new implementation's stricter concept is untouched.
+template <typename char_type, typename T>
+concept cxx20_scatter_printable = ::std::integral<char_type> && requires(char_type ch, T &&t) {
+	{
+		print_scatter_define(io_reserve_type<char_type, ::std::remove_cvref_t<T>>,
+							 ::fast_io::freestanding::forward<T>(t))
+	} -> ::std::same_as<::fast_io::basic_io_scatter_t<char_type>>;
+};
+
+/// @brief      Pre-C++26 context_printable: no dynamic_reserve_printable precondition.
+template <typename char_type, typename T>
+concept cxx20_context_printable = ::std::integral<char_type> && requires(T t, char_type *ptr) {
+	requires requires(
+		typename ::std::remove_cvref_t<decltype(print_context_type(io_reserve_type<char_type, T>))>::type st) {
+		{ st.print_context_define(t, ptr, ptr) } -> ::std::same_as<context_print_result<char_type *>>;
+	};
+};
+
 
 namespace details::decay
 {
@@ -26,7 +62,7 @@ template <::std::integral char_type, typename Arg, typename... Args>
 inline constexpr contiguous_scatter_result find_continuous_scatters_n()
 {
 	contiguous_scatter_result ret{};
-	if constexpr (::fast_io::scatter_printable<char_type, Arg>)
+	if constexpr (::fast_io::cxx20_scatter_printable<char_type, Arg>)
 	{
 		if constexpr (sizeof...(Args) != 0)
 		{
@@ -125,7 +161,7 @@ inline constexpr scatter_rsv_result find_continuous_scatters_reserve_n()
 			return {res.position + 1, ::fast_io::details::intrinsics::add_or_overflow_die_chain(res.neededspace, sz), res.null};
 		}
 	}
-	else if constexpr (::fast_io::scatter_printable<char_type, Arg> && findscatter)
+	else if constexpr (::fast_io::cxx20_scatter_printable<char_type, Arg> && findscatter)
 	{
 		if constexpr (sizeof...(Args) == 0)
 		{
@@ -222,7 +258,7 @@ inline constexpr void print_control_single(output outstm, T t)
 	using value_type = ::std::remove_cvref_t<T>;
 	constexpr bool asan_activated{::fast_io::details::asan_state::current == ::fast_io::details::asan_state::activate};
 	constexpr auto lfch{char_literal_v<u8'\n', char_type>};
-	if constexpr (scatter_printable<char_type, value_type>)
+	if constexpr (cxx20_scatter_printable<char_type, value_type>)
 	{
 #if 0
 		basic_io_scatter_t<char_type> scatter;
@@ -301,7 +337,7 @@ inline constexpr void print_control_single(output outstm, T t)
 		}
 		else
 		{
-			::fast_io::operations::decay::write_all_decay(outstm, scatter_res.base, scatter_res.base + scatter_res.len);
+			::fast_io::operations::decay::write_all_decay(outstm, scatter_res.base, scatter_res.len);
 		}
 	}
 	else if constexpr (reserve_printable<char_type, value_type>)
@@ -369,7 +405,7 @@ inline constexpr void print_control_single(output outstm, T t)
 					}
 					else [[unlikely]]
 					{
-						::fast_io::operations::decay::write_all_decay(outstm, buffer, bcurr);
+						::fast_io::operations::decay::write_all_decay(outstm, buffer, static_cast<::std::size_t>(bcurr - buffer));
 					}
 				}
 			}
@@ -382,7 +418,7 @@ inline constexpr void print_control_single(output outstm, T t)
 					*i = lfch;
 					++i;
 				}
-				::fast_io::operations::decay::write_all_decay(outstm, buffer, i);
+				::fast_io::operations::decay::write_all_decay(outstm, buffer, static_cast<::std::size_t>(i - buffer));
 			}
 		}
 	}
@@ -456,7 +492,7 @@ inline constexpr void print_control_single(output outstm, T t)
 				else
 					[[unlikely]]
 				{
-					::fast_io::operations::decay::write_all_decay(outstm, toptr, it);
+					::fast_io::operations::decay::write_all_decay(outstm, toptr, static_cast<::std::size_t>(it - toptr));
 				}
 			}
 			else
@@ -468,7 +504,7 @@ inline constexpr void print_control_single(output outstm, T t)
 					*it = lfch;
 					++it;
 				}
-				::fast_io::operations::decay::write_all_decay(outstm, newptr.ptr, it);
+				::fast_io::operations::decay::write_all_decay(outstm, newptr.ptr, static_cast<::std::size_t>(it - newptr.ptr));
 			}
 		}
 	}
@@ -515,7 +551,7 @@ inline constexpr void print_control_single(output outstm, T t)
 	{
 		// todo?
 	}
-	else if constexpr (context_printable<char_type, value_type>)
+	else if constexpr (cxx20_context_printable<char_type, value_type>)
 	{
 		typename ::std::remove_cvref_t<decltype(print_context_type(io_reserve_type<char_type, value_type>))>::type st;
 		constexpr ::std::size_t reserved_size{32u};
@@ -556,7 +592,7 @@ inline constexpr void print_control_single(output outstm, T t)
 										*resit = lfch;
 										++resit;
 									}
-									::fast_io::operations::decay::write_all_decay(outstm, buffer, resit);
+									::fast_io::operations::decay::write_all_decay(outstm, buffer, static_cast<::std::size_t>(resit - buffer));
 									if (done)
 									{
 										return;
@@ -564,7 +600,7 @@ inline constexpr void print_control_single(output outstm, T t)
 								}
 								else
 								{
-									::fast_io::operations::decay::write_all_decay(outstm, buffer, resit);
+									::fast_io::operations::decay::write_all_decay(outstm, buffer, static_cast<::std::size_t>(resit - buffer));
 									if (done)
 									{
 										return;
@@ -605,7 +641,7 @@ inline constexpr void print_control_single(output outstm, T t)
 						*resit = lfch;
 						++resit;
 					}
-					::fast_io::operations::decay::write_all_decay(outstm, buffer, resit);
+					::fast_io::operations::decay::write_all_decay(outstm, buffer, static_cast<::std::size_t>(resit - buffer));
 					if (done)
 					{
 						return;
@@ -613,7 +649,7 @@ inline constexpr void print_control_single(output outstm, T t)
 				}
 				else
 				{
-					::fast_io::operations::decay::write_all_decay(outstm, buffer, resit);
+					::fast_io::operations::decay::write_all_decay(outstm, buffer, static_cast<::std::size_t>(resit - buffer));
 					if (done)
 					{
 						return;
@@ -649,7 +685,7 @@ inline constexpr char_type* printrsvcontiguousimpl(char_type* iter,Arg arg,Args.
 	{
 		ret = find_continuous_scatters_n<char_type,Args...>();
 	}
-	if constexpr(::fast_io::scatter_printable<char_type,Arg>)
+	if constexpr(::fast_io::cxx20_scatter_printable<char_type,Arg>)
 	{
 		return {ret.position+1,ret.neededspace,ret.hasdynamicreserve};
 	}
@@ -979,7 +1015,7 @@ inline constexpr auto print_n_scatters_reserve(basic_io_scatter_t<scattertype> *
 				}
 			}
 		}
-		else if constexpr (::fast_io::scatter_printable<char_type, nocvreft>)
+		else if constexpr (::fast_io::cxx20_scatter_printable<char_type, nocvreft>)
 		{
 			if constexpr (::std::same_as<nocvreft, basic_io_scatter_t<scattertype>>)
 			{
@@ -1145,7 +1181,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm, T t, Args... arg
 						*ptred = ::fast_io::char_literal_v<u8'\n', char_type>;
 						++ptred;
 					}
-					::fast_io::operations::decay::write_all_decay(optstm, buffer, ptred);
+					::fast_io::operations::decay::write_all_decay(optstm, buffer, static_cast<::std::size_t>(ptred - buffer));
 				}
 				else if constexpr (res.hasreserve)
 				{
@@ -1167,7 +1203,7 @@ inline constexpr void print_controls_impl(outputstmtype optstm, T t, Args... arg
 							*ptred = ::fast_io::char_literal_v<u8'\n', char_type>;
 							++ptred;
 						}
-						::fast_io::operations::decay::write_all_decay(optstm, buffer, ptred);
+						::fast_io::operations::decay::write_all_decay(optstm, buffer, static_cast<::std::size_t>(ptred - buffer));
 					}
 				}
 			}
@@ -1325,7 +1361,7 @@ inline constexpr void print_controls_buffer_impl(outputstmtype optstm, T t, Args
 					}
 					else [[unlikely]]
 					{
-						::fast_io::operations::decay::write_all_decay(optstm, buffer, bcurr);
+						::fast_io::operations::decay::write_all_decay(optstm, buffer, static_cast<::std::size_t>(bcurr - buffer));
 					}
 				}
 				if constexpr (rsvresult.position != n)
@@ -1411,8 +1447,8 @@ template <typename char_type, typename... Args>
 concept print_freestanding_params_okay =
 	::std::integral<char_type> &&
 	((::fast_io::printable<char_type, Args> || ::fast_io::reserve_printable<char_type, Args> ||
-	  ::fast_io::dynamic_reserve_printable<char_type, Args> || ::fast_io::scatter_printable<char_type, Args> ||
-	  ::fast_io::reserve_scatters_printable<char_type, Args> || ::fast_io::context_printable<char_type, Args> ||
+	  ::fast_io::dynamic_reserve_printable<char_type, Args> || ::fast_io::cxx20_scatter_printable<char_type, Args> ||
+	  ::fast_io::reserve_scatters_printable<char_type, Args> || ::fast_io::cxx20_context_printable<char_type, Args> ||
 	  ::fast_io::transcode_imaginary_printable<char_type, Args> || ::std::same_as<::std::remove_cvref_t<Args>, ::fast_io::io_null_t>) &&
 	 ...);
 

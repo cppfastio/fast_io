@@ -272,7 +272,6 @@ FAST_IO_DLLIMPORT FAST_IO_GNU_MALLOC void *FAST_IO_WINSTDCALL RtlAllocateHeap(vo
 FAST_IO_DLLIMPORT char unsigned FAST_IO_WINSTDCALL RtlFreeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlFreeHeap, 12);
 FAST_IO_DLLIMPORT peb *FAST_IO_WINSTDCALL RtlGetCurrentPeb() noexcept FAST_IO_WINSTDCALL_RENAME(RtlGetCurrentPeb, 0);
 FAST_IO_DLLIMPORT void *FAST_IO_WINSTDCALL RtlReAllocateHeap(void *, ::std::uint_least32_t, void *, ::std::size_t) noexcept FAST_IO_WINSTDCALL_RENAME(RtlReAllocateHeap, 16);
-FAST_IO_DLLIMPORT ::std::size_t FAST_IO_WINSTDCALL RtlSizeHeap(void *, ::std::uint_least32_t, void *) noexcept FAST_IO_WINSTDCALL_RENAME(RtlSizeHeap, 12);
 
 #if (defined(__GNUC__) || defined(__clang__)) && \
 	(defined(__aarch64__) || defined(__arm64ec__))

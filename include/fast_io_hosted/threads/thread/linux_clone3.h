@@ -52,18 +52,15 @@ private:
 	[[gnu::noreturn]]
 	inline static constexpr void child_entry(child_ctx<F, A...> *ctx) noexcept
 	{
-#ifdef FAST_IO_CPP_EXCEPTIONS
-		try
-#endif
+		FAST_IO_HERBCEPTIONS_TRY
 		{
 			apply(ctx->func, ctx->args);
 		}
-#ifdef FAST_IO_CPP_EXCEPTIONS
-		catch (...)
+		FAST_IO_HERBCEPTIONS_CATCH_ALL
 		{
 			::fast_io::fast_terminate();
 		}
-#endif
+
 		// Kernel-dependent CLONE_CHILD_CLEARTID is cleared to 0 upon exit and wakes the futex
 
 		// libc will auto destroy stack_
@@ -77,6 +74,7 @@ public:
 	template <typename Func, typename... Args>
 		requires std::invocable<Func, Args...>
 	inline constexpr linux_clone3_thread(Func &&func, Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		// Assume the returned address is 16 aligned
 		this->stack_ = thread_stack_type_allocator::allocate(1u);
@@ -176,6 +174,7 @@ public:
 	}
 
 	inline constexpr void join()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (!this->joinable()) [[unlikely]]
 		{

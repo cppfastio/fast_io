@@ -16,8 +16,7 @@ inline constexpr auto k512scalar{create_k512scalar()};
 
 #if __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
-#endif
-#if __has_cpp_attribute(msvc::forceinline)
+#elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
 inline constexpr void sha512_round(::std::uint_least64_t T1, ::std::uint_least64_t a, ::std::uint_least64_t b,

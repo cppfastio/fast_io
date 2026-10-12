@@ -10,6 +10,8 @@ template <typename instmtype>
 #endif
 inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype insm, io_scatter_t const *pscatters,
 																	   ::std::size_t n)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires ::fast_io::operations::decay::defines::bytes_readable<instmtype>
 {
 	using char_type = typename instmtype::input_char_type;
 	if constexpr (::fast_io::operations::decay::defines::has_scatter_read_some_bytes_underflow_define<instmtype>)
@@ -22,8 +24,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 		{
 			auto [baseb, len] = pscatters[i];
 			::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(baseb))};
-			auto ed{base + len};
-			auto written{::fast_io::details::read_some_bytes_impl(insm, base, ed)};
+			auto written{::fast_io::details::read_some_bytes_impl(insm, base, len)};
 			::std::size_t sz{static_cast<::std::size_t>(written - base)};
 			if (sz != len)
 			{
@@ -76,6 +77,8 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 template <typename instmtype>
 inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(instmtype insm, io_scatter_t const *pscatters,
 																  ::std::size_t n)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires(::fast_io::operations::decay::defines::bytes_readable<instmtype> || ::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
@@ -87,8 +90,8 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(instmtype insm
 	else if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 	{
 		using char_type = typename instmtype::input_char_type;
-		char_type *curr{ibuffer_curr(insm)};
-		char_type *ed{ibuffer_end(insm)};
+		auto curr{ibuffer_curr(insm)};
+		auto ed{ibuffer_end(insm)};
 
 		::std::size_t buffptrdiff{static_cast<::std::size_t>(ed - curr)};
 		auto i{pscatters}, e{pscatters + n};
@@ -103,7 +106,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_impl(instmtype insm
 					[[__gnu__::__may_alias__]]
 #endif
 					= char_type *;
-				::fast_io::details::non_overlapped_copy_n(curr, len, reinterpret_cast<char_type_ptr>(base));
+				::fast_io::details::non_overlapped_copy_n(curr, len, reinterpret_cast<char_type_ptr>(const_cast<void *>(base)));
 				curr += len;
 				buffptrdiff -= len;
 			}
@@ -133,6 +136,8 @@ template <typename instmtype>
 [[__gnu__::__cold__]]
 #endif
 inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatter_t const *pscatters, ::std::size_t n)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires ::fast_io::operations::decay::defines::bytes_readable<instmtype>
 {
 	using char_type = typename instmtype::input_char_type;
 	if constexpr (::fast_io::operations::decay::defines::has_scatter_read_all_bytes_underflow_define<instmtype>)
@@ -145,7 +150,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatte
 		{
 			auto [basep, len] = *i;
 			::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(basep))};
-			::fast_io::details::read_all_bytes_impl(insm, base, base + len);
+			::fast_io::details::read_all_bytes_impl(insm, base, len);
 		}
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_read_all_bytes_underflow_define<instmtype>)
@@ -154,7 +159,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatte
 		{
 			auto [basep, len] = *i;
 			::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(basep))};
-			::fast_io::details::read_all_bytes_impl(insm, base, base + len);
+			::fast_io::details::read_all_bytes_impl(insm, base, len);
 		}
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_scatter_read_some_bytes_underflow_define<instmtype>)
@@ -169,14 +174,14 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatte
 			}
 			if (!retpos)
 			{
-				::fast_io::throw_parse_code(::fast_io::parse_code::end_of_file);
+				::fast_io::herbceptions::throws_parse_errc(::fast_io::freestanding::parse_errc::end_of_file);
 			}
 			::std::size_t pisc{ret.position_in_scatter};
 			if (pisc)
 			{
 				auto pi = pscatters[ret.position];
-				::std::byte *base{reinterpret_cast<::std::byte *>(pi.base)};
-				::fast_io::details::read_all_bytes_impl(insm, base + pisc, base + pi.len);
+				::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(pi.base))};
+				::fast_io::details::read_all_bytes_impl(insm, base + pisc, pi.len - pisc);
 				++retpos;
 			}
 			pscatters += retpos;
@@ -189,7 +194,7 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatte
 		{
 			auto [basep, len] = *i;
 			::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(basep))};
-			::fast_io::details::read_all_bytes_impl(insm, base, base + len);
+			::fast_io::details::read_all_bytes_impl(insm, base, len);
 		}
 	}
 	else if constexpr (sizeof(char_type) == 1 &&
@@ -226,6 +231,8 @@ inline constexpr void scatter_read_all_bytes_cold_impl(instmtype insm, io_scatte
 
 template <typename instmtype>
 inline constexpr void scatter_read_all_bytes_impl(instmtype insm, io_scatter_t const *pscatters, ::std::size_t n)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
+	requires(::fast_io::operations::decay::defines::bytes_readable<instmtype> || ::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 	{
@@ -237,8 +244,8 @@ inline constexpr void scatter_read_all_bytes_impl(instmtype insm, io_scatter_t c
 	else if constexpr (::fast_io::operations::decay::defines::has_ibuffer_basic_operations<instmtype>)
 	{
 		using char_type = typename instmtype::input_char_type;
-		char_type *curr{ibuffer_curr(insm)};
-		char_type *ed{ibuffer_end(insm)};
+		auto curr{ibuffer_curr(insm)};
+		auto ed{ibuffer_end(insm)};
 
 		::std::size_t buffptrdiff{static_cast<::std::size_t>(ed - curr)};
 
@@ -254,7 +261,7 @@ inline constexpr void scatter_read_all_bytes_impl(instmtype insm, io_scatter_t c
 					[[__gnu__::__may_alias__]]
 #endif
 					= char_type *;
-				::fast_io::details::non_overlapped_copy_n(curr, len, reinterpret_cast<char_type_ptr>(base));
+				::fast_io::details::non_overlapped_copy_n(curr, len, reinterpret_cast<char_type_ptr>(const_cast<void *>(base)));
 				curr += len;
 				buffptrdiff -= len;
 			}

@@ -18,6 +18,7 @@ namespace fast_io::details
 [[__gnu__::__const__]]
 #endif
 inline ::fast_io::install_path get_module_install_path_from_argv0(char const *argv0)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!argv0) [[unlikely]]
 	{

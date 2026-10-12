@@ -1,4 +1,4 @@
-﻿#include <fast_io.h>
+#include <fast_io.h>
 
 #include <fast_io_core_impl/allocation/adapters.h>
 #include <fast_io_core_impl/allocation/c_malloc.h>
@@ -12,9 +12,9 @@ namespace
 
 struct allocate_only_allocator
 {
-	static inline void *allocate(::std::size_t n) noexcept
+	static inline void *allocate_die(::std::size_t n) noexcept
 	{
-		return ::fast_io::c_malloc_allocator::allocate(n);
+		return ::fast_io::c_malloc_allocator::allocate_die(n);
 	}
 
 	static inline void deallocate_n(void *p, ::std::size_t) noexcept

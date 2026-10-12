@@ -8,22 +8,22 @@ namespace details
 
 template <::std::integral char_type, typename traits_type>
 inline char_type *streambuf_read_report_eh_impl(::std::basic_streambuf<char_type, traits_type> *fb, char_type *src,
-												char_type *last)
+												::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	return src + fb->sgetn(src, static_cast<::std::streamsize>(last - src));
+	return src + fb->sgetn(src, static_cast<::std::streamsize>(count));
 }
 
 template <::std::integral char_type, typename traits_type>
 inline char_type const *streambuf_write_report_eh_impl(::std::basic_streambuf<char_type, traits_type> *fb,
-													   char_type const *src, char_type const *last)
+													   char_type const *src, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	return src + fb->sputn(src, static_cast<::std::streamsize>(last - src));
+	return src + fb->sputn(src, static_cast<::std::streamsize>(count));
 }
 
 template <::std::integral char_type, typename traits_type>
 inline ::fast_io::intfpos_t streambuf_seek_common(::std::basic_streambuf<char_type, traits_type> *fb,
 												  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir,
-												  ::std::ios_base::openmode md)
+												  ::std::ios_base::openmode md) FAST_IO_HERBCEPTIONS_THROWS
 {
 	using offtype = typename traits_type::off_type;
 	using postype = typename traits_type::pos_type;
@@ -74,27 +74,28 @@ inline ::fast_io::intfpos_t streambuf_seek_common(::std::basic_streambuf<char_ty
 
 template <::std::integral char_type, typename traits_type>
 inline ::fast_io::intfpos_t streambuf_seek_input(::std::basic_streambuf<char_type, traits_type> *fb,
-												 ::fast_io::intfpos_t off, ::fast_io::seekdir sdir)
+												 ::fast_io::intfpos_t off, ::fast_io::seekdir sdir) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::streambuf_seek_common(fb, off, sdir, ::std::ios_base::in);
 }
 
 template <::std::integral char_type, typename traits_type>
 inline ::fast_io::intfpos_t streambuf_seek_output(::std::basic_streambuf<char_type, traits_type> *fb,
-												  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir)
+												  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::streambuf_seek_common(fb, off, sdir, ::std::ios_base::out);
 }
 
 template <::std::integral char_type, typename traits_type>
 inline ::fast_io::intfpos_t streambuf_seek_io(::std::basic_streambuf<char_type, traits_type> *fb,
-											  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir)
+											  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::streambuf_seek_common(fb, off, sdir, ::std::ios_base::in | ::std::ios_base::out);
 }
 
 template <::std::integral char_type, typename traits_type>
 inline void streambuf_flush_impl(::std::basic_streambuf<char_type, traits_type> *fb)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (fb->pubsync() == -1)
 	{
@@ -106,38 +107,39 @@ inline void streambuf_flush_impl(::std::basic_streambuf<char_type, traits_type> 
 
 template <typename T>
 inline ::fast_io::intfpos_t io_stream_seek_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
-												  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir)
+												  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::streambuf_seek_io(fb.fb, off, sdir);
 }
 
 template <typename T>
 inline ::fast_io::intfpos_t input_stream_seek_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
-													 ::fast_io::intfpos_t off, ::fast_io::seekdir sdir)
+													 ::fast_io::intfpos_t off, ::fast_io::seekdir sdir) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::streambuf_seek_input(fb.fb, off, sdir);
 }
 
 template <typename T>
 inline ::fast_io::intfpos_t output_stream_seek_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
-													  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir)
+													  ::fast_io::intfpos_t off, ::fast_io::seekdir sdir) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::streambuf_seek_output(fb.fb, off, sdir);
 }
 
 template <typename T>
 inline typename T::char_type const *write_some_overflow_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
-															   typename T::char_type const *first,
-															   typename T::char_type const *last)
+															   typename T::char_type const *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::streambuf_write_report_eh_impl(fb.fb, first, last);
+	return ::fast_io::details::streambuf_write_report_eh_impl(fb.fb, first, count);
 }
 
 template <typename T>
 inline typename T::char_type *read_some_underflow_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
-														 typename T::char_type *first, typename T::char_type *last)
+														 typename T::char_type *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::streambuf_read_report_eh_impl(fb.fb, first, last);
+	return ::fast_io::details::streambuf_read_report_eh_impl(fb.fb, first, count);
 }
 
 template <typename T>
@@ -149,6 +151,7 @@ io_stream_ref_define(::fast_io::basic_general_streambuf_io_observer<T> other) no
 
 template <typename T>
 inline constexpr void io_stream_buffer_flush_define(::fast_io::basic_general_streambuf_io_observer<T> other)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::streambuf_flush_impl(other.fb);
 }

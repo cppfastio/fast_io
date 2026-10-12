@@ -9,6 +9,7 @@ class basic_general_raw_ostream_io_observer
 {
 public:
 	using char_type = ch_type;
+	using output_char_type = char_type;
 	using native_handle_type = T *;
 	native_handle_type os{};
 	inline constexpr native_handle_type release() noexcept
@@ -58,11 +59,11 @@ io_value_handle(basic_general_raw_ostream_io_observer<char_type, T> osiob) noexc
 namespace details
 {
 
-inline void llvm_ostream_write_impl(::llvm::raw_ostream *os, void const *first_vptr, void const *last_vptr)
+inline void llvm_ostream_write_impl(::llvm::raw_ostream *os, void const *first_vptr, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	char const *first{reinterpret_cast<char const *>(first_vptr)};
-	char const *last{reinterpret_cast<char const *>(last_vptr)};
-	::std::size_t const n{static_cast<::std::size_t>(last - first)};
+	::std::size_t const n{count};
 	auto os_obuffer_curr_ptr{llvm_raw_ostream_obuffer_ptr<1, char>(os)};
 	auto os_obuffer_end_ptr{llvm_raw_ostream_obuffer_ptr<2, char>(os)};
 	::std::size_t const remain_size{static_cast<::std::size_t>(os_obuffer_end_ptr - os_obuffer_curr_ptr)};
@@ -77,14 +78,17 @@ inline void llvm_ostream_write_impl(::llvm::raw_ostream *os, void const *first_v
 
 } // namespace details
 
-template <::std::integral char_type, typename T, ::std::contiguous_iterator Iter>
-inline constexpr void write(basic_general_raw_ostream_io_observer<char_type, T> osiob, Iter first, Iter last)
+template <::std::integral char_type, typename T>
+inline constexpr void write_all_bytes_overflow_define(basic_general_raw_ostream_io_observer<char_type, T> osiob,
+													  ::std::byte const *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	::fast_io::llvm::details::llvm_ostream_write_impl(osiob.os, ::std::to_address(first), ::std::to_address(last));
+	::fast_io::llvm::details::llvm_ostream_write_impl(osiob.os, first, count);
 }
 
 template <::std::integral char_type, typename T>
-inline constexpr void flush(basic_general_raw_ostream_io_observer<char_type, T> osiob)
+inline constexpr void io_stream_buffer_flush_define(basic_general_raw_ostream_io_observer<char_type, T> osiob)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	osiob.os->flush();
 }

@@ -152,6 +152,7 @@ public:
 	basic_qt_file &operator=(basic_qt_file const &) = delete;
 
 	void close()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->qdevice) [[likely]]
 		{

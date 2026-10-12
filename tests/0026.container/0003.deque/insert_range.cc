@@ -24,7 +24,7 @@ inline void test_iterator_ops()
 	auto check_equal = [&](auto const &msg, ::std::source_location src = ::std::source_location::current()) {
 		if (dq.size() != ref.size())
 		{
-			::fast_io::io::panicln(src, "\tsize mismatch: ", msg);
+			::fast_io::io::panicln(src, "\tsize mismatch: ", ::fast_io::mnp::os_c_str(msg));
 		}
 
 		for (std::size_t i{}; i != dq.size(); ++i)
@@ -199,13 +199,13 @@ inline void test_insert_range_index()
 	auto check_equal = [&](auto const &msg, ::std::source_location src = ::std::source_location::current()) {
 		if (dq.size() != ref.size())
 		{
-			::fast_io::io::panicln(src, "\tERROR: size mismatch: ", msg);
+			::fast_io::io::panicln(src, "\tERROR: size mismatch: ", ::fast_io::mnp::os_c_str(msg));
 		}
 		for (::std::size_t i{}; i != dq.size(); ++i)
 		{
 			if (dq[i] != ref[i])
 			{
-				::fast_io::io::panicln(src, "\tERROR: value mismatch at index ", i, "\tdq[i]=", dq[i], "\tref[i]=", ref[i], " : ", msg);
+				::fast_io::io::panicln(src, "\tERROR: value mismatch at index ", i, "\tdq[i]=", dq[i], "\tref[i]=", ref[i], " : ", ::fast_io::mnp::os_c_str(msg));
 			}
 		}
 	};

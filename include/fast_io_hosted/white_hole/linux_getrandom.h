@@ -24,9 +24,10 @@ inline constexpr basic_linux_getrandom<char_type> input_stream_ref_define(basic_
 
 namespace details
 {
-inline ::std::byte *linux_getrandom_read_some_bytes_define_impl(unsigned flags, ::std::byte *first, ::std::byte *last)
+inline ::std::byte *linux_getrandom_read_some_bytes_define_impl(unsigned flags, ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	::std::size_t sz{static_cast<::std::size_t>(last - first)};
+	::std::size_t sz{count};
 #if defined(__linux__) && defined(__NR_getrandom)
 	auto ret{system_call<__NR_getrandom, ::std::ptrdiff_t>(first, sz, flags)};
 	system_call_throw_error(ret);
@@ -42,10 +43,10 @@ inline ::std::byte *linux_getrandom_read_some_bytes_define_impl(unsigned flags, 
 } // namespace details
 
 template <::std::integral char_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_linux_getrandom<char_type> g, ::std::byte *first,
-													 ::std::byte *last)
+inline ::std::byte *read_some_bytes_underflow_define(basic_linux_getrandom<char_type> g, ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::linux_getrandom_read_some_bytes_define_impl(g.flags, first, last);
+	return ::fast_io::details::linux_getrandom_read_some_bytes_define_impl(g.flags, first, count);
 }
 
 using linux_getrandom = basic_linux_getrandom<char>;

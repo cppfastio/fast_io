@@ -14,6 +14,7 @@ print_alias_define(io_alias_t, manip::drainage<source_type &> source)
 
 template <output_stream dest_type, output_stream source_type>
 inline constexpr void drain(dest_type &&dest, source_type &&source)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	print_freestanding(::std::forward<dest_type>(dest), drainage(source));
 }

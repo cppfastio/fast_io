@@ -168,7 +168,7 @@ template <typename CharT, typename Traits>
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
-inline ::std::basic_filebuf<CharT, Traits> *open_libcxx_hacked_basic_filebuf_impl(FILE *fp, ::std::ios::openmode mode)
+inline ::std::basic_filebuf<CharT, Traits> *open_libcxx_hacked_basic_filebuf_impl(FILE *fp, ::std::ios::openmode mode) FAST_IO_HERBCEPTIONS_THROWS
 {
 	filebuf_guard<CharT, Traits> guard(new ::std::basic_filebuf<CharT, Traits>);
 	::std::basic_filebuf<CharT, Traits> *fb{guard.new_filebuf};
@@ -183,7 +183,7 @@ template <typename CharT, typename Traits>
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
-inline ::std::basic_filebuf<CharT, Traits> *open_hacked_basic_filebuf(FILE *fp, ::fast_io::open_mode mode)
+inline ::std::basic_filebuf<CharT, Traits> *open_hacked_basic_filebuf(FILE *fp, ::fast_io::open_mode mode) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return open_libcxx_hacked_basic_filebuf_impl<CharT, Traits>(
 		fp, ::fast_io::details::calculate_fstream_file_open_mode(mode));

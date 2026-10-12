@@ -16,7 +16,7 @@
 struct benchmark_return
 {
 	std::size_t total_size{};
-	fast_io::unix_timestamp timestamp{};
+	fast_io::posix_statx_timestamp64 timestamp{};
 };
 
 template <typename Func>

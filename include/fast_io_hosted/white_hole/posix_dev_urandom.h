@@ -14,17 +14,17 @@ public:
 	template <typename... Args>
 		requires((sizeof...(Args) != 0) && ::std::constructible_from<handle_type, Args...>)
 	inline explicit constexpr basic_generic_posix_dev_urandom(Args &&...args)
-		: handle(::std::forward<Args>(args)...)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!(::std::is_nothrow_constructible_v<handletype, Args...>)) : handle(::std::forward<Args>(args)...)
 	{
 	}
 
 	inline constexpr basic_generic_posix_dev_urandom()
-		: handle(u8"/dev/urandom", ::fast_io::open_mode::in)
+		FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(handle_type(u8"/dev/urandom", ::fast_io::open_mode::in)) : handle(u8"/dev/urandom", ::fast_io::open_mode::in)
 	{}
-	inline explicit constexpr basic_generic_posix_dev_urandom(::std::nullptr_t)
+	inline explicit constexpr basic_generic_posix_dev_urandom(::std::nullptr_t) FAST_IO_HERBCEPTIONS_THROWS_IF(!::std::is_nothrow_default_constructible_v<handle_type>)
 	{}
 
-	inline constexpr void close()
+	inline constexpr void close() FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(handle.close())
 	{
 		handle.close();
 	}
@@ -60,7 +60,7 @@ io_stream_ref_define(basic_generic_posix_dev_urandom_ref<observetype, char_type>
 }
 
 template <typename observetype, ::std::integral char_type>
-inline constexpr void io_stream_require_secure_clear_define(basic_generic_posix_dev_urandom_ref<observetype, char_type>)
+inline constexpr void io_stream_require_secure_clear_define(basic_generic_posix_dev_urandom_ref<observetype, char_type>) noexcept
 {
 }
 

@@ -31,7 +31,7 @@ inline void test_from_range_with_vector()
 		{
 			if (dq[i] != vec[i])
 			{
-				::fast_io::io::panicln("value mismatch at ", i, " with from_range vector");
+				::fast_io::io::panic("value mismatch at ", i, " with from_range vector\n");
 			}
 		}
 	}
@@ -40,7 +40,7 @@ inline void test_from_range_with_vector()
 	{
 		::std::vector<::std::size_t> empty_vec;
 		::fast_io::deque<::std::size_t> dq(::fast_io::freestanding::from_range, empty_vec);
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::fast_io::io::panic("deque from empty range should be empty\n");
 		}

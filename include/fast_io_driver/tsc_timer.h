@@ -33,6 +33,7 @@ struct tsc_timer
 	[[__gnu__::__cold__]]
 #endif
 	~tsc_timer()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		::fast_io::io::perr(fast_io::u8err(), s, u8":", current_tsc() - t0, u8" cycles\n");
 	}

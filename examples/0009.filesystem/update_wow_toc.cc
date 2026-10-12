@@ -48,9 +48,9 @@ int main(int argc, char **argv)
 			auto itvwsze{it + vw.size()};
 			auto nextn{std::find(itvwsze, ed, u8'\n')};
 			fast_io::obuf_file obf(drt(ent));
-			fast_io::operations::write_all(obf, bg, itvwsze);
+			fast_io::operations::write_all(obf, bg, static_cast<::std::size_t>(itvwsze - bg));
 			print(obf, versionstring);
-			fast_io::operations::write_all(obf, nextn, ed);
+			fast_io::operations::write_all(obf, nextn, static_cast<::std::size_t>(ed - nextn));
 		}
 	}
 }

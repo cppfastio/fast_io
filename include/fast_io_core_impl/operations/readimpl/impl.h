@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "throws_if.h"
 #include "basis.h"
 #include "scatter.h"
 #include "scatterbytes.h"

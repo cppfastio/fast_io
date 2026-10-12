@@ -25,6 +25,7 @@ namespace fast_io::details
 [[__gnu__::__const__]]
 #endif
 inline ::fast_io::install_path get_module_install_path()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	char buffer[PATH_MAX + 1];
 	::std::uint_least32_t size{PATH_MAX};

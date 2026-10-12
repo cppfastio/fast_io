@@ -24,6 +24,7 @@ struct basic_file_wrapper : public T
 	}
 	inline constexpr basic_file_wrapper(native_fs_dirent fsdirent, open_mode m = interface_mode,
 								 perms p = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(T(fsdirent, m | interface_mode, p))
 		: T(fsdirent, m | interface_mode, p)
 	{
 	}
@@ -31,17 +32,20 @@ struct basic_file_wrapper : public T
 	template <::fast_io::constructible_to_os_c_str pathtype>
 	inline explicit constexpr basic_file_wrapper(pathtype const &filename, open_mode om = interface_mode,
 										  perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(T(filename, om | interface_mode, pm))
 		: T(filename, om | interface_mode, pm)
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str pathtype>
 	inline explicit constexpr basic_file_wrapper(native_at_entry nate, pathtype const &filename, open_mode om = interface_mode,
 										  perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(T(nate, filename, om | interface_mode, pm))
 		: T(nate, filename, om | interface_mode, pm)
 	{
 	}
 
 	inline explicit constexpr basic_file_wrapper(io_temp_t)
+		FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(T(io_temp))
 		: T(io_temp)
 	{}
 };

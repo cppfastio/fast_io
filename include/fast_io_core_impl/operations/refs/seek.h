@@ -12,6 +12,13 @@ concept has_input_stream_buffer_flush_define = requires(T t) { input_stream_buff
 template <typename T>
 concept has_output_stream_buffer_flush_define = requires(T t) { output_stream_buffer_flush_define(t); };
 
+/* a buffered stream can hand its pending output allocation to a detached
+ * guard for zero-copy async writes; the guard must expose
+ * pending_bytes() -> {first, count} */
+template <typename T>
+concept has_output_stream_buffer_detach_define =
+	requires(T t) { { output_stream_buffer_detach_define(t).pending_bytes() }; };
+
 template <typename T>
 concept has_io_stream_buffer_flush_define = requires(T t) { io_stream_buffer_flush_define(t); };
 

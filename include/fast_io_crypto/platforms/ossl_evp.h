@@ -11,6 +11,7 @@ class ossl_evp_guard
 public:
 	EVP_MD_CTX *pmdctx{};
 	inline ossl_evp_guard()
+		FAST_IO_HERBCEPTIONS_THROWS
 		: pmdctx{noexcept_call(EVP_MD_CTX_new)}
 	{
 		if (this->pmdctx == nullptr)
@@ -36,6 +37,7 @@ public:
 };
 
 inline EVP_MD_CTX *create_ossl_evp_hash_impl(char const *name)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto md{noexcept_call(EVP_get_digestbyname, name)};
 	if (md == nullptr)
@@ -52,7 +54,7 @@ inline EVP_MD_CTX *create_ossl_evp_hash_impl(char const *name)
 
 struct ossl_evp_common
 {
-	inline EVP_MD_CTX *operator()(char const *name) const
+	inline EVP_MD_CTX *operator()(char const *name) const FAST_IO_HERBCEPTIONS_THROWS
 	{
 		return create_ossl_evp_hash_impl(name);
 	}
@@ -60,6 +62,7 @@ struct ossl_evp_common
 
 template <constructible_to_os_c_str T>
 inline EVP_MD_CTX *create_ossl_evp_hash_impl(T const &t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return posix_api_common(t, ossl_evp_common{});
 }
@@ -77,6 +80,7 @@ public:
 	inline constexpr ossl_evp_hash_file() noexcept = default;
 	template <constructible_to_os_c_str T>
 	inline explicit ossl_evp_hash_file(T const &s)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: pmdctx{::fast_io::details::create_ossl_evp_hash_impl(s)}
 	{
 	}
@@ -90,6 +94,7 @@ public:
 		}
 	}
 	inline void update(::std::byte const *first, ::std::byte const *last)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (!noexcept_call(EVP_DigestUpdate, this->pmdctx, first, static_cast<::std::size_t>(last - first)))
 		{
@@ -105,6 +110,7 @@ public:
 		return this->pmdctx;
 	}
 	inline void do_final()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		int unsigned u{};
 		if (!noexcept_call(EVP_DigestFinal_ex, this->pmdctx, reinterpret_cast<char unsigned *>(digest_buffer),

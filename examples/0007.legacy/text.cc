@@ -20,56 +20,35 @@ int main()
 	fast_io::posix_tzset();
 	auto unix_ts{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 	using namespace fast_io::mnp;
-	println(cfl, "Unix Timestamp:", unix_ts,
-			"\n"
-			"Universe Timestamp:",
-			static_cast<fast_io::universe_timestamp>(unix_ts),
-			"\n"
-			"UTC:",
-			utc(unix_ts), "\n", "Local:", local(unix_ts), " Timezone:", fast_io::timezone_name(), "\n",
+	print(cfl, "Unix Timestamp:", unix_ts,
+		  "\nUTC:", utc(unix_ts),
+		  "\nLocal:", local(unix_ts), " Timezone:", fast_io::timezone_name());
 #ifdef __clang__
-			"LLVM clang ", __clang_version__,
-			"\n"
+	print(cfl, "\nLLVM clang " __clang_version__);
 #elif defined(__GNUC__)
-			"gcc ", __GNUC__,
-			"\n"
+	print(cfl, "\ngcc ", __GNUC__);
 #elif defined(_MSC_VER)
-			"Microsoft Visual C++ ", _MSC_VER,
-			"\n"
+	print(cfl, "\nMicrosoft Visual C++ ", _MSC_VER);
 #else
-			"Unknown C++ compiler\n"
+	print(cfl, "\nUnknown C++ compiler");
 #endif
 #if defined(__GLIBCXX__)
-			"GCC libstdc++ ",
-			__GLIBCXX__,
-			"\n"
+	print(cfl, "\nGCC libstdc++ ", __GLIBCXX__);
 #elif defined(_LIBCPP_VERSION)
-			"LLVM libc++ ",
-			_LIBCPP_VERSION,
-			"\n"
+	print(cfl, "\nLLVM libc++ " _LIBCPP_VERSION);
 #elif defined(_MSVC_STL_UPDATE)
-			"Microsoft Visual C++ STL ",
-			_MSVC_STL_UPDATE,
-			"\n"
+	print(cfl, "\nMicrosoft Visual C++ STL ", _MSVC_STL_UPDATE);
 #else
-			"Unknown C++ standard library\n"
+	print(cfl, "\nUnknown C++ standard library");
 #endif
-			"FILE*:",
-			handlevw(cfl.fp),
-			"\n"
-			"fd:",
-			handlevw(static_cast<fast_io::posix_io_observer>(cfl).fd)
+	println(cfl,
+			"\nFILE*:", handlevw(cfl.fp),
+			"\nfd:", handlevw(static_cast<fast_io::posix_io_observer>(cfl).fd)
 #ifdef _WIN32
-				,
-			"\n"
-			"win32 HANDLE:",
-			handlevw(static_cast<fast_io::win32_io_observer>(cfl).handle),
-			"\n"
-			"zw HANDLE:",
-			handlevw(static_cast<fast_io::zw_io_observer>(cfl).handle),
-			"\n"
-			"nt HANDLE:",
-			handlevw(static_cast<fast_io::nt_io_observer>(cfl).handle)
+						 ,
+			"\nwin32 HANDLE:", handlevw(static_cast<fast_io::win32_io_observer>(cfl).handle),
+			"\nzw HANDLE:", handlevw(static_cast<fast_io::zw_io_observer>(cfl).handle),
+			"\nnt HANDLE:", handlevw(static_cast<fast_io::nt_io_observer>(cfl).handle)
 #endif
 	);
 }

@@ -39,7 +39,7 @@ inline void test_insert_range_from_array()
 		{
 			if (dq[i] != ref[i])
 			{
-				::fast_io::io::panicln("value mismatch at ", i, " after insert_range from vector");
+				::fast_io::io::panic("value mismatch at ", i, " after insert_range from vector\n");
 			}
 		}
 	}
@@ -69,7 +69,7 @@ inline void test_insert_range_from_array()
 		{
 			if (dq[i] != ref[i])
 			{
-				::fast_io::io::panicln("value mismatch at ", i, " after insert_range at front");
+				::fast_io::io::panic("value mismatch at ", i, " after insert_range at front\n");
 			}
 		}
 	}
@@ -99,7 +99,7 @@ inline void test_insert_range_from_array()
 		{
 			if (dq[i] != ref[i])
 			{
-				::fast_io::io::panicln("value mismatch at ", i, " after insert_range at end");
+				::fast_io::io::panic("value mismatch at ", i, " after insert_range at end\n");
 			}
 		}
 	}

@@ -5,7 +5,7 @@
 #endif
 
 #if __cpp_impl_three_way_comparison >= 201907L
-#if __cpp_lib_three_way_comparison >= 201907L
+#if __cpp_lib_three_way_comparison >= 201907L && !defined(__HERBCEPTIONS__)
 namespace fast_io::freestanding
 {
 using ::std::lexicographical_compare_three_way;
@@ -14,9 +14,20 @@ using ::std::compare_three_way;
 #else
 namespace fast_io::freestanding
 {
+struct compare_three_way
+{
+	template <typename T, typename U>
+	inline constexpr auto operator()(T const &t, U const &u) const
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(t <=> u))
+	{
+		return t <=> u;
+	}
+};
+
 template <typename I1, typename I2, typename Cmp>
 constexpr auto lexicographical_compare_three_way(I1 f1, I1 l1, I2 f2, I2 l2, Cmp comp)
-	-> decltype(comp(*f1, *f2))
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(comp(*f1, *f2)))
+		-> decltype(comp(*f1, *f2))
 {
 	using ret_t = decltype(comp(*f1, *f2));
 	static_assert(::std::disjunction_v<
@@ -41,8 +52,9 @@ constexpr auto lexicographical_compare_three_way(I1 f1, I1 l1, I2 f2, I2 l2, Cmp
 
 template <typename I1, typename I2>
 constexpr auto lexicographical_compare_three_way(I1 f1, I1 l1, I2 f2, I2 l2)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::fast_io::freestanding::compare_three_way{}(*f1, *f2)))
 {
-	return lexicographical_compare_three_way(f1, l1, f2, l2, ::std::compare_three_way{});
+	return lexicographical_compare_three_way(f1, l1, f2, l2, ::fast_io::freestanding::compare_three_way{});
 }
 
 } // namespace fast_io::freestanding
@@ -60,7 +72,7 @@ using ::std::copy_backward;
 using ::std::move_backward;
 using ::std::fill;
 using ::std::fill_n;
-}
+} // namespace fast_io::freestanding
 
 #else
 namespace fast_io::freestanding
@@ -142,7 +154,7 @@ inline constexpr void fill(fwd_iter first, fwd_iter last, T value)
 					  ::std::is_scalar_v<fwd_iter> && sizeof(fwd_iter) == 1)
 		{
 #ifdef __cpp_if_consteval
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 #else
 			if (!__builtin_is_constant_evaluated())
 #endif
@@ -173,7 +185,7 @@ inline constexpr void fill_n(fwd_iter first, ::std::size_t n, T value)
 					  ::std::is_scalar_v<fwd_iter> && sizeof(fwd_iter) == 1)
 		{
 #ifdef __cpp_if_consteval
-			if !consteval
+			FAST_IO_IF_NOT_CONSTEVAL
 #else
 			if (!__builtin_is_constant_evaluated())
 #endif
@@ -223,6 +235,7 @@ template <::std::input_iterator Iter, ::std::integral T>
 // requires (::std::is_trivially_copyable_v<T>&&sizeof(T)<=sizeof(::std::uintmax_t))
 	requires(::std::is_trivially_copyable_v<T>)
 inline constexpr Iter find(Iter first, Iter last, T t)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == t))
 {
 	for (; first != last; ++first)
 	{
@@ -260,6 +273,7 @@ struct mismatch_result
 
 template <::std::input_iterator Iter, ::std::input_iterator Iter2>
 inline constexpr mismatch_result<Iter, Iter2> my_mismatch(Iter first1, Iter last1, Iter2 first2, Iter2 last2)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first1 == *first2))
 {
 	for (; first1 != last1 && first2 != last2 && *first1 == *first2; ++first2)
 	{
@@ -270,6 +284,8 @@ inline constexpr mismatch_result<Iter, Iter2> my_mismatch(Iter first1, Iter last
 template <::std::forward_iterator ForwardIt, class T>
 	requires(::std::is_trivially_copyable_v<T>)
 inline constexpr ForwardIt remove(ForwardIt first, ForwardIt last, T value)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == value) ||
+								   !noexcept(*first = ::std::move(*first)))
 {
 	first = find(first, last, value);
 	if (first != last)
@@ -294,6 +310,7 @@ template <::std::random_access_iterator input_iter, ::std::random_access_iterato
 			 (::std::is_trivially_copyable_v<::std::iter_value_t<input_iter>> &&
 			  ::std::is_trivially_copyable_v<::std::iter_value_t<output_iter>>))
 inline constexpr output_iter overlapped_copy_trivial(input_iter first, ::std::size_t n, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(result[0] = ::std::move(first[0])))
 {
 	::fast_io::details::overlapped_copy_buffer_ptr<::std::iter_value_t<output_iter>> tempbuffer(n);
 	auto tempbufferptr{tempbuffer.ptr};
@@ -301,8 +318,7 @@ inline constexpr output_iter overlapped_copy_trivial(input_iter first, ::std::si
 	{
 		tempbufferptr[i] = first[i];
 	}
-#if __cpp_if_consteval >= 202106L
-	if consteval
+	FAST_IO_IF_CONSTEVAL
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -310,7 +326,6 @@ inline constexpr output_iter overlapped_copy_trivial(input_iter first, ::std::si
 		}
 	}
 	else
-#endif
 	{
 		for (::std::size_t i{}; i != n; ++i)
 		{
@@ -385,6 +400,7 @@ inline
 
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size_t count, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *first))
 {
 
 	if (__builtin_is_constant_evaluated())
@@ -417,6 +433,7 @@ inline constexpr output_iter non_overlapped_copy_n(input_iter first, ::std::size
 
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter non_overlapped_copy(input_iter first, input_iter last, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *first))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -451,6 +468,7 @@ template <::std::contiguous_iterator input_iter, ::std::contiguous_iterator outp
 	requires(::std::same_as<::std::iter_value_t<input_iter>, ::std::iter_value_t<output_iter>> &&
 			 ::std::is_trivially_copyable_v<::std::iter_value_t<input_iter>>)
 inline constexpr output_iter overlapped_copy(input_iter first, input_iter last, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(result[0] = ::std::move(first[0])))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -501,6 +519,7 @@ template <::std::contiguous_iterator input_iter, ::std::contiguous_iterator outp
 	requires(::std::same_as<::std::iter_value_t<input_iter>, ::std::iter_value_t<output_iter>> &&
 			 ::std::is_trivially_copyable_v<::std::iter_value_t<input_iter>>)
 inline output_iter overlapped_copy_n(input_iter first, ::std::size_t count, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(result[0] = ::std::move(first[0])))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -539,6 +558,7 @@ inline output_iter overlapped_copy_n(input_iter first, ::std::size_t count, outp
 
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter my_copy_n(input_iter first, ::std::size_t count, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *first))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -571,6 +591,7 @@ inline constexpr output_iter my_copy_n(input_iter first, ::std::size_t count, ou
 
 template <::std::input_iterator input_iter, ::std::input_or_output_iterator output_iter>
 inline constexpr output_iter my_copy(input_iter first, input_iter second, output_iter result)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*result = *first))
 {
 	using input_value_type = ::std::iter_value_t<input_iter>;
 	using output_value_type = ::std::iter_value_t<output_iter>;
@@ -593,6 +614,7 @@ inline constexpr output_iter my_copy(input_iter first, input_iter second, output
 
 template <::std::bidirectional_iterator input_iter, ::std::bidirectional_iterator output_iter>
 inline constexpr output_iter my_copy_backward(input_iter first, input_iter last, output_iter d_last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*d_last = *last))
 {
 	if (__builtin_is_constant_evaluated())
 	{
@@ -669,6 +691,7 @@ inline constexpr bool my_compare_iter_n(input_iter first, ::std::size_t n, outpu
 
 template <::std::input_iterator InputIt1, ::std::input_iterator InputIt2>
 inline constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first1 < *first2))
 {
 	for (; (first1 != last1) && (first2 != last2); ++first2)
 	{
@@ -687,6 +710,7 @@ inline constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1, I
 
 template <::std::input_iterator InputIt1, ::std::input_iterator InputIt2>
 inline constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first1 == *first2))
 {
 	for (; first1 != last1 && first2 != last2 && *first1 == *first2; ++first2)
 	{
@@ -697,6 +721,7 @@ inline constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, In
 
 template <::std::forward_iterator ForwardIt, class T, class Compare>
 inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const &value, Compare comp)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(comp(*first, value)))
 {
 	ForwardIt it;
 	typename ::std::iterator_traits<ForwardIt>::difference_type count, step;
@@ -723,6 +748,7 @@ inline constexpr ForwardIt lower_bound(ForwardIt first, ForwardIt last, T const 
 
 template <::std::input_iterator InputIt, ::std::forward_iterator NoThrowForwardIt>
 inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last, NoThrowForwardIt d_first)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::std::is_nothrow_constructible_v<typename ::std::iterator_traits<NoThrowForwardIt>::value_type, decltype(*first)>)
 {
 	using T = typename ::std::iterator_traits<NoThrowForwardIt>::value_type;
 	struct destroyer
@@ -748,12 +774,7 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 				   (::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			::std::size_t count{static_cast<::std::size_t>(last - first)};
 			if (count) // to avoid nullptr UB
@@ -762,7 +783,6 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 			}
 			return d_first += count;
 		}
-#endif
 	}
 	destroyer d{d_first, d_first};
 	for (; first != last; ++first)
@@ -777,8 +797,9 @@ inline constexpr NoThrowForwardIt uninitialized_copy(InputIt first, InputIt last
 
 template <::std::input_iterator InputIt, ::std::forward_iterator NoThrowForwardIt>
 inline constexpr NoThrowForwardIt
-uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) noexcept(
-	::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<NoThrowForwardIt>::value_type>)
+uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!::std::is_nothrow_constructible_v<typename ::std::iterator_traits<NoThrowForwardIt>::value_type, decltype(*first)>)
 {
 	using T = typename ::std::iterator_traits<NoThrowForwardIt>::value_type;
 	struct destroyer
@@ -807,12 +828,7 @@ uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 				   (::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if (n) // to avoid nullptr UB
 			{
@@ -820,12 +836,11 @@ uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 			}
 			return d_first += n;
 		}
-#endif
 	}
 	destroyer d{d_first, d_first};
 	for (::std::size_t i{}; i != n; ++i)
 	{
-		::std::construct_at(::std::to_address(d.current), *first);
+		::new (static_cast<void *>(::std::to_address(d.current))) T(*first);
 		++d.current;
 		++first;
 	}
@@ -836,9 +851,10 @@ uninitialized_copy_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 
 template <::std::input_iterator InputIt, ::std::forward_iterator NoThrowForwardIt>
 inline constexpr NoThrowForwardIt
-uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) noexcept(
-	::std::is_nothrow_constructible_v<typename ::std::iterator_traits<NoThrowForwardIt>::value_type>) // undefined if
-																									  // throws
+uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!::std::is_nothrow_constructible_v<typename ::std::iterator_traits<NoThrowForwardIt>::value_type, decltype(::std::move(*first))>) // undefined if
+																																		  // throws
 {
 	using T = typename ::std::iterator_traits<NoThrowForwardIt>::value_type;
 	using input_iter = InputIt;
@@ -852,12 +868,7 @@ uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 				   (::std::integral<input_value_type> && ::std::integral<output_value_type> &&
 					sizeof(input_value_type) == sizeof(output_value_type))))
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if (n) // to avoid nullptr UB
 			{
@@ -865,11 +876,10 @@ uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 			}
 			return d_first += n;
 		}
-#endif
 	}
 	for (::std::size_t i{}; i != n; ++i)
 	{
-		::std::construct_at(::std::to_address(d_first), ::std::move(*first));
+		::new (static_cast<void *>(::std::to_address(d_first))) T(::std::move(*first));
 		++d_first;
 		++first;
 	}
@@ -877,78 +887,99 @@ uninitialized_move_n(InputIt first, ::std::size_t n, NoThrowForwardIt d_first) n
 }
 
 template <::std::input_iterator ForwardIt>
-inline constexpr void uninitialized_default_construct(ForwardIt first, ForwardIt last) noexcept(
-	::std::is_nothrow_default_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+inline constexpr void uninitialized_default_construct(ForwardIt first, ForwardIt last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::std::is_nothrow_default_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
 {
 	using T = typename ::std::iterator_traits<ForwardIt>::value_type;
 	if constexpr (::fast_io::freestanding::is_zero_default_constructible_v<T> &&
 				  ::std::contiguous_iterator<ForwardIt> && !::std::is_volatile_v<T>)
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			::fast_io::freestanding::my_memset(::std::to_address(first), 0, sizeof(T) * static_cast<::std::size_t>(last - first));
 			return;
 		}
-#endif
 	}
 	for (; first != last; ++first)
 	{
-		::std::construct_at(::std::to_address(first));
+		::new (static_cast<void *>(::std::to_address(first))) T;
 	}
 }
 
 template <::std::input_iterator ForwardIt>
-inline constexpr void uninitialized_default_construct_n(ForwardIt first, ::std::size_t n) noexcept(
-	::std::is_nothrow_default_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+inline constexpr void uninitialized_default_construct_n(ForwardIt first, ::std::size_t n)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::std::is_nothrow_default_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
 {
 	::fast_io::freestanding::uninitialized_default_construct(first, ::std::next(first, n));
 }
 
 template <::std::input_iterator ForwardIt, typename T>
-inline constexpr ForwardIt uninitialized_fill(ForwardIt first, ForwardIt last, T const &x) noexcept(
-	::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+inline constexpr ForwardIt uninitialized_fill(ForwardIt first, ForwardIt last, T const &x)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!::std::is_nothrow_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type, T const &>)
 {
 	using valuetype = typename ::std::iterator_traits<ForwardIt>::value_type;
 
 	if constexpr (::std::integral<valuetype> && ::std::integral<T> &&
 				  sizeof(T) == 1 && sizeof(valuetype) == 1 && ::std::contiguous_iterator<ForwardIt>)
 	{
-#if __cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			::fast_io::freestanding::my_memset(::std::to_address(first), static_cast<int>(static_cast<::std::uint_least8_t>(x)), sizeof(T) * static_cast<::std::size_t>(last - first));
 			return last;
 		}
-#endif
 	}
 
 	for (; first != last; ++first)
 	{
-		::std::construct_at(::std::to_address(first), x);
+		::new (static_cast<void *>(::std::to_address(first))) valuetype(x);
 	}
 	return last;
 }
 
 template <::std::input_iterator ForwardIt, typename T>
-inline constexpr ForwardIt uninitialized_fill_n(ForwardIt first, ::std::size_t n, T const &x) noexcept(
-	::std::is_nothrow_copy_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+inline constexpr ForwardIt uninitialized_fill_n(ForwardIt first, ::std::size_t n, T const &x)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!::std::is_nothrow_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type, T const &>)
 {
 	return ::fast_io::freestanding::uninitialized_fill(first, ::std::next(first, n), x);
 }
 
+template <::std::forward_iterator It1, ::std::forward_iterator It2>
+	requires ::std::same_as<::std::iter_value_t<It1>, ::std::iter_value_t<It2>>
+inline constexpr void iter_swap(It1 a, It2 b)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!::std::is_nothrow_move_constructible_v<::std::iter_value_t<It1>> ||
+		!::std::is_nothrow_move_assignable_v<::std::iter_value_t<It1>>)
+{
+	using valtype = ::std::iter_value_t<It1>;
+	valtype tmp(::std::move(*a));
+	*a = ::std::move(*b);
+	*b = ::std::move(tmp);
+}
+
+template <::std::bidirectional_iterator BidIt>
+inline constexpr void reverse(BidIt first, BidIt last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!::std::is_nothrow_move_constructible_v<::std::iter_value_t<BidIt>> ||
+		!::std::is_nothrow_move_assignable_v<::std::iter_value_t<BidIt>>)
+{
+	for (; first != last; ++first)
+	{
+		if (first == --last)
+		{
+			break;
+		}
+		iter_swap(first, last);
+	}
+}
+
 template <::std::forward_iterator ForwardIt>
 inline constexpr ForwardIt
-rotate(ForwardIt first, ForwardIt middle,
-	   ForwardIt last) noexcept(::std::is_nothrow_swappable_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
+rotate(ForwardIt first, ForwardIt middle, ForwardIt last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(
+		!::std::is_nothrow_move_constructible_v<typename ::std::iterator_traits<ForwardIt>::value_type> ||
+		!::std::is_nothrow_move_assignable_v<typename ::std::iterator_traits<ForwardIt>::value_type>)
 {
 	// copied from cppreference, room for improvements
 	if (first == middle)
@@ -967,7 +998,7 @@ rotate(ForwardIt first, ForwardIt middle,
 		{
 			next_read = read; // track where "first" went
 		}
-		::std::ranges::swap(*write, *read);
+		iter_swap(write, read);
 	}
 	// rotate the remaining sequence into place
 	rotate(write, next_read, last);
@@ -976,6 +1007,7 @@ rotate(ForwardIt first, ForwardIt middle,
 
 template <::std::bidirectional_iterator BidIt1, typename T>
 inline constexpr BidIt1 find_not(BidIt1 first, BidIt1 last, T const &val)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == val))
 {
 	for (; first != last && *first == val; ++first)
 	{
@@ -985,6 +1017,7 @@ inline constexpr BidIt1 find_not(BidIt1 first, BidIt1 last, T const &val)
 
 template <::std::bidirectional_iterator BidIt1, typename T>
 inline constexpr BidIt1 find_last(BidIt1 first, BidIt1 last, T const &val)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == val))
 {
 	for (auto it = last; it != first;)
 	{
@@ -999,6 +1032,7 @@ inline constexpr BidIt1 find_last(BidIt1 first, BidIt1 last, T const &val)
 
 template <::std::bidirectional_iterator BidIt1, typename T>
 inline constexpr BidIt1 find_last_not(BidIt1 first, BidIt1 last, T const &val)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first != val))
 {
 	for (auto it = last; it != first;)
 	{
@@ -1013,6 +1047,7 @@ inline constexpr BidIt1 find_last_not(BidIt1 first, BidIt1 last, T const &val)
 
 template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
 inline constexpr BidIt1 find_first_not_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*sfirst != *first))
 {
 	for (; first != last; ++first)
 	{
@@ -1030,6 +1065,7 @@ inline constexpr BidIt1 find_first_not_of(BidIt1 first, BidIt1 last, BidIt2 sfir
 
 template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
 inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*first == *sfirst))
 {
 	for (auto it = last; first != it;)
 	{
@@ -1047,6 +1083,7 @@ inline constexpr BidIt1 find_last_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, B
 
 template <::std::bidirectional_iterator BidIt1, ::std::bidirectional_iterator BidIt2>
 inline constexpr BidIt1 find_last_not_of(BidIt1 first, BidIt1 last, BidIt2 sfirst, BidIt2 slast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*sfirst != *first))
 {
 	for (auto it = last; first != it;)
 	{

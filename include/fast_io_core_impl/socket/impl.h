@@ -8,6 +8,7 @@
 
 #include "addrprt.h"
 #include "addrscn.h"
+#include "lna.h"
 
 namespace fast_io
 {
@@ -17,6 +18,10 @@ struct
 #endif
 	posix_empty_network_service
 {
+	inline explicit posix_empty_network_service(::fast_io::net_service_flags =
+													::fast_io::net_service_flags::none) noexcept
+	{
+	}
 };
 // a dummy service to make serivce work with windows at a cross platform level
 

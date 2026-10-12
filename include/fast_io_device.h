@@ -4,7 +4,7 @@
 #endif
 
 #if !defined(__cpp_concepts)
-#error "fast_io requires at least C++20 standard compiler."
+#error "fast_io requires at least a C++26 standard compiler."
 #else
 // fast_io_devices.h defines commonly used io devices and their correlated mutex verisons.
 #include "fast_io_hosted.h"

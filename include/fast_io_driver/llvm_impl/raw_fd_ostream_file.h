@@ -12,12 +12,14 @@ inline ::llvm::raw_fd_ostream *open_llvm_raw_fd_ostream_from_fd(int fd)
 }
 
 inline ::llvm::raw_fd_ostream *open_llvm_raw_fd_ostream_from_fd_dup(::llvm::raw_fd_ostream *f)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return open_llvm_raw_fd_ostream_from_fd(::fast_io::details::sys_dup(hack_fd_from_llvm_raw_fd_ostream(f)));
 }
 
 inline ::llvm::raw_fd_ostream *open_llvm_raw_fd_ostream_from_fd_dup2(::llvm::raw_fd_ostream *thisfdos,
 																	 ::llvm::raw_fd_ostream *otherfdos)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (thisfdos == nullptr)
 	{
@@ -61,6 +63,7 @@ public:
 		other.os = nullptr;
 	}
 	basic_raw_fd_ostream_file(basic_raw_fd_ostream_file const &other)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_raw_fd_ostream_io_observer<char_type>{open_llvm_raw_fd_ostream_from_fd_dup(other.os)}
 	{
 	}
@@ -78,11 +81,13 @@ public:
 	// windows specific. open posix file from win32 io handle
 	template <win32_family family>
 	basic_raw_fd_ostream_file(basic_win32_family_file<family, char_type> &&win32_handle, open_mode mode)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_raw_fd_ostream_file(basic_posix_file<char_type>(::std::move(win32_handle), mode), mode)
 	{
 	}
 	template <nt_family family>
 	basic_raw_fd_ostream_file(basic_nt_family_file<family, char_type> &&nt_handle, open_mode mode)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_raw_fd_ostream_file(basic_posix_file<char_type>(::std::move(nt_handle), mode), mode)
 	{
 	}
@@ -110,16 +115,19 @@ public:
 	}
 
 	basic_raw_fd_ostream_file(native_fs_dirent fsdirent, open_mode om, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_raw_fd_ostream_file(basic_posix_file<char_type>(fsdirent, om, pm), om)
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
 	basic_raw_fd_ostream_file(T const &file, open_mode om, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_raw_fd_ostream_file(basic_posix_file<char_type>(file, om, pm), om)
 	{
 	}
 	template <::fast_io::constructible_to_os_c_str T>
 	basic_raw_fd_ostream_file(native_at_entry nate, T const &file, open_mode om, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_raw_fd_ostream_file(basic_posix_file<char_type>(nate, file, om, pm), om)
 	{
 	}

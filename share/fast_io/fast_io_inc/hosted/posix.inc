@@ -4,8 +4,7 @@ export namespace fast_io
     using ::fast_io::posix_stdin_number;
     using ::fast_io::posix_stdout_number;
     using ::fast_io::posix_stderr_number;
-    using ::fast_io::posix_domain_value;
-
+    
 #if ((!defined(_WIN32) || defined(__WINE__)) || defined(__CYGWIN__)) && !defined(__wasm__)
     namespace posix
     {

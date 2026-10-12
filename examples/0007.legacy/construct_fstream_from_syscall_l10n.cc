@@ -32,11 +32,8 @@ FILE* or fstream apis
 	print(fiob, "Hello World from fast_io::filebuf_io_observer\n");
 	fast_io::posix_tzset();
 	auto unix_ts{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
-	fast_io::native_l10n l10n(u8"");
+	auto l10n{::fast_io::l10n::load_l10n(u8"")};
 	println(imbue(l10n, fast_io::c_stdout()), "Unix Timestamp:", unix_ts,
-			"\n"
-			"Universe Timestamp:",
-			static_cast<fast_io::universe_timestamp>(unix_ts),
 			"\n"
 			"UTC iso8601:",
 			utc(unix_ts), "\n", "UTC date_fmt:", fast_io::mnp::date_fmt(utc(unix_ts)),
@@ -137,7 +134,6 @@ D:\hg\fast_io\examples\0007.legacy>set L10N=ja_JP.UTF-8
 
 D:\hg\fast_io\examples\0007.legacy>construct_fstream_from_syscall_l10n
 Unix Timestamp:1,666,670,097.1489241
-Universe Timestamp:434,602,343,095,905,297.1489241
 UTC iso8601:2022-10-25T03:54:57.1489241Z
 UTC date_fmt:2022年 10月 25日 火曜日 03:54:57 +00:00
 UTC era_d_t_fmt:令和4年10月25日 03時54分57秒

@@ -15,7 +15,7 @@ struct basic_posix_api_encoding_converter
 		requires(sizeof(from_char_type) != 1)
 	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
-	constexpr
+		constexpr
 #endif
 		basic_posix_api_encoding_converter(from_char_type const *p, ::std::size_t sz) noexcept
 		: buffer_capacity(details::cal_decorated_reserve_size<sizeof(from_char_type), sizeof(char_type)>(sz)),
@@ -29,7 +29,7 @@ struct basic_posix_api_encoding_converter
 		requires(sizeof(from_char_type) == 1)
 	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
-	constexpr
+		constexpr
 #endif
 		basic_posix_api_encoding_converter(from_char_type const *p, ::std::size_t sz) noexcept
 		: buffer_capacity(sz), buffer_data(details::allocate_iobuf_space<char_type, allocator_type>(
@@ -58,9 +58,9 @@ struct basic_posix_api_encoding_converter
 	inline basic_posix_api_encoding_converter &operator=(basic_posix_api_encoding_converter const &) = delete;
 	inline
 #if __cpp_constexpr >= 201907L && __cpp_constexpr_dynamic_alloc >= 201907L && __cpp_lib_is_constant_evaluated >= 201811L
-	constexpr
+		constexpr
 #endif
-		~basic_posix_api_encoding_converter()
+		~basic_posix_api_encoding_converter() noexcept
 	{
 		details::deallocate_iobuf_space<false, char_type, allocator_type>(buffer_data, buffer_capacity + 1);
 
@@ -78,7 +78,7 @@ template <typename allocator_type = typename posix_api_encoding_converter::alloc
 		  typename Func>
 	requires(sizeof(char_type) != sizeof(char))
 inline auto posix_api_common_codecvt_impl(char_type const *filename_c_str, ::std::size_t filename_c_str_len,
-										  Func callback)
+										  Func callback) FAST_IO_HERBCEPTIONS_THROWS
 {
 	basic_posix_api_encoding_converter<allocator_type> converter(filename_c_str, filename_c_str_len);
 	if constexpr (::fast_io::details::api_common_has_size_overload<char, Func>)
@@ -95,7 +95,7 @@ inline auto posix_api_common_codecvt_impl(char_type const *filename_c_str, ::std
 
 template <typename allocator_type = typename posix_api_encoding_converter::allocator_type, typename T, typename Func>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline auto posix_api_common(T const &t, Func callback)
+inline auto posix_api_common(T const &t, Func callback) FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool has_size_overload{::fast_io::details::api_common_has_size_overload<char, Func>};
 	if constexpr (::std::is_array_v<T>)

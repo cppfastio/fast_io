@@ -59,7 +59,7 @@ namespace details
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
 #endif
-inline constexpr auto posix_clock_id_to_native_value(posix_clock_id pcid)
+inline constexpr auto posix_clock_id_to_native_value(posix_clock_id pcid) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(_WIN32) && !defined(__CYGWIN__)
 	switch (pcid)
@@ -180,7 +180,7 @@ inline constexpr auto posix_clock_id_to_native_value(posix_clock_id pcid)
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
 #endif
-inline ::std::int_least64_t win32_query_performance_frequency()
+inline ::std::int_least64_t win32_query_performance_frequency() FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::int_least64_t val{};
 	if (!::fast_io::win32::QueryPerformanceFrequency(__builtin_addressof(val)))
@@ -197,10 +197,10 @@ inline ::std::int_least64_t win32_query_performance_frequency()
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
 #endif
-inline unix_timestamp win32_query_performance_frequency_to_unix_timestamp()
+inline posix_statx_timestamp64 win32_query_performance_frequency_to_posix_statx_timestamp64() FAST_IO_HERBCEPTIONS_THROWS
 {
-	return {0, uint_least64_subseconds_per_second /
-				   static_cast<::std::uint_least64_t>(win32_query_performance_frequency())};
+	return {0, static_cast<::std::uint_least32_t>(1000000000ULL /
+												 static_cast<::std::uint_least64_t>(win32_query_performance_frequency()))};
 }
 #endif
 } // namespace details
@@ -209,8 +209,8 @@ inline
 #if (defined(_WIN32) && !defined(__CYGWIN__)) || defined(__MSDOS__)
 	constexpr
 #endif
-	unix_timestamp
-	posix_clock_getres([[maybe_unused]] posix_clock_id pclk_id)
+	posix_statx_timestamp64
+	posix_clock_getres([[maybe_unused]] posix_clock_id pclk_id) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if (defined(_WIN32) && !defined(__CYGWIN__))
 	switch (pclk_id)
@@ -222,15 +222,13 @@ inline
 	case posix_clock_id::process_cputime_id:
 	case posix_clock_id::thread_cputime_id:
 	{
-		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
-		constexpr unix_timestamp constexpr_stamp{0, mul_factor};
-		return constexpr_stamp;
+		return {0, 100u};
 	}
 	case posix_clock_id::monotonic:
 	case posix_clock_id::monotonic_coarse:
 	case posix_clock_id::monotonic_raw:
 	case posix_clock_id::boottime:
-		return ::fast_io::details::win32_query_performance_frequency_to_unix_timestamp();
+		return ::fast_io::details::win32_query_performance_frequency_to_posix_statx_timestamp64();
 		break;
 	default:
 		throw_win32_error(0x00000057);
@@ -247,14 +245,12 @@ inline
 	case posix_clock_id::monotonic_raw:
 	case posix_clock_id::boottime:
 	{
-		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 100u};
-		return {0, mul_factor};
+		return {0, 10000000u};
 	}
 	case posix_clock_id::process_cputime_id:
 	case posix_clock_id::thread_cputime_id:
 	{
-		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / ::fast_io::posix::libc_uclocks_per_sec};
-		return {0, mul_factor};
+		return {0, static_cast<::std::uint_least32_t>(1000000000ULL / ::fast_io::posix::libc_uclocks_per_sec)};
 	}
 	default:
 		throw_posix_error(EINVAL);
@@ -269,9 +265,8 @@ inline
 	{
 		throw_posix_error();
 	}
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
 	return {static_cast<::std::int_least64_t>(res.tv_sec),
-			static_cast<::std::uint_least64_t>(res.tv_nsec) * mul_factor};
+			static_cast<::std::uint_least32_t>(res.tv_nsec)};
 #else
 	throw_posix_error(EINVAL);
 #endif
@@ -280,7 +275,7 @@ inline
 namespace win32::details
 {
 
-inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
+inline posix_statx_timestamp64 win32_posix_clock_gettime_tai_impl() noexcept
 {
 	::fast_io::win32::filetime ftm;
 #if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
@@ -288,24 +283,25 @@ inline unix_timestamp win32_posix_clock_gettime_tai_impl() noexcept
 #else
 	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
 #endif
-	return static_cast<unix_timestamp>(to_win32_timestamp(ftm));
+	return ::fast_io::to_posix_statx_timestamp64_ftu64(::fast_io::win32::filetime_to_uint_least64_t(ftm));
 }
 
-inline unix_timestamp win32_posix_clock_gettime_uptime_impl()
+inline posix_statx_timestamp64 win32_posix_clock_gettime_uptime_impl()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t ftm;
 	if (!::fast_io::win32::QueryUnbiasedInterruptTime(__builtin_addressof(ftm)))
 	{
 		throw_win32_error();
 	}
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
 	::std::uint_least64_t seconds{ftm / 10000000ULL};
-	::std::uint_least64_t subseconds{ftm % 10000000ULL};
-	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
+	::std::uint_least32_t nanoseconds{static_cast<::std::uint_least32_t>(ftm % 10000000ULL) * 100u};
+	return {static_cast<::std::int_least64_t>(seconds), nanoseconds};
 }
 
 template <bool is_thread>
-inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
+inline posix_statx_timestamp64 win32_posix_clock_gettime_process_or_thread_time_impl()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::filetime creation_time, exit_time, kernel_time, user_time;
 	if constexpr (is_thread)
@@ -331,12 +327,12 @@ inline unix_timestamp win32_posix_clock_gettime_process_or_thread_time_impl()
 	::std::uint_least64_t ftm{::fast_io::win32::filetime_to_uint_least64_t(kernel_time) +
 							  ::fast_io::win32::filetime_to_uint_least64_t(user_time)};
 	::std::uint_least64_t seconds{ftm / 10000000ULL};
-	::std::uint_least64_t subseconds{ftm % 10000000ULL};
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
-	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
+	::std::uint_least32_t nanoseconds{static_cast<::std::uint_least32_t>(ftm % 10000000ULL) * 100u};
+	return {static_cast<::std::int_least64_t>(seconds), nanoseconds};
 }
 
-inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
+inline posix_statx_timestamp64 win32_posix_clock_gettime_boottime_impl()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t freq{
 		static_cast<::std::uint_least64_t>(::fast_io::details::win32_query_performance_frequency())};
@@ -350,25 +346,25 @@ inline unix_timestamp win32_posix_clock_gettime_boottime_impl()
 		throw_win32_error(0x00000057);
 	}
 	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
-	::std::uint_least64_t val{uint_least64_subseconds_per_second / freq};
+	::std::uint_least64_t val{1000000000ULL / freq};
 	::std::uint_least64_t dv{ucounter / freq};
 	::std::uint_least64_t md{ucounter % freq};
-	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
-						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
+	return {static_cast<::std::int_least64_t>(dv),
+			static_cast<::std::uint_least32_t>(md * val)};
 }
 
 } // namespace win32::details
 
 namespace win32::nt::details
 {
-inline unix_timestamp nt602_posix_clock_gettime_tai_impl() noexcept
+inline posix_statx_timestamp64 nt602_posix_clock_gettime_tai_impl() noexcept
 {
-	return static_cast<unix_timestamp>(::fast_io::win32::to_win32_timestamp_ftu64(
-		static_cast<::std::uint_least64_t>(::fast_io::win32::nt::RtlGetSystemTimePrecise())));
+	return ::fast_io::to_posix_statx_timestamp64_ftu64(
+		static_cast<::std::uint_least64_t>(::fast_io::win32::nt::RtlGetSystemTimePrecise()));
 }
 
 template <bool zw>
-inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
+inline posix_statx_timestamp64 nt_posix_clock_gettime_boottime_impl() FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::int_least64_t counter;
 	::std::int_least64_t freq;
@@ -377,25 +373,25 @@ inline unix_timestamp nt_posix_clock_gettime_boottime_impl() noexcept
 
 	if (status) [[unlikely]]
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 
 	if (counter < 0 || freq <= 0) [[unlikely]]
 	{
-		throw_nt_error(0xC0000003);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000003);
 	}
 
 	::std::uint_least64_t ucounter{static_cast<::std::uint_least64_t>(counter)};
 	::std::uint_least64_t ufreq{static_cast<::std::uint_least64_t>(freq)};
-	::std::uint_least64_t val{::fast_io::uint_least64_subseconds_per_second / ufreq};
+	::std::uint_least64_t val{1000000000ULL / ufreq};
 	::std::uint_least64_t dv{ucounter / ufreq};
 	::std::uint_least64_t md{ucounter % ufreq};
-	return unix_timestamp{static_cast<::std::int_least64_t>(dv),
-						  static_cast<::std::uint_least64_t>(md * static_cast<::std::uint_least64_t>(val))};
+	return {static_cast<::std::int_least64_t>(dv),
+			static_cast<::std::uint_least32_t>(md * val)};
 }
 
 template <bool zw, bool is_thread>
-inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
+inline posix_statx_timestamp64 nt_posix_clock_gettime_process_or_thread_time_impl() FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::int_least64_t kernel_time;
 	::std::int_least64_t user_time;
@@ -415,7 +411,7 @@ inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
 
 		if (status) [[unlikely]]
 		{
-			throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 
 		kernel_time = kut.KernelTime;
@@ -436,7 +432,7 @@ inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
 
 		if (status) [[unlikely]]
 		{
-			throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 
 		kernel_time = kut.KernelTime;
@@ -445,19 +441,19 @@ inline unix_timestamp nt_posix_clock_gettime_process_or_thread_time_impl()
 	::std::uint_least64_t ftm{static_cast<::std::uint_least64_t>(kernel_time) +
 							  static_cast<::std::uint_least64_t>(user_time)};
 	::std::uint_least64_t seconds{ftm / 10000000ULL};
-	::std::uint_least64_t subseconds{ftm % 10000000ULL};
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
-	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
+	::std::uint_least32_t nanoseconds{static_cast<::std::uint_least32_t>(ftm % 10000000ULL) * 100u};
+	return {static_cast<::std::int_least64_t>(seconds), nanoseconds};
 }
 
 template <bool zw>
 inline ::std::uint_least64_t nt10x_get_auxiliary_counter_frequency()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t feq;
 	auto status{::fast_io::win32::nt::nt_query_auxiliary_counter_frequency<zw>(__builtin_addressof(feq))};
 	if (status) [[unlikely]]
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 	return feq;
 }
@@ -492,6 +488,7 @@ extern unsigned int my_dos_settime(my_dos_time_t *) noexcept __asm__("__dos_sett
 extern unsigned int my_dos_setdate(my_dos_date_t *) noexcept __asm__("__dos_setdate");
 
 inline iso8601_timestamp get_dos_iso8601_timestamp()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	my_dos_date_t dos_date;
 	my_dos_time_t dos_time;
@@ -504,26 +501,27 @@ inline iso8601_timestamp get_dos_iso8601_timestamp()
 		if (dos_date.day == dos_date_temp.day && dos_date.month == dos_date_temp.month &&
 			dos_date.year == dos_date_temp.year && dos_date.dayofweek == dos_date_temp.dayofweek)
 		{
-			constexpr ::std::uint_least64_t factor{uint_least64_subseconds_per_second / 100u};
 			return {static_cast<::std::int_least64_t>(dos_date.year),
 					dos_date.month,
 					dos_date.day,
 					dos_time.hour,
 					dos_time.minute,
 					dos_time.second,
-					static_cast<::std::uint_least64_t>(dos_time.hsecond) * factor,
+					static_cast<::std::uint_least32_t>(dos_time.hsecond) * 10000000u,
 					0};
 		}
 	}
 	throw_posix_error(EINVAL);
 }
 
-inline unix_timestamp get_dos_unix_timestamp()
+inline posix_statx_timestamp64 get_dos_unix_timestamp()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return to_timestamp(get_dos_iso8601_timestamp());
+	return to_posix_statx_timestamp64(get_dos_iso8601_timestamp());
 }
 
-inline void set_dos_unix_timestamp(unix_timestamp tsp)
+inline void set_dos_unix_timestamp(posix_statx_timestamp64 tsp)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	iso8601_timestamp iso8601{utc(tsp)};
 	if (iso8601.year > static_cast<::std::int_least64_t>(UINT_LEAST16_MAX) || iso8601.year < 0)
@@ -533,11 +531,10 @@ inline void set_dos_unix_timestamp(unix_timestamp tsp)
 	::std::uint_least16_t year{static_cast<::std::uint_least16_t>(iso8601.year)};
 	my_dos_date_t dos_date{static_cast<::std::uint_least8_t>(iso8601.day),
 						   static_cast<::std::uint_least8_t>(iso8601.month), year, 0};
-	constexpr ::std::uint_least64_t precision{uint_least64_subseconds_per_second / 100ULL};
 	my_dos_time_t dos_time{static_cast<::std::uint_least8_t>(iso8601.hours),
 						   static_cast<::std::uint_least8_t>(iso8601.minutes),
 						   static_cast<::std::uint_least8_t>(iso8601.seconds),
-						   static_cast<::std::uint_least8_t>(iso8601.subseconds / precision)};
+						   static_cast<::std::uint_least8_t>(iso8601.nanoseconds / 10000000u)};
 	if (!my_dos_setdate(__builtin_addressof(dos_date)))
 	{
 		throw_posix_error();
@@ -570,7 +567,7 @@ inline void set_dos_unix_timestamp(unix_timestamp tsp)
 } // namespace details
 #endif
 
-inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_id)
+inline posix_statx_timestamp64 posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_id) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if (defined(_WIN32) && !defined(__CYGWIN__))
 	switch (pclk_id)
@@ -628,9 +625,8 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 		::std::uint_least64_t u{static_cast<::std::uint_least64_t>(::fast_io::posix::libc_dos_uclock())};
 		::std::uint_least64_t seconds{u / ::fast_io::posix::libc_uclocks_per_sec};
 		::std::uint_least64_t subseconds{u % ::fast_io::posix::libc_uclocks_per_sec};
-		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / ::fast_io::posix::libc_uclocks_per_sec};
 		return {static_cast<::std::int_least64_t>(seconds),
-				static_cast<::std::uint_least64_t>(subseconds) * mul_factor};
+				static_cast<::std::uint_least32_t>(subseconds * (1000000000ULL / ::fast_io::posix::libc_uclocks_per_sec))};
 	}
 	default:
 		throw_posix_error(EINVAL);
@@ -651,58 +647,50 @@ inline unix_timestamp posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_i
 		throw_posix_error();
 	}
 
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
 	return {static_cast<::std::int_least64_t>(res.tv_sec),
-			static_cast<::std::uint_least64_t>(res.tv_nsec) * mul_factor};
+			static_cast<::std::uint_least32_t>(res.tv_nsec)};
 #else
 	throw_posix_error(EINVAL);
 #endif
 }
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-template <nt_family family, ::std::int_least64_t off_to_epoch>
+template <nt_family family>
 	requires(family == nt_family::nt || family == nt_family::zw)
-inline basic_timestamp<off_to_epoch> nt_family_clock_settime(posix_clock_id pclk_id,
-															 basic_timestamp<off_to_epoch> timestamp)
+inline posix_statx_timestamp64 nt_family_clock_settime(posix_clock_id pclk_id,
+													   posix_statx_timestamp64 timestamp)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	if constexpr (::std::same_as<win32_timestamp, basic_timestamp<off_to_epoch>>)
+	switch (pclk_id)
 	{
-		switch (pclk_id)
+	case posix_clock_id::realtime:
+	case posix_clock_id::realtime_alarm:
+	case posix_clock_id::realtime_coarse:
+	case posix_clock_id::tai:
+	{
+		::std::int_least64_t tms(static_cast<::std::int_least64_t>(
+			(static_cast<::std::uint_least64_t>(timestamp.tv_sec) + 11644473600ULL) * 10000000ULL +
+			timestamp.tv_nsec / 100u));
+		::std::int_least64_t old_tms{};
+		auto ntstatus{win32::nt::nt_set_system_time<(family == nt_family::zw)>(__builtin_addressof(tms), __builtin_addressof(old_tms))};
+		if (ntstatus)
 		{
-		case posix_clock_id::realtime:
-		case posix_clock_id::realtime_alarm:
-		case posix_clock_id::realtime_coarse:
-		case posix_clock_id::tai:
-		{
-			constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 10000000u};
-			::std::int_least64_t tms(static_cast<::std::int_least64_t>(static_cast<::std::uint_least64_t>(timestamp.seconds) * 10000000ULL +
-																	   timestamp.subseconds / mul_factor));
-			::std::int_least64_t old_tms{};
-			auto ntstatus{win32::nt::nt_set_system_time<(family == nt_family::zw)>(__builtin_addressof(tms), __builtin_addressof(old_tms))};
-			if (ntstatus)
-			{
-				throw_nt_error(ntstatus);
-			}
-			return to_win32_timestamp_ftu64(old_tms);
+			::fast_io::herbceptions::throws_nt_errc_with_value(ntstatus);
 		}
-		default:
-			throw_nt_error(0xC00000EF);
-		};
+		return ::fast_io::to_posix_statx_timestamp64_ftu64(static_cast<::std::uint_least64_t>(old_tms));
 	}
-	else
-	{
-		return static_cast<basic_timestamp<off_to_epoch>>(
-			nt_family_clock_settime<family>(pclk_id, static_cast<win32_timestamp>(timestamp)));
-	}
+	default:
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC00000EF);
+	};
 }
-template <::std::int_least64_t off_to_epoch>
-inline basic_timestamp<off_to_epoch> nt_clock_settime(posix_clock_id pclk_id, basic_timestamp<off_to_epoch> timestamp)
+inline posix_statx_timestamp64 nt_clock_settime(posix_clock_id pclk_id, posix_statx_timestamp64 timestamp)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return nt_family_clock_settime<nt_family::nt>(pclk_id, timestamp);
 }
 
-template <::std::int_least64_t off_to_epoch>
-inline basic_timestamp<off_to_epoch> zw_clock_settime(posix_clock_id pclk_id, basic_timestamp<off_to_epoch> timestamp)
+inline posix_statx_timestamp64 zw_clock_settime(posix_clock_id pclk_id, posix_statx_timestamp64 timestamp)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return nt_family_clock_settime<nt_family::zw>(pclk_id, timestamp);
 }
@@ -714,6 +702,7 @@ namespace details
 #if !defined(_WIN32) || defined(__CYGWIN__)
 template <bool local_tm>
 inline struct tm unix_timestamp_to_tm_impl(::std::int_least64_t seconds)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(_TIME64_T)
 	time64_t val{static_cast<time64_t>(seconds)};
@@ -782,15 +771,15 @@ inline struct tm unix_timestamp_to_tm_impl(::std::int_least64_t seconds)
 }
 #endif
 
-inline iso8601_timestamp to_iso8601_local_impl(::std::int_least64_t seconds, ::std::uint_least64_t subseconds,
-											   [[maybe_unused]] bool dstadj)
+inline iso8601_timestamp to_iso8601_local_impl(::std::int_least64_t seconds, ::std::uint_least32_t nanoseconds,
+											   [[maybe_unused]] bool dstadj) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__MSDOS__) || (defined(__NEWLIB__) && !defined(__CYGWIN__)) || defined(__AVR__) || defined(_PICOLIBC__) || \
 	defined(__serenity__)
-	return unix_timestamp_to_iso8601_tsp_impl_internal(seconds, subseconds, 0);
+	return unix_timestamp_to_iso8601_tsp_impl_internal(seconds, nanoseconds, 0);
 #elif (defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)) || defined(__linux__)
 #if (defined(__MINGW32__) && !__has_include(<_mingw_stat64.h>))
-	return unix_timestamp_to_iso8601_tsp_impl_internal(seconds, subseconds, 0);
+	return unix_timestamp_to_iso8601_tsp_impl_internal(seconds, nanoseconds, 0);
 #else
 	long tm_gmtoff{};
 #if (defined(_MSC_VER) || defined(_UCRT)) && !defined(__BIONIC__)
@@ -831,7 +820,7 @@ inline iso8601_timestamp to_iso8601_local_impl(::std::int_least64_t seconds, ::s
 	constexpr ::std::uint_least32_t ul32_zero{};
 	return unix_timestamp_to_iso8601_tsp_impl_internal(
 		sub_overflow(seconds, static_cast<::std::int_least64_t>(static_cast<::std::int_least32_t>(dst_timezone))),
-		subseconds, static_cast<::std::int_least32_t>(ul32_zero - dst_timezone));
+		nanoseconds, static_cast<::std::int_least32_t>(ul32_zero - dst_timezone));
 #endif
 #else
 	auto res{unix_timestamp_to_tm_impl<true>(seconds)};
@@ -890,7 +879,7 @@ inline iso8601_timestamp to_iso8601_local_impl(::std::int_least64_t seconds, ::s
 			static_cast<::std::uint_least8_t>(res.tm_hour),
 			static_cast<::std::uint_least8_t>(res.tm_min),
 			static_cast<::std::uint_least8_t>(res.tm_sec),
-			subseconds,
+			nanoseconds,
 			static_cast<::std::int_least32_t>(tm_gmtoff)};
 #endif
 }
@@ -934,7 +923,7 @@ inline bool posix_daylight() noexcept
 	return hours != 0;
 }
 
-inline win32_timezone_t timezone_name(bool is_dst = posix_daylight())
+inline win32_timezone_t timezone_name(bool is_dst = posix_daylight()) FAST_IO_HERBCEPTIONS_THROWS
 {
 	win32_timezone_t tzt{.is_dst = is_dst};
 	constexpr ::std::size_t zero{};
@@ -955,7 +944,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char, win32_
 namespace details
 {
 
-inline ::std::size_t print_reserve_define_impl(char *first, win32_timezone_t tzt)
+inline ::std::size_t print_reserve_define_impl(char *first, win32_timezone_t tzt) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto errn{::fast_io::noexcept_call(_get_tzname, __builtin_addressof(tzt.tz_name_len), first, tzt.tz_name_len,
 									   tzt.is_dst)};
@@ -975,7 +964,7 @@ inline ::std::size_t print_reserve_define_impl(char *first, win32_timezone_t tzt
 
 } // namespace details
 
-inline char *print_reserve_define(io_reserve_type_t<char, win32_timezone_t>, char *first, win32_timezone_t tzt)
+inline char *print_reserve_define(io_reserve_type_t<char, win32_timezone_t>, char *first, win32_timezone_t tzt) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::print_reserve_define_impl(::std::to_address(first), tzt) + first;
 }
@@ -987,7 +976,7 @@ extern char *m_tzname[2] __asm__("_tzname");
 extern int m_daylight __asm__("_daylight");
 #endif
 
-inline bool posix_daylight()
+inline bool posix_daylight() FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__MSDOS__) || (defined(__wasi__) && !defined(__wasilibc_unmodified_upstream)) || defined(__AVR__)
 	return 0;
@@ -1022,31 +1011,20 @@ inline basic_io_scatter_t<char> timezone_name([[maybe_unused]] bool dst = posix_
 
 #endif
 
-template <::std::int_least64_t off_to_epoch>
-inline iso8601_timestamp local(basic_timestamp<off_to_epoch> timestamp, [[maybe_unused]] bool dstadj = posix_daylight())
+inline iso8601_timestamp local(posix_statx_timestamp64 timestamp, [[maybe_unused]] bool dstadj = posix_daylight()) FAST_IO_HERBCEPTIONS_THROWS
 {
 #ifdef __MSDOS__
 	return utc(timestamp);
-#if 0
-	return details::to_iso8601_local_impl(static_cast<unix_timestamp>(timestamp));
-#endif
 #else
-	if constexpr (off_to_epoch == 0)
-	{
-		return details::to_iso8601_local_impl(timestamp.seconds, timestamp.subseconds, dstadj);
-	}
-	else
-	{
-		unix_timestamp stmp(static_cast<unix_timestamp>(timestamp));
-		return details::to_iso8601_local_impl(stmp.seconds, stmp.subseconds, dstadj);
-	}
+	return details::to_iso8601_local_impl(timestamp.tv_sec, timestamp.tv_nsec, dstadj);
 #endif
 }
 
-inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe_unused]] unix_timestamp timestamp)
+inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe_unused]] posix_statx_timestamp64 timestamp)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(_WIN32) && !defined(__NEWLIB__)
-	nt_clock_settime(pclk_id, timestamp);
+	(void)nt_clock_settime(pclk_id, timestamp);
 #elif defined(__MSDOS__)
 	switch (pclk_id)
 	{
@@ -1057,13 +1035,12 @@ inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe
 	{
 #if 0
 		if constexpr(sizeof(::std::time_t)<sizeof(::std::int_least64_t))
-		{
-			if(static_cast<::std::int_least64_t>(::std::numeric_limits<::std::time_t>::max())<timestamp.seconds)
+{
+			if(static_cast<::std::int_least64_t>(::std::numeric_limits<::std::time_t>::max())<timestamp.tv_sec)
 				throw_posix_error(EOVERFLOW);
 		}
-		constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/1000000u};
-		timeval tv{static_cast<::std::time_t>(timestamp.seconds),
-		static_cast<long>(timestamp.subseconds/mul_factor)};
+		timeval tv{static_cast<::std::time_t>(timestamp.tv_sec),
+		static_cast<long>(timestamp.tv_nsec/1000u)};
 		if(::fast_io::noexcept_call(::settimeofday,__builtin_addressof(tv), nullptr)<0)
 			throw_posix_error();
 #else
@@ -1075,7 +1052,7 @@ inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe
 	}
 #elif defined(__AVR__)
 	constexpr ::std::int_least64_t mn_unix_offset{UNIX_OFFSET};
-	auto tsp_seconds{timestamp.seconds};
+	auto tsp_seconds{timestamp.tv_sec};
 	if (tsp_seconds < mn_unix_offset)
 	{
 		throw_posix_error(EINVAL);
@@ -1102,9 +1079,8 @@ inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe
 	}
 #elif (!defined(__NEWLIB__) || defined(_POSIX_TIMERS)) && \
 	(!defined(__wasi__) || defined(__wasilibc_unmodified_upstream))
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
 	struct timespec res{
-		static_cast<::std::time_t>(timestamp.seconds), static_cast<long>(timestamp.subseconds / mul_factor)};
+		static_cast<::std::time_t>(timestamp.tv_sec), static_cast<long>(timestamp.tv_nsec)};
 	auto clk{details::posix_clock_id_to_native_value(pclk_id)};
 #ifdef __linux__
 	system_call_throw_error(system_call<__NR_clock_settime, int>(clk, __builtin_addressof(res)));
@@ -1128,7 +1104,8 @@ namespace details
 
 }
 
-inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,unix_timestamp timestamp)
+inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,posix_statx_timestamp64 timestamp)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	switch(pclk_id)
 	{
@@ -1152,7 +1129,8 @@ inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,unix_times
 	}
 }
 
-inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,unix_timestamp timestamp)
+inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,posix_statx_timestamp64 timestamp)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	posix_clock_sleep_abstime_complete(pclk_id,timestamp);
 	return false;
@@ -1160,10 +1138,10 @@ inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,unix_
 
 #else
 
-inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,unix_timestamp timestamp)
+inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,posix_statx_timestamp64 timestamp)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/1000000000u};
-	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.seconds),static_cast<long>(timestamp.subseconds/mul_factor)};
+	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.tv_sec),static_cast<long>(timestamp.tv_nsec)};
 	auto ret{::fast_io::noexcept_call(::clock_nanosleep,pclk_id,TIMER_ABSTIME,__builtin_addressof(timestamp_spec),nullptr)};
 	if(ret<0)
 	{
@@ -1175,10 +1153,10 @@ inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,unix_
 	return false;
 }
 
-inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,unix_timestamp timestamp)
+inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,posix_statx_timestamp64 timestamp)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second/1000000000u};
-	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.seconds),static_cast<long>(timestamp.subseconds/mul_factor)};
+	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.tv_sec),static_cast<long>(timestamp.tv_nsec)};
 	for(;;)
 	{
 		auto ret{::fast_io::noexcept_call(::clock_nanosleep,pclk_id,TIMER_ABSTIME,__builtin_addressof(timestamp_spec),nullptr)};

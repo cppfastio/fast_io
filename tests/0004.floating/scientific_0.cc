@@ -6,7 +6,7 @@ using namespace fast_io::io;
 int main()
 {
 	using namespace fast_io::mnp;
-	fast_io::native_l10n loc("");
+	auto const *loc{::fast_io::l10n::load_l10n(u8"")};
 	constexpr float value{-2.271745e-01f};
 	print("general:\t", value, "\t", comma_general(value), "\n"
 														   "scientific:\t",

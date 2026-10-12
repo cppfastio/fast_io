@@ -107,20 +107,20 @@ public:
 namespace details
 {
 
-inline void pa_simple_read_underflow_impl(pa_simple *ps, ::std::byte *first, ::std::byte *last)
+inline void pa_simple_read_underflow_impl(pa_simple *ps, ::std::byte *first, ::std::size_t count)
 {
 	int err{};
-	if (::fast_io::noexcept_call(pa_simple_read, ps, first, static_cast<::std::size_t>(last - first),
+	if (::fast_io::noexcept_call(pa_simple_read, ps, first, count,
 								 __builtin_addressof(err)) < 0) [[unlikely]]
 	{
 		throw_pulse_audio_error(err);
 	}
 }
 
-inline void pa_simple_write_overflow_impl(pa_simple *ps, ::std::byte const *first, ::std::byte const *last)
+inline void pa_simple_write_overflow_impl(pa_simple *ps, ::std::byte const *first, ::std::size_t count)
 {
 	int err{};
-	if (::fast_io::noexcept_call(pa_simple_write, ps, first, static_cast<::std::size_t>(last - first),
+	if (::fast_io::noexcept_call(pa_simple_write, ps, first, count,
 								 __builtin_addressof(err)) < 0) [[unlikely]]
 	{
 		throw_pulse_audio_error(err);
@@ -130,17 +130,15 @@ inline void pa_simple_write_overflow_impl(pa_simple *ps, ::std::byte const *firs
 } // namespace details
 
 template <::std::integral ch_type>
-inline void read_all_bytes_underflow_define(basic_pulseaudio_simple_io_observer<ch_type> iob, ::std::byte *first,
-											::std::byte *last)
+inline void read_all_bytes_underflow_define(basic_pulseaudio_simple_io_observer<ch_type> iob, ::std::byte *first, ::std::size_t count)
 {
-	return ::fast_io::details::pa_simple_read_underflow_impl(iob.s, first, last);
+	return ::fast_io::details::pa_simple_read_underflow_impl(iob.s, first, count);
 }
 
 template <::std::integral ch_type>
-inline void write_all_bytes_overflow_define(basic_pulseaudio_simple_io_observer<ch_type> iob, ::std::byte const *first,
-											::std::byte const *last)
+inline void write_all_bytes_overflow_define(basic_pulseaudio_simple_io_observer<ch_type> iob, ::std::byte const *first, ::std::size_t count)
 {
-	return ::fast_io::details::pa_simple_write_overflow_impl(iob.s, first, last);
+	return ::fast_io::details::pa_simple_write_overflow_impl(iob.s, first, count);
 }
 
 template <::std::integral ch_type>

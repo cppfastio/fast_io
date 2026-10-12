@@ -7,7 +7,7 @@ int main()
 {
 	fast_io::vector<char> letters{'a', 'b', 'c', 'd', 'e', 'f'};
 
-	if (!letters.empty())
+	if (!letters.is_empty())
 	{
 		print("The first character is '", chvw(letters.front()), "'.\n");
 	}

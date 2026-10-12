@@ -31,30 +31,18 @@ int main(int argc, char **argv)
 
 		::fast_io::io::perr(::fast_io::out(), "child stdout:\n");
 
-		for (;;)
-		{
-			auto res{::fast_io::operations::transmit_until_eof(::fast_io::out(), pipe_out)};
-			if (!res.transmitted)
-			{
-				break;
-			}
-		}
+		::fast_io::operations::transmit_all_bytes(::fast_io::out(), {}, pipe_out, {}, {});
 
 		::fast_io::io::perr(::fast_io::out(), "child stderr:\n");
 
-		for (;;)
-		{
-			auto res{::fast_io::operations::transmit_until_eof(::fast_io::out(), pipe_err)};
-			if (!res.transmitted)
-			{
-				break;
-			}
-		}
+		::fast_io::operations::transmit_all_bytes(::fast_io::out(), {}, pipe_err, {}, {});
 
 	}
-	catch (fast_io::error e)
+#if defined(__HERBCEPTIONS__)
+	catch throws(::std::error e)
 	{
-		perrln(e);
+		::fast_io::perrln(e);
 		return 1;
 	}
+#endif
 }

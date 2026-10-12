@@ -10,13 +10,14 @@ template <typename... Args>
 #endif
 	::std::string
 	concat_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>,
 																Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<false, char, ::std::string>(
+		return ::fast_io::basic_concat<false, char, ::std::string>(
 			io_print_forward<char>(io_print_alias(args))...);
 	}
 	else
@@ -34,13 +35,14 @@ template <typename... Args>
 #endif
 	::std::basic_string<wchar_t>
 	wconcat_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>,
 																Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<false, wchar_t, ::std::basic_string<wchar_t>>(
+		return ::fast_io::basic_concat<false, wchar_t, ::std::basic_string<wchar_t>>(
 			io_print_forward<wchar_t>(io_print_alias(args))...);
 	}
 	else
@@ -58,13 +60,14 @@ template <typename... Args>
 #endif
 	::std::u8string
 	u8concat_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>,
 																Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<false, char8_t, ::std::u8string>(
+		return ::fast_io::basic_concat<false, char8_t, ::std::u8string>(
 			io_print_forward<char8_t>(io_print_alias(args))...);
 	}
 	else
@@ -81,12 +84,13 @@ template <typename... Args>
 #endif
 	::std::u16string
 	u16concat_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<false, char16_t, ::std::u16string>(
+		return ::fast_io::basic_concat<false, char16_t, ::std::u16string>(
 			io_print_forward<char16_t>(io_print_alias(args))...);
 	}
 	else
@@ -103,12 +107,13 @@ template <typename... Args>
 #endif
 	::std::u32string
 	u32concat_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<false, char32_t, ::std::u32string>(
+		return ::fast_io::basic_concat<false, char32_t, ::std::u32string>(
 			io_print_forward<char32_t>(io_print_alias(args))...);
 	}
 	else
@@ -125,13 +130,14 @@ template <typename... Args>
 #endif
 	::std::basic_string<char>
 	concatln_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>,
 																Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<true, char, ::std::basic_string<char>>(
+		return ::fast_io::basic_concat<true, char, ::std::basic_string<char>>(
 			io_print_forward<char>(io_print_alias(args))...);
 	}
 	else
@@ -149,13 +155,14 @@ template <typename... Args>
 #endif
 	::std::basic_string<wchar_t>
 	wconcatln_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>,
 																Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<true, wchar_t, ::std::basic_string<wchar_t>>(
+		return ::fast_io::basic_concat<true, wchar_t, ::std::basic_string<wchar_t>>(
 			io_print_forward<wchar_t>(io_print_alias(args))...);
 	}
 	else
@@ -173,13 +180,14 @@ template <typename... Args>
 #endif
 	::std::u8string
 	u8concatln_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{
 		::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>,
 																Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<true, char8_t, ::std::u8string>(
+		return ::fast_io::basic_concat<true, char8_t, ::std::u8string>(
 			io_print_forward<char8_t>(io_print_alias(args))...);
 	}
 	else
@@ -196,12 +204,13 @@ template <typename... Args>
 #endif
 	::std::u16string
 	u16concatln_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<true, char16_t, ::std::u16string>(
+		return ::fast_io::basic_concat<true, char16_t, ::std::u16string>(
 			io_print_forward<char16_t>(io_print_alias(args))...);
 	}
 	else
@@ -218,12 +227,13 @@ template <typename... Args>
 #endif
 	::std::u32string
 	u32concatln_std(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<
 		::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
 	if constexpr (type_error)
 	{
-		return details::decay::basic_general_concat_phase1_decay_impl<true, char32_t, ::std::u32string>(
+		return ::fast_io::basic_concat<true, char32_t, ::std::u32string>(
 			io_print_forward<char32_t>(io_print_alias(args))...);
 	}
 	else

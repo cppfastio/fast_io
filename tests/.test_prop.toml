@@ -27,3 +27,5 @@ ignore = true
 
 ["0036.sto"]
 ignore = true
+["0042.modules"] # modules need a prebuilt BMI; not buildable by the flat per-file harness
+ignore = true

@@ -26,6 +26,6 @@ int main()
 
 		fast_io::iobuf_io_file obf(::fast_io::io_cookie_type<::fast_io::native_file>, "iobuf_io_file_eol_dbg.txt",
 								   ::fast_io::open_mode::out);
-		::fast_io::operations::transmit_bytes_until_eof(obf, ibf);
+		::fast_io::operations::transmit_all_bytes(obf, {}, ibf, {}, {});
 	}
 }

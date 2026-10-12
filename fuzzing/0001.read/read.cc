@@ -14,7 +14,7 @@ int main()
 		try
 		{
 			soc.reopen(fast_io::tcp_accept(socket));
-			transmit64(null_device, soc, UINT64_MAX);
+			::fast_io::operations::transmit_all_bytes(null_device, {}, soc, {}, UINT64_MAX);
 			soc.close();
 		}
 		catch (...)

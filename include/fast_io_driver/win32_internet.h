@@ -120,6 +120,8 @@ class basic_win32_internet_io_observer
 {
 public:
 	using char_type = ch_type;
+	using input_char_type = char_type;
+	using output_char_type = char_type;
 	using native_handle_type = void *;
 	native_handle_type handle{};
 	constexpr operator bool() noexcept
@@ -164,28 +166,30 @@ public:
 	}
 };
 
-template <::std::integral ch_type, ::std::contiguous_iterator Iter>
-inline Iter read(basic_win32_internet_io_observer<ch_type> iob, Iter begin, Iter end)
+template <::std::integral ch_type>
+inline ::std::byte *read_some_bytes_underflow_define(basic_win32_internet_io_observer<ch_type> iob,
+													 ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	unsigned long readed{};
-	if (!InternetReadFile(iob.handle, ::std::to_address(begin), sizeof(*begin) * (end - begin),
-						  __builtin_addressof(readed)))
+	if (!InternetReadFile(iob.handle, first, static_cast<unsigned long>(count), __builtin_addressof(readed)))
 	{
-		throw fast_io::win32_error();
+		throw ::fast_io::win32_error();
 	}
-	return begin + readed / sizeof(begin);
+	return first + readed;
 }
 
-template <::std::integral ch_type, ::std::contiguous_iterator Iter>
-inline Iter write(basic_win32_internet_io_observer<ch_type> iob, Iter begin, Iter end)
+template <::std::integral ch_type>
+inline ::std::byte const *write_some_bytes_overflow_define(basic_win32_internet_io_observer<ch_type> iob,
+														   ::std::byte const *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	unsigned long written{};
-	if (!InternetWriteFile(iob.handle, ::std::to_address(begin), sizeof(*begin) * (end - begin),
-						   __builtin_addressof(written)))
+	if (!InternetWriteFile(iob.handle, first, static_cast<unsigned long>(count), __builtin_addressof(written)))
 	{
-		throw fast_io::win32_error();
+		throw ::fast_io::win32_error();
 	}
-	return begin + written / sizeof(begin);
+	return first + written;
 }
 
 using win32_internet_io_observer = basic_win32_internet_io_observer<char>;

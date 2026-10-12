@@ -26,11 +26,13 @@ try
 			fast_io::native_file pf(drt(ent), fast_io::open_mode::in | fast_io::open_mode::text); // sorry i am stupid
 			fast_io::c_file_unlocked pf2(at(df_crlf), native_filename(ent),
 										 fast_io::open_mode::out | fast_io::open_mode::text);
-			transmit(pf2, pf);
+			::fast_io::operations::transmit_all_bytes(pf2, {}, pf, {}, {});
 		}
 	}
 }
-catch (fast_io::error e)
+#if defined(__HERBCEPTIONS__)
+catch throws(::std::error e)
 {
 	perrln(e);
 }
+#endif

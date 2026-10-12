@@ -18,9 +18,9 @@ inline constexpr foo output_stream_ref_define(foo f) noexcept
 inline constexpr ::std::byte const *write_some_bytes_overflow_define(
 	foo,
 	::std::byte const *first,
-	::std::byte const *last)
+	::std::size_t count)
 {
-	return fakewrite(first, last);
+	return fakewrite(first, first + count);
 }
 
 int main()
@@ -61,8 +61,7 @@ int main()
 		}
 		else
 		{
-			::fast_io::operations::write_some(f, buffer,
-											  buffer + 5);
+			::fast_io::operations::write_some(f, buffer, 5);
 		}
 	}
 	char buffer[20] = "abcde\nf";

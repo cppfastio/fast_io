@@ -10,8 +10,8 @@ int main()
 	{
 		[[maybe_unused]] auto tsp = fast_io::to<fast_io::iso8601_timestamp>(s);
 	}
-	catch (fast_io::error e)
+	catch throws(::std::error e)
 	{
-		print(static_cast<fast_io::parse_code>(e.code));
+		perrln(e);
 	}
 }

@@ -72,6 +72,8 @@ inline constexpr char_type get_horizontal_exec_char() noexcept
 template <typename containe, ::std::integral char_type>
 inline ::fast_io::manipulators::auto_indent_t<char_type, containe> calculate_auto_width_result(char_type const *first2,
 																							   char_type const *last)
+
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(containe{}))
 {
 	auto first{first2};
 	containe cont;

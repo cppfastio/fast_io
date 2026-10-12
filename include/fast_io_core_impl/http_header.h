@@ -77,19 +77,19 @@ inline bool try_copy_into_buffer(basic_http_header_buffer<ch_type, buffer_size> 
 }
 
 template <::std::integral ch_type, ::std::size_t buffer_size>
-inline constexpr parse_code determine_http_header_location(basic_http_header_buffer<ch_type, buffer_size> &b) noexcept
+inline constexpr ::fast_io::freestanding::parse_errc determine_http_header_location(basic_http_header_buffer<ch_type, buffer_size> &b) noexcept
 {
 	auto i{b.buffer}, e{b.buffer + b.header_length};
 	if (i != e && *i == char_literal_v<u8' ', ch_type>)
 	{
-		return parse_code::invalid;
+		return ::fast_io::freestanding::parse_errc::invalid;
 	}
 	{
 		i = ::fast_io::details::find_ch_impl<u8' ', false>(i, e);
 		// for(;i!=e&&*i!=char_literal_v<u8' ',ch_type>;++i);
 		if (i == e)
 		{
-			return parse_code::invalid;
+			return ::fast_io::freestanding::parse_errc::invalid;
 		}
 		b.http_request_end_location = static_cast<::std::size_t>(i - b.buffer);
 	}
@@ -98,7 +98,7 @@ inline constexpr parse_code determine_http_header_location(basic_http_header_buf
 	// for(;i!=e&&*i==char_literal_v<u8' ',ch_type>;++i);
 	if (i == e)
 	{
-		return parse_code::invalid;
+		return ::fast_io::freestanding::parse_errc::invalid;
 	}
 	b.http_status_code_start_location = static_cast<::std::size_t>(i - b.buffer);
 	{
@@ -106,7 +106,7 @@ inline constexpr parse_code determine_http_header_location(basic_http_header_buf
 		// for(;i!=e&&*i!=char_literal_v<u8' ',ch_type>;++i);
 		if (i == e)
 		{
-			return parse_code::invalid;
+			return ::fast_io::freestanding::parse_errc::invalid;
 		}
 		b.http_status_code_end_location = static_cast<::std::size_t>(i - b.buffer);
 	}
@@ -114,17 +114,17 @@ inline constexpr parse_code determine_http_header_location(basic_http_header_buf
 	// for(;i!=e&&*i==char_literal_v<u8' ',ch_type>;++i);
 	if (i == e)
 	{
-		return parse_code::invalid;
+		return ::fast_io::freestanding::parse_errc::invalid;
 	}
 	b.http_status_reason_start_location = static_cast<::std::size_t>(i - b.buffer);
 	i = ::fast_io::details::find_ch_impl<u8'\r', false>(i, e);
 	// for(;i!=e&&*i!=char_literal_v<u8'\r',ch_type>;++i);
 	if (i == e)
 	{
-		return parse_code::invalid;
+		return ::fast_io::freestanding::parse_errc::invalid;
 	}
 	b.http_status_reason_end_location = static_cast<::std::size_t>(i - b.buffer);
-	return parse_code::ok;
+	return ::fast_io::freestanding::parse_errc::ok;
 }
 
 template <::std::integral char_type, ::std::size_t buffer_size>
@@ -135,7 +135,7 @@ http_header_scan_context_define_impl(::std::size_t &state, char_type const *firs
 	auto first{first1};
 	if (first == last)
 	{
-		return {first, parse_code::partial};
+		return {first, ::fast_io::freestanding::parse_errc::partial};
 	}
 	if (state != 0)
 	{
@@ -153,9 +153,9 @@ http_header_scan_context_define_impl(::std::size_t &state, char_type const *firs
 				state = 2u;
 				if (!::fast_io::details::try_copy_into_buffer(bufferref, first1, last))
 				{
-					return {first, parse_code::invalid};
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
 				}
-				return {first, parse_code::partial};
+				return {first, ::fast_io::freestanding::parse_errc::partial};
 			}
 			[[fallthrough]];
 		}
@@ -171,9 +171,9 @@ http_header_scan_context_define_impl(::std::size_t &state, char_type const *firs
 				state = 3u;
 				if (!::fast_io::details::try_copy_into_buffer(bufferref, first1, last))
 				{
-					return {first, parse_code::invalid};
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
 				}
-				return {first, parse_code::partial};
+				return {first, ::fast_io::freestanding::parse_errc::partial};
 			}
 			[[fallthrough]];
 		}
@@ -186,7 +186,7 @@ http_header_scan_context_define_impl(::std::size_t &state, char_type const *firs
 			++first;
 			if (!::fast_io::details::try_copy_into_buffer(bufferref, first1, first))
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			return {first, ::fast_io::details::determine_http_header_location(bufferref)};
 		}
@@ -201,34 +201,34 @@ http_header_scan_context_define_impl(::std::size_t &state, char_type const *firs
 		{
 			if (!::fast_io::details::try_copy_into_buffer(bufferref, first1, first))
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			state = 0u;
-			return {first, parse_code::partial};
+			return {first, ::fast_io::freestanding::parse_errc::partial};
 		}
 		++first;
 		if (first == last)
 		{
 			if (!::fast_io::details::try_copy_into_buffer(bufferref, first1, first))
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			state = 1u;
-			return {first, parse_code::partial};
+			return {first, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (*first != char_literal_v<u8'\n', char_type>)
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++first;
 		if (first == last)
 		{
 			if (!::fast_io::details::try_copy_into_buffer(bufferref, first1, first))
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			state = 2u;
-			return {first, parse_code::partial};
+			return {first, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (*first != char_literal_v<u8'\r', char_type>)
 		{
@@ -239,19 +239,19 @@ http_header_scan_context_define_impl(::std::size_t &state, char_type const *firs
 		{
 			if (!::fast_io::details::try_copy_into_buffer(bufferref, first1, first))
 			{
-				return {first, parse_code::invalid};
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			state = 3u;
-			return {first, parse_code::partial};
+			return {first, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (*first != char_literal_v<u8'\n', char_type>)
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++first;
 		if (!::fast_io::details::try_copy_into_buffer(bufferref, first1, first))
 		{
-			return {first, parse_code::invalid};
+			return {first, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		return {first, ::fast_io::details::determine_http_header_location(bufferref)};
 	}
@@ -269,12 +269,12 @@ inline constexpr parse_result<char_type const *> scan_context_define(
 }
 
 template <::std::integral char_type, ::std::size_t buffer_size>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_context_eof_define(io_reserve_type_t<char_type, ::fast_io::parameter<basic_http_header_buffer<char_type> &>>,
 						http_buffer_parse_context,
 						::fast_io::parameter<basic_http_header_buffer<char_type, buffer_size> &>) noexcept
 {
-	return parse_code::invalid;
+	return ::fast_io::freestanding::parse_errc::invalid;
 }
 
 using http_header_buffer = basic_http_header_buffer<char>;
@@ -301,7 +301,7 @@ struct basic_http_line
 
 template <::std::integral char_type, ::std::size_t buffer_size>
 inline constexpr basic_http_line_generator<char_type>
-line_generator(basic_http_header_buffer<char_type, buffer_size> const&b) noexcept
+line_generator(basic_http_header_buffer<char_type, buffer_size> const &b) noexcept
 {
 	::std::size_t end_loc{b.http_status_reason_end_location};
 	char_type const *start{b.buffer + end_loc};
@@ -359,13 +359,13 @@ inline constexpr ::std::default_sentinel_t end(basic_http_line_generator<char_ty
 }
 
 template <::std::integral char_type>
-inline constexpr bool operator==(basic_http_line_generator<char_type> &b, ::std::default_sentinel_t)
+inline constexpr bool operator==(basic_http_line_generator<char_type> &b, ::std::default_sentinel_t) noexcept
 {
 	return b.current == b.last;
 }
 
 template <::std::integral char_type>
-inline constexpr bool operator!=(basic_http_line_generator<char_type> &b, ::std::default_sentinel_t)
+inline constexpr bool operator!=(basic_http_line_generator<char_type> &b, ::std::default_sentinel_t) noexcept
 {
 	return b.current != b.last;
 }
@@ -377,6 +377,214 @@ inline constexpr basic_http_line<char_type> operator*(basic_http_line_generator<
 				b.current, static_cast<::std::size_t>(b.key_end - b.current)),
 			::fast_io::manipulators::os_str_known_size_without_null_terminated<char_type>(
 				b.value_start, static_cast<::std::size_t>(b.value_end - b.value_start))};
+}
+
+namespace manipulators::scan_skippers
+{
+
+enum class line_skipper_tag
+{
+	lf,
+	crlf,
+	cr,
+#if defined(_WIN32) || defined(__CYGWIN__)
+	platform = crlf
+#else
+	platform = lf
+#endif
+};
+
+template <line_skipper_tag tag>
+struct line_skipper
+{
+	using manip_tag = manip_tag_t;
+	inline static constexpr line_skipper_tag tag_value{tag};
+};
+
+/*
+Consumes exactly one line terminator from an input stream.
+	crlf: "\r\n" or a lone "\n"		lf: "\n"	cr: "\r"
+	platform: crlf on _WIN32/__CYGWIN__, lf elsewhere
+Used for protocol framing such as HTTP chunked bodies. Also printable:
+prints the terminator to an output stream.
+*/
+inline constexpr line_skipper<line_skipper_tag::lf> lf() noexcept
+{
+	return {};
+}
+inline constexpr line_skipper<line_skipper_tag::crlf> crlf() noexcept
+{
+	return {};
+}
+inline constexpr line_skipper<line_skipper_tag::cr> cr() noexcept
+{
+	return {};
+}
+inline constexpr line_skipper<line_skipper_tag::platform> line_skipper_platform() noexcept
+{
+	return {};
+}
+
+} // namespace manipulators::scan_skippers
+
+template <::std::integral char_type, manipulators::scan_skippers::line_skipper_tag tag>
+inline constexpr ::std::size_t
+print_reserve_size(io_reserve_type_t<char_type, manipulators::scan_skippers::line_skipper<tag>>) noexcept
+{
+	return 2;
+}
+
+template <::std::integral char_type, manipulators::scan_skippers::line_skipper_tag tag>
+inline constexpr char_type *
+print_reserve_define(io_reserve_type_t<char_type, manipulators::scan_skippers::line_skipper<tag>>, char_type *iter,
+					 manipulators::scan_skippers::line_skipper<tag>) noexcept
+{
+	if constexpr (tag == manipulators::scan_skippers::line_skipper_tag::lf)
+	{
+		*iter = char_literal_v<u8'\n', char_type>;
+		return iter + 1;
+	}
+	else if constexpr (tag == manipulators::scan_skippers::line_skipper_tag::cr)
+	{
+		*iter = char_literal_v<u8'\r', char_type>;
+		return iter + 1;
+	}
+	else
+	{
+		*iter = char_literal_v<u8'\r', char_type>;
+		iter[1] = char_literal_v<u8'\n', char_type>;
+		return iter + 2;
+	}
+}
+
+namespace details
+{
+
+struct line_skipper_scan_context
+{
+	::std::uint_least8_t matched{};
+};
+
+template <::fast_io::manipulators::scan_skippers::line_skipper_tag tag, ::std::integral char_type>
+inline constexpr parse_result<char_type const *>
+line_skipper_scan_context_define_impl(line_skipper_scan_context &ctx, char_type const *first,
+									  char_type const *last) noexcept
+{
+	for (; first != last; ++first)
+	{
+		if constexpr (tag == ::fast_io::manipulators::scan_skippers::line_skipper_tag::lf)
+		{
+			if (*first != char_literal_v<u8'\n', char_type>)
+			{
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
+			}
+			return {first + 1, ::fast_io::freestanding::parse_errc::ok};
+		}
+		else if constexpr (tag == ::fast_io::manipulators::scan_skippers::line_skipper_tag::cr)
+		{
+			if (*first != char_literal_v<u8'\r', char_type>)
+			{
+				return {first, ::fast_io::freestanding::parse_errc::invalid};
+			}
+			return {first + 1, ::fast_io::freestanding::parse_errc::ok};
+		}
+		else
+		{
+			if (ctx.matched == 0)
+			{
+				if (*first == char_literal_v<u8'\n', char_type>)
+				{
+					return {first + 1, ::fast_io::freestanding::parse_errc::ok};
+				}
+				if (*first != char_literal_v<u8'\r', char_type>)
+				{
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
+				}
+				ctx.matched = 1;
+			}
+			else
+			{
+				if (*first != char_literal_v<u8'\n', char_type>)
+				{
+					return {first, ::fast_io::freestanding::parse_errc::invalid};
+				}
+				return {first + 1, ::fast_io::freestanding::parse_errc::ok};
+			}
+		}
+	}
+	return {first, ::fast_io::freestanding::parse_errc::partial};
+}
+
+} // namespace details
+
+template <::std::integral char_type, manipulators::scan_skippers::line_skipper_tag tag>
+inline constexpr io_type_t<details::line_skipper_scan_context>
+scan_context_type(io_reserve_type_t<char_type, manipulators::scan_skippers::line_skipper<tag>>) noexcept
+{
+	return {};
+}
+
+template <::std::integral char_type, manipulators::scan_skippers::line_skipper_tag tag>
+inline constexpr parse_result<char_type const *>
+scan_contiguous_define(io_reserve_type_t<char_type, manipulators::scan_skippers::line_skipper<tag>>,
+					   char_type const *begin, char_type const *end,
+					   manipulators::scan_skippers::line_skipper<tag>) noexcept
+{
+	constexpr bool is_crlf{tag == manipulators::scan_skippers::line_skipper_tag::crlf};
+	if (begin != end)
+	{
+		if constexpr (is_crlf)
+		{
+			if (*begin == char_literal_v<u8'\n', char_type>)
+			{
+				return {begin + 1, ::fast_io::freestanding::parse_errc::ok};
+			}
+		}
+		char_type const expected{(tag == manipulators::scan_skippers::line_skipper_tag::lf)
+									 ? char_literal_v<u8'\n', char_type>
+									 : char_literal_v<u8'\r', char_type>};
+		if (*begin != expected)
+		{
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
+		}
+		if constexpr (!is_crlf)
+		{
+			return {begin + 1, ::fast_io::freestanding::parse_errc::ok};
+		}
+		else if (end - begin >= 2)
+		{
+			if (begin[1] != char_literal_v<u8'\n', char_type>)
+			{
+				return {begin + 1, ::fast_io::freestanding::parse_errc::invalid};
+			}
+			return {begin + 2, ::fast_io::freestanding::parse_errc::ok};
+		}
+	}
+	/*
+	Ran out of input before the line terminator completed. Return end so
+	the caller falls back to the context path which re-examines the same chars.
+	*/
+	return {end, ::fast_io::freestanding::parse_errc::partial};
+}
+
+template <::std::integral char_type, manipulators::scan_skippers::line_skipper_tag tag>
+inline constexpr parse_result<char_type const *>
+scan_context_define(io_reserve_type_t<char_type, manipulators::scan_skippers::line_skipper<tag>>,
+					details::line_skipper_scan_context &ctx, char_type const *begin, char_type const *end,
+					manipulators::scan_skippers::line_skipper<tag>) noexcept
+{
+	return details::line_skipper_scan_context_define_impl<tag>(ctx, begin, end);
+}
+
+template <::std::integral char_type, manipulators::scan_skippers::line_skipper_tag tag>
+inline constexpr ::fast_io::freestanding::parse_errc
+scan_context_eof_define(io_reserve_type_t<char_type, manipulators::scan_skippers::line_skipper<tag>>,
+						details::line_skipper_scan_context &ctx,
+						manipulators::scan_skippers::line_skipper<tag>) noexcept
+{
+	/* EOF with nothing consumed is plain end_of_file; EOF between '\r' and '\n' is truncated input */
+	return ctx.matched == 0 ? ::fast_io::freestanding::parse_errc::end_of_file
+							: ::fast_io::freestanding::parse_errc::invalid;
 }
 
 } // namespace fast_io

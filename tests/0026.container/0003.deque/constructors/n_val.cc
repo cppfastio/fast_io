@@ -55,7 +55,7 @@ inline void test_n_val_string()
 	{
 		if (dq[i] != hello)
 		{
-			::fast_io::io::panicln("value mismatch at ", i, " for string type");
+			::fast_io::io::panic("value mismatch at ", i, " for string type\n");
 		}
 	}
 

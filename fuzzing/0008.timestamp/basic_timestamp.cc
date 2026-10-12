@@ -4,7 +4,7 @@ thread_local fast_io::timestamp_scan_state_t<char> state{};
 
 extern "C" int LLVMFuzzerTestOneInput(std::uint8_t const *ptr, std::size_t n) noexcept
 {
-	fast_io::unix_timestamp tsp{};
+	fast_io::posix_statx_timestamp64 tsp{};
 	auto begin{reinterpret_cast<char const *>(ptr)};
 	auto end{begin + n};
 	for (;;)

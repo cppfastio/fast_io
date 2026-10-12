@@ -5,7 +5,7 @@ using namespace fast_io::io;
 
 int main()
 {
-	fast_io::native_l10n loc("");
+	auto const *loc{::fast_io::l10n::load_l10n(u8"")};
 	println(imbue(loc, fast_io::c_stdout()), "rigstr\t", fast_io::mnp::internal("asf", 10), "\n"
 																							"lft\t",
 			fast_io::mnp::left(-10000, 10), "\n"

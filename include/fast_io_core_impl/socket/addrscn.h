@@ -24,7 +24,7 @@ template <typename phase_t, ::std::integral char_type>
 struct ip_scan_state_t
 {
 	// to find out why +1 is needed here:
-	
+
 	// Reserve one extra character beyond the maximum decimal length of
 	// uint_least16_t so that the streaming integer scanner
 	// (scan_context_define_parse_impl / sc_int_ctx_digit_phase) can
@@ -56,10 +56,10 @@ scn_cnt_define_inaddr_impl(char_type const *begin, char_type const *end, posix_i
 {
 	if (end - begin < 7) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	auto [itr0, ec0] = scan_int_contiguous_define_impl<10, true, false, false>(begin, begin + 3, t.address[0]);
-	if (ec0 != parse_code::ok) [[unlikely]]
+	if (ec0 != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {itr0, ec0};
 	}
@@ -67,17 +67,17 @@ scn_cnt_define_inaddr_impl(char_type const *begin, char_type const *end, posix_i
 	{
 		if (t.address[0] >= 256u) [[unlikely]]
 		{
-			return {itr0, parse_code::overflow};
+			return {itr0, ::fast_io::freestanding::parse_errc::overflow};
 		}
 	}
 	begin = itr0;
 	if (begin == end || *begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	++begin;
 	auto [itr1, ec1] = scan_int_contiguous_define_impl<10, true, false, false>(begin, begin + 3, t.address[1]);
-	if (ec1 != parse_code::ok) [[unlikely]]
+	if (ec1 != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {itr1, ec1};
 	}
@@ -85,21 +85,21 @@ scn_cnt_define_inaddr_impl(char_type const *begin, char_type const *end, posix_i
 	{
 		if (t.address[1] >= 256u) [[unlikely]]
 		{
-			return {itr1, parse_code::overflow};
+			return {itr1, ::fast_io::freestanding::parse_errc::overflow};
 		}
 	}
 	begin = itr1;
 	if (begin == end || *begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	++begin;
 	if (end - begin < 3) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	auto [itr2, ec2] = scan_int_contiguous_define_impl<10, true, false, false>(begin, begin + 3, t.address[2]);
-	if (ec2 != parse_code::ok) [[unlikely]]
+	if (ec2 != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {itr2, ec2};
 	}
@@ -107,17 +107,17 @@ scn_cnt_define_inaddr_impl(char_type const *begin, char_type const *end, posix_i
 	{
 		if (t.address[2] >= 256u) [[unlikely]]
 		{
-			return {itr2, parse_code::overflow};
+			return {itr2, ::fast_io::freestanding::parse_errc::overflow};
 		}
 	}
 	begin = itr2;
 	if (begin == end || *begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	++begin;
 	auto [itr3, ec3] = scan_int_contiguous_define_impl<10, true, false, false>(begin, end, t.address[3]);
-	if (ec3 != parse_code::ok) [[unlikely]]
+	if (ec3 != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {itr3, ec3};
 	}
@@ -125,11 +125,11 @@ scn_cnt_define_inaddr_impl(char_type const *begin, char_type const *end, posix_i
 	{
 		if (t.address[3] >= 256u) [[unlikely]]
 		{
-			return {itr3, parse_code::overflow};
+			return {itr3, ::fast_io::freestanding::parse_errc::overflow};
 		}
 	}
 	begin = itr3;
-	return {begin, parse_code::ok};
+	return {begin, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <::std::integral char_type>
@@ -143,10 +143,10 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		auto [itr, ec] = scan_context_define_parse_impl<10, false, false, false>(state, begin, end, t.address[0]);
-		if (ec != parse_code::ok) [[unlikely]]
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -154,7 +154,7 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 		{
 			if (t.address[0] >= 256) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 		}
 		state.size = 0;
@@ -167,11 +167,11 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 		{
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++begin;
 		state.ip_phase = scan_ipv4_context_phase::addr1;
@@ -181,10 +181,10 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		auto [itr, ec] = scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t.address[1]);
-		if (ec != parse_code::ok) [[unlikely]]
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -192,7 +192,7 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 		{
 			if (t.address[1] >= 256) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 		}
 		state.size = 0;
@@ -205,11 +205,11 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 		{
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++begin;
 		state.ip_phase = scan_ipv4_context_phase::addr2;
@@ -219,10 +219,10 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		auto [itr, ec] = scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t.address[2]);
-		if (ec != parse_code::ok) [[unlikely]]
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -230,7 +230,7 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 		{
 			if (t.address[2] >= 256) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 		}
 		state.size = 0;
@@ -243,11 +243,11 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 		{
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++begin;
 		state.ip_phase = scan_ipv4_context_phase::addr3;
@@ -257,10 +257,10 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		auto [itr, ec] = scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t.address[3]);
-		if (ec != parse_code::ok) [[unlikely]]
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -268,11 +268,11 @@ scn_ctx_define_inaddr_impl(ipv4_scan_state_t<char_type> &state, char_type const 
 		{
 			if (t.address[3] >= 256) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 		}
 		begin = itr;
-		return {begin, parse_code::ok};
+		return {begin, ::fast_io::freestanding::parse_errc::ok};
 	}
 	}
 	::fast_io::unreachable();
@@ -284,11 +284,11 @@ inline constexpr parse_result<char_type const *> scn_cnt_define_port_impl(char_t
 {
 	if (begin == end) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	if (*begin != char_literal_v<u8':', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	++begin;
 	return scan_int_contiguous_define_impl<10, true, false, false>(begin, end, t);
@@ -304,11 +304,11 @@ inline constexpr parse_result<char_type const *> scn_ctx_define_port_impl(ip_por
 	case state.port_mark:
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (*begin != char_literal_v<u8':', char_type>) [[unlikely]]
 		{
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++begin;
 		state.ip_phase = state.port;
@@ -316,7 +316,7 @@ inline constexpr parse_result<char_type const *> scn_ctx_define_port_impl(ip_por
 	case state.port:
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		return scan_context_define_parse_impl<10, true, false, false>(state, begin, end, t);
 	default:;
@@ -347,12 +347,12 @@ scn_cnt_define_in6addr_4_digits_impl(char_type const *begin, char_type const *en
 	using unsigned_char_type = ::std::make_unsigned_t<char_type>;
 	if (begin == end) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	if (*begin == char_literal_v<u8':', char_type>) [[unlikely]]
 	{
 		// use eof here to represent shorten case. should be handled from the caller.
-		return {begin, parse_code::end_of_file};
+		return {begin, ::fast_io::freestanding::parse_errc::end_of_file};
 	}
 	// loop unrolled, because each time the return changes a bit
 	::std::uint_least16_t value{};
@@ -366,7 +366,7 @@ scn_cnt_define_in6addr_4_digits_impl(char_type const *begin, char_type const *en
 		{
 			if (::fast_io::char_category::is_c_upper(ch_raw))
 			{
-				return {it, parse_code::invalid};
+				return {it, ::fast_io::freestanding::parse_errc::invalid};
 			}
 		}
 
@@ -379,19 +379,19 @@ scn_cnt_define_in6addr_4_digits_impl(char_type const *begin, char_type const *en
 		if (digits == 4u) [[unlikely]]
 		{
 			// More than 4 hex digits in a single group is overflow
-			return {it, parse_code::overflow};
+			return {it, ::fast_io::freestanding::parse_errc::overflow};
 		}
 		value = static_cast<::std::uint_least16_t>((value << 4u) | ch);
 		++digits;
 	}
 	if (digits == 0u) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 
 	t = ::fast_io::big_endian(value);
 
-	return {it, parse_code::ok};
+	return {it, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <bool allowv6uppercase, bool allowv4mapped_ipv4, ::std::integral char_type>
@@ -410,7 +410,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 
 	if (it == end) [[unlikely]]
 	{
-		return {it, parse_code::invalid};
+		return {it, ::fast_io::freestanding::parse_errc::invalid};
 	}
 
 	// Handling cases starting with “::”
@@ -419,7 +419,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 		++it;
 		if (it == end || *it != colon) [[unlikely]]
 		{
-			return {it, parse_code::invalid};
+			return {it, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		++it;
 		colonp = cur; // “::” at the very beginning
@@ -431,7 +431,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 		if (cur == words_end) [[unlikely]]
 		{
 			// Exceeds 8 groups
-			return {it, parse_code::overflow};
+			return {it, ::fast_io::freestanding::parse_errc::overflow};
 		}
 
 		// Find this segment [token_begin, token_end)
@@ -445,7 +445,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 		if (token_begin == token_end) [[unlikely]]
 		{
 			// Empty token, should not occur ("::" has already been handled above)
-			return {it, parse_code::invalid};
+			return {it, ::fast_io::freestanding::parse_errc::invalid};
 		}
 
 		if constexpr (allowv4mapped_ipv4)
@@ -464,18 +464,18 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 			{
 				if (static_cast<::std::size_t>(words_end - cur) < 2u) [[unlikely]]
 				{
-					return {it, parse_code::overflow};
+					return {it, ::fast_io::freestanding::parse_errc::overflow};
 				}
 				posix_in_addr v4{};
 				auto [next4, ec4] = scn_cnt_define_inaddr_impl(token_begin, token_end, v4);
-				if (ec4 != parse_code::ok || next4 != token_end) [[unlikely]]
+				if (ec4 != ::fast_io::freestanding::parse_errc::ok || next4 != token_end) [[unlikely]]
 				{
-					return {next4, ec4 == parse_code::ok ? parse_code::invalid : ec4};
+					return {next4, ec4 == ::fast_io::freestanding::parse_errc::ok ? ::fast_io::freestanding::parse_errc::invalid : ec4};
 				}
 				it = token_end;
 				if (it != end) [[unlikely]]
 				{
-					return {it, parse_code::invalid};
+					return {it, ::fast_io::freestanding::parse_errc::invalid};
 				}
 				::std::uint_least16_t hi{
 					static_cast<::std::uint_least16_t>(
@@ -489,7 +489,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 				++cur;
 				*cur = ::fast_io::big_endian(lo);
 				++cur;
-				
+
 				used_ipv4_suffix = true;
 				break;
 			}
@@ -499,9 +499,9 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 		::std::uint_least16_t value{};
 		auto [next, ec] =
 			scn_cnt_define_in6addr_4_digits_impl<allowv6uppercase>(token_begin, token_end, value);
-		if (ec != parse_code::ok || next != token_end) [[unlikely]]
+		if (ec != ::fast_io::freestanding::parse_errc::ok || next != token_end) [[unlikely]]
 		{
-			return {next, ec == parse_code::ok ? parse_code::invalid : ec};
+			return {next, ec == ::fast_io::freestanding::parse_errc::ok ? ::fast_io::freestanding::parse_errc::invalid : ec};
 		}
 
 		*cur = value;
@@ -517,7 +517,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 		++it;
 		if (it == end)
 		{
-			return {it, parse_code::invalid};
+			return {it, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		if (*it == colon)
 		{
@@ -525,7 +525,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 			if (colonp != nullptr) [[unlikely]]
 			{
 				// Can only have one "::"
-				return {it, parse_code::invalid};
+				return {it, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			colonp = cur;
 			++it;
@@ -544,7 +544,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 		// When there is no "::", it must be exactly 8 groups
 		if (n_words != 8u) [[unlikely]]
 		{
-			return {it, parse_code::invalid};
+			return {it, ::fast_io::freestanding::parse_errc::invalid};
 		}
 	}
 	else
@@ -555,7 +555,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 
 		if (n_words > 8u || (colonp != nullptr && n_words == 8u)) [[unlikely]]
 		{
-			return {it, parse_code::invalid};
+			return {it, ::fast_io::freestanding::parse_errc::invalid};
 		}
 
 		// Move the tail to the end of the array
@@ -588,7 +588,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 
 	if (n_words != 8u) [[unlikely]]
 	{
-		return {it, parse_code::invalid};
+		return {it, ::fast_io::freestanding::parse_errc::invalid};
 	}
 
 	if constexpr (allowv4mapped_ipv4)
@@ -601,7 +601,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 			{
 				if (*words_curr != 0)
 				{
-					return {it, parse_code::invalid};
+					return {it, ::fast_io::freestanding::parse_errc::invalid};
 				}
 			}
 
@@ -617,7 +617,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 
 			if (prefix_word != static_cast<::std::uint_least16_t>(0xFFFFu))
 			{
-				return {it, parse_code::invalid};
+				return {it, ::fast_io::freestanding::parse_errc::invalid};
 			}
 		}
 	}
@@ -632,7 +632,7 @@ scn_cnt_define_in6addr_shorten_impl(char_type const *begin, char_type const *end
 		}
 	}
 
-	return {it, parse_code::ok};
+	return {it, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <bool allowv6shorten, bool allowv6uppercase, bool allowv6bracket, bool requirev6full,
@@ -645,7 +645,7 @@ scn_cnt_define_in6addr_impl(char_type const *begin, char_type const *end, posix_
 	{
 		if (begin == end) [[unlikely]]
 		{
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		if (*begin != char_literal_v<u8'[', char_type>) [[unlikely]]
 		{
@@ -659,16 +659,16 @@ scn_cnt_define_in6addr_impl(char_type const *begin, char_type const *end, posix_
 		}
 		if (inner_end == end) [[unlikely]]
 		{
-			return {inner_end, parse_code::invalid};
+			return {inner_end, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		auto result =
 			scn_cnt_define_in6addr_impl<allowv6shorten, allowv6uppercase, false, requirev6full,
 										allowv4mapped_ipv4>(inner_begin, inner_end, t);
-		if (result.code != parse_code::ok || result.iter != inner_end) [[unlikely]]
+		if (result.code != ::fast_io::freestanding::parse_errc::ok || result.iter != inner_end) [[unlikely]]
 		{
-			return {result.iter, result.code == parse_code::ok ? parse_code::invalid : result.code};
+			return {result.iter, result.code == ::fast_io::freestanding::parse_errc::ok ? ::fast_io::freestanding::parse_errc::invalid : result.code};
 		}
-		return {inner_end + 1, parse_code::ok};
+		return {inner_end + 1, ::fast_io::freestanding::parse_errc::ok};
 	}
 	if constexpr (allowv6shorten)
 	{
@@ -693,12 +693,12 @@ scn_ctx_define_in6addr_impl(ipv6_scan_state_t<char_type> &state, char_type const
 		scn_cnt_define_in6addr_impl<true, true, true, false, allowv4mapped_ipv4>(begin, end, addr)};
 	// If parsing fails exactly at the buffer end, treat it as a "need more input" case
 	// for the streaming context scanner, similar to IPv4 behavior.
-	if (result.code == parse_code::invalid && result.iter == end)
+	if (result.code == ::fast_io::freestanding::parse_errc::invalid && result.iter == end)
 	{
 		state.size = 1; // mark that we have an unfinished IPv6 parse for EOF handling
-		result.code = parse_code::partial;
+		result.code = ::fast_io::freestanding::parse_errc::partial;
 	}
-	else if (result.code != parse_code::partial)
+	else if (result.code != ::fast_io::freestanding::parse_errc::partial)
 	{
 		state.size = 0;
 		state.integer_phase = scan_integral_context_phase::zero;
@@ -758,7 +758,7 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 		auto result{details::scn_cnt_define_inaddr_impl(begin, end, *val.reference)};
 		if constexpr (flags.requireport == true)
 		{
-			if (result.code != parse_code::ok) [[unlikely]]
+			if (result.code != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 			{
 				return result;
 			}
@@ -770,7 +770,7 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 	else if constexpr (::std::same_as<iptype, ::fast_io::ipv4>)
 	{
 		auto result{::fast_io::details::scn_cnt_define_inaddr_impl(begin, end, val.reference->address)};
-		if (result.code != parse_code::ok) [[unlikely]]
+		if (result.code != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return result;
 		}
@@ -792,7 +792,7 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 												 flags.requirev6full, flags.ipv4_mapped_ipv6>(begin, end, *val.reference)};
 		if constexpr (flags.requireport == true)
 		{
-			if (result.code != parse_code::ok) [[unlikely]]
+			if (result.code != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 			{
 				return result;
 			}
@@ -810,7 +810,7 @@ scan_contiguous_define(io_reserve_type_t<char_type, manipulators::ip_scan_manip_
 				flags.allowv6bracket,
 				flags.requirev6full,
 				flags.ipv4_mapped_ipv6>(begin, end, val.reference->address)};
-		if (result.code != parse_code::ok) [[unlikely]]
+		if (result.code != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return result;
 		}
@@ -862,13 +862,13 @@ inline constexpr parse_result<char_type const *> scan_context_define(
 }
 
 template <::std::integral char_type, ::fast_io::manipulators::ip_scan_flags flags>
-inline constexpr parse_code scan_context_eof_define(
+inline constexpr ::fast_io::freestanding::parse_errc scan_context_eof_define(
 	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::ip_scan_manip_t<flags, posix_in_addr *>>,
 	ipv4_scan_state_t<char_type> &state, ::fast_io::manipulators::ip_scan_manip_t<flags, posix_in_addr *> t) noexcept
 {
 	if (state.ip_phase != scan_ipv4_context_phase::addr3)
 	{
-		return parse_code::end_of_file;
+		return ::fast_io::freestanding::parse_errc::end_of_file;
 	}
 	else
 	{
@@ -902,7 +902,7 @@ scan_context_define(::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulat
 	case scan_ipv4_context_phase::addr3:
 	{
 		auto result{details::scn_ctx_define_inaddr_impl(state, begin, end, t.reference->address)};
-		if (result.code != parse_code::ok)
+		if (result.code != ::fast_io::freestanding::parse_errc::ok)
 		{
 			return result;
 		}
@@ -931,13 +931,13 @@ scan_context_define(::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulat
 }
 
 template <::std::integral char_type, ::fast_io::manipulators::ip_scan_flags flags>
-inline constexpr parse_code scan_context_eof_define(
+inline constexpr ::fast_io::freestanding::parse_errc scan_context_eof_define(
 	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::ip_scan_manip_t<flags, ipv4 *>>,
 	ipv4_scan_state_t<char_type> &state, ::fast_io::manipulators::ip_scan_manip_t<flags, ipv4 *> t) noexcept
 {
 	if (state.ip_phase != ::std::bit_cast<scan_ipv4_context_phase>(state.port))
 	{
-		return parse_code::end_of_file;
+		return ::fast_io::freestanding::parse_errc::end_of_file;
 	}
 	else
 	{
@@ -987,7 +987,7 @@ scan_context_define(
 		::fast_io::details::scn_ctx_define_in6addr_impl<flags.ipv4_mapped_ipv6>(state, begin, end,
 																				t.reference->address)};
 
-	if (result.code != parse_code::ok)
+	if (result.code != ::fast_io::freestanding::parse_errc::ok)
 	{
 		return result;
 	}
@@ -1011,7 +1011,7 @@ scan_context_define(
 }
 
 template <::std::integral char_type, ::fast_io::manipulators::ip_scan_flags flags>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_context_eof_define(
 	io_reserve_type_t<char_type,
 					  ::fast_io::manipulators::ip_scan_manip_t<flags, posix_in6_addr *>>,
@@ -1021,12 +1021,12 @@ scan_context_eof_define(
 	// IPv6 itself does not have the concept of "the last group of partial digits"
 	// So if it's not parsed, it's end_of_file
 	return state.size == 0
-			   ? parse_code::ok
-			   : parse_code::invalid;
+			   ? ::fast_io::freestanding::parse_errc::ok
+			   : ::fast_io::freestanding::parse_errc::invalid;
 }
 
 template <::std::integral char_type, ::fast_io::manipulators::ip_scan_flags flags>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_context_eof_define(
 	io_reserve_type_t<char_type,
 					  ::fast_io::manipulators::ip_scan_manip_t<flags, ipv6 *>>,
@@ -1035,7 +1035,7 @@ scan_context_eof_define(
 {
 	if constexpr (flags.requireport == false)
 	{
-		return parse_code::ok;
+		return ::fast_io::freestanding::parse_errc::ok;
 	}
 
 	// Try to complete the integer tail

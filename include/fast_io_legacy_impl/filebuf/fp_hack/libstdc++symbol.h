@@ -27,69 +27,69 @@ inline constexpr auto compute_libstdcxx_stdinoutbufname() noexcept
 		{
 			if constexpr (::std::same_as<char_type, char>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_sync_filebuf<char,struct std::char_traits<char> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_sync_filebuf@DU?$char_traits@D@std@@@__gnu_cxx@@");
 			}
 			else if constexpr (::std::same_as<char_type, wchar_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_sync_filebuf<wchar_t,struct std::char_traits<wchar_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_sync_filebuf@_WU?$char_traits@_W@std@@@__gnu_cxx@@");
 			}
 			else if constexpr (::std::same_as<char_type, char8_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_sync_filebuf<char8_t,struct std::char_traits<char8_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_sync_filebuf@_QU?$char_traits@_Q@std@@@__gnu_cxx@@");
 			}
 			else if constexpr (::std::same_as<char_type, char16_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_sync_filebuf<char16_t,struct std::char_traits<char16_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_sync_filebuf@_SU?$char_traits@_S@std@@@__gnu_cxx@@");
 			}
 			else
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_sync_filebuf<char32_t,struct std::char_traits<char32_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_sync_filebuf@_UU?$char_traits@_U@std@@@__gnu_cxx@@");
 			}
 		}
 		else if constexpr (streambuftype == 1) //__gnu_cxx::stdio_filebuf
 		{
 			if constexpr (::std::same_as<char_type, char>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_filebuf<char,struct std::char_traits<char> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_filebuf@DU?$char_traits@D@std@@@__gnu_cxx@@");
 			}
 			else if constexpr (::std::same_as<char_type, wchar_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_filebuf<wchar_t,struct std::char_traits<wchar_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_filebuf@_WU?$char_traits@_W@std@@@__gnu_cxx@@");
 			}
 			else if constexpr (::std::same_as<char_type, char8_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_filebuf<char8_t,struct std::char_traits<char8_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_filebuf@_QU?$char_traits@_Q@std@@@__gnu_cxx@@");
 			}
 			else if constexpr (::std::same_as<char_type, char16_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_filebuf<char16_t,struct std::char_traits<char16_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_filebuf@_SU?$char_traits@_S@std@@@__gnu_cxx@@");
 			}
 			else
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class __gnu_cxx::stdio_filebuf<char32_t,struct std::char_traits<char32_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$stdio_filebuf@_UU?$char_traits@_U@std@@@__gnu_cxx@@");
 			}
 		}
 		else // MSVC STL and GNU libstdc++ use the same symbol for std::filebuf i think
 		{
 			if constexpr (::std::same_as<char_type, char>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class std::basic_filebuf<char,struct std::char_traits<char> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$basic_filebuf@DU?$char_traits@D@std@@@std@@");
 			}
 			else if constexpr (::std::same_as<char_type, wchar_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class std::basic_filebuf<wchar_t,struct std::char_traits<wchar_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$basic_filebuf@_WU?$char_traits@_W@std@@@std@@");
 			}
 			else if constexpr (::std::same_as<char_type, char8_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class std::basic_filebuf<char8_t,struct std::char_traits<char8_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$basic_filebuf@_QU?$char_traits@_Q@std@@@std@@");
 			}
 			else if constexpr (::std::same_as<char_type, char16_t>)
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class std::basic_filebuf<char16_t,struct std::char_traits<char16_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$basic_filebuf@_SU?$char_traits@_S@std@@@std@@");
 			}
 			else
 			{
-				return ::fast_io::details::compute_symbol_name(u8"class std::basic_filebuf<char32_t,struct std::char_traits<char32_t> >");
+				return ::fast_io::details::compute_symbol_name(u8".?AV?$basic_filebuf@_UU?$char_traits@_U@std@@@std@@");
 			}
 		}
 	}

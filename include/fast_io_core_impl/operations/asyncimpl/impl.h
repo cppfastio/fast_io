@@ -1,0 +1,15 @@
+#pragma once
+
+#include "common.h"
+#include "task.h"
+#include "pread.h"
+#include "pwrite.h"
+#include "scatter.h"
+#include "transmit.h"
+#include "flush.h"
+#include "scan.h"
+#include "accept.h"
+#include "connect.h"
+#include "close.h"
+#include "ptrops.h"
+#include "print.h"

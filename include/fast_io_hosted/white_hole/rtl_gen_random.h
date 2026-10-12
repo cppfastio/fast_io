@@ -22,25 +22,27 @@ namespace win32
 namespace details
 {
 
-inline ::std::byte *rtl_gen_random_some_impl(::std::byte *first, ::std::byte *last)
+inline ::std::byte *rtl_gen_random_some_impl(::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (sizeof(::std::size_t) <= sizeof(::std::uint_least32_t))
 	{
-		::std::size_t sz{static_cast<::std::size_t>(last - first)};
+		::std::size_t sz{count};
 		if (!::fast_io::win32::SystemFunction036(first, static_cast<::std::uint_least32_t>(sz)))
 		{
-			//However, according to MSDN, this API does not set LastError.
+			// However, according to MSDN, this API does not set LastError.
 			throw_win32_error(31 /*ERROR_GEN_FAILURE*/);
 		}
-		return last;
+		return first + count;
 	}
 	else
 	{
 		constexpr ::std::size_t uintleast32mx{
 			static_cast<::std::size_t>(::std::numeric_limits<::std::uint_least32_t>::max())};
-		while (first != last)
+		auto const e{first + count};
+		while (first != e)
 		{
-			::std::size_t toreadthisround{static_cast<::std::size_t>(last - first)};
+			::std::size_t toreadthisround{static_cast<::std::size_t>(e - first)};
 			if (uintleast32mx < toreadthisround)
 			{
 				toreadthisround = uintleast32mx;
@@ -52,16 +54,17 @@ inline ::std::byte *rtl_gen_random_some_impl(::std::byte *first, ::std::byte *la
 			}
 			first += toreadthisround;
 		}
-		return last;
+		return first;
 	}
 }
 
-inline void rtl_gen_random_all_impl(::std::byte *first, ::std::byte *last)
+inline void rtl_gen_random_all_impl(::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto ret{rtl_gen_random_some_impl(first, last)};
+	auto ret{rtl_gen_random_some_impl(first, count)};
 	if constexpr (sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
 	{
-		if (ret != last)
+		if (ret != first + count)
 		{
 			throw_win32_error();
 		}
@@ -73,16 +76,17 @@ inline void rtl_gen_random_all_impl(::std::byte *first, ::std::byte *last)
 
 template <::std::integral char_type>
 	requires(sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
-inline ::std::byte *read_some_bytes_underflow_define(basic_rtl_gen_random<char_type>, ::std::byte *first,
-													 ::std::byte *last)
+inline ::std::byte *read_some_bytes_underflow_define(basic_rtl_gen_random<char_type>, ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::rtl_gen_random_some_impl(first, last);
+	return ::fast_io::win32::details::rtl_gen_random_some_impl(first, count);
 }
 
 template <::std::integral char_type>
-inline void read_all_bytes_underflow_define(basic_rtl_gen_random<char_type>, ::std::byte *first, ::std::byte *last)
+inline void read_all_bytes_underflow_define(basic_rtl_gen_random<char_type>, ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	::fast_io::win32::details::rtl_gen_random_all_impl(first, last);
+	::fast_io::win32::details::rtl_gen_random_all_impl(first, count);
 }
 
 template <::std::integral char_type>

@@ -23,6 +23,7 @@ inline int dup2(int old_fd, int new_fd) noexcept
 } // namespace posix
 
 inline int sys_dup(int old_fd)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_dup)
 	int fd{::fast_io::system_call<__NR_dup, int>(old_fd)};
@@ -51,12 +52,11 @@ inline int sys_dup(int old_fd)
 #endif
 }
 
-template <bool always_terminate = false>
-inline int sys_dup2(int old_fd, int new_fd)
+inline int sys_dup2(int old_fd, int new_fd) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_dup2)
 	int fd{::fast_io::system_call<__NR_dup2, int>(old_fd, new_fd)};
-	::fast_io::system_call_throw_error<always_terminate>(fd);
+	::fast_io::system_call_throw_error(fd);
 	return fd;
 #else
 
@@ -75,14 +75,7 @@ inline int sys_dup2(int old_fd, int new_fd)
 
 	if (fd == -1)
 	{
-		if constexpr (always_terminate)
-		{
-			fast_terminate();
-		}
-		else
-		{
-			throw_posix_error();
-		}
+		throw_posix_error();
 	}
 	return fd;
 #endif
@@ -139,7 +132,7 @@ inline int sys_close(int fd) noexcept
 #endif
 }
 
-inline void sys_close_throw_error(int &fd)
+inline void sys_close_throw_error(int &fd) FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto ret{::fast_io::details::sys_close(fd)};
 	fd = -1; // POSIX standard says we should never call close(2) again even close syscall fails
@@ -168,6 +161,7 @@ extern int fcntl(int fd, int cmd, ... /* arg */) noexcept
 template <typename... Args>
 	requires(::std::is_scalar_v<Args> && ...)
 inline int sys_fcntl(int fd, int op, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_fcntl)
 	auto result{::fast_io::system_call<__NR_fcntl, int>(fd, op, args...)};

@@ -57,6 +57,7 @@ inline int my_random_entropy(int fd) noexcept
 	return ent;
 }
 #endif
+
 } // namespace details
 
 template <::std::integral ch_type>
@@ -145,7 +146,8 @@ struct basic_white_hole_engine
 			return 0.0;
 		}
 	}
-	inline result_type operator()()
+
+	inline constexpr result_type generate() FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<handle_type>)
 	{
 		result_type value;
 		auto instmref{::fast_io::operations::input_stream_ref(handle)};
@@ -167,14 +169,61 @@ struct basic_white_hole_engine
 		else
 		{
 			::fast_io::operations::decay::read_all_bytes_decay(
-				instmref, reinterpret_cast<::std::byte *>(__builtin_addressof(value)),
-				reinterpret_cast<::std::byte *>(__builtin_addressof(value) + 1));
+				instmref,
+				reinterpret_cast<::std::byte *>(__builtin_addressof(value)),
+				sizeof(value));
 		}
 		return value;
+	}
+	inline constexpr result_type operator()() noexcept(::fast_io::operations::decay::defines::input_stream_operations_nothrow<handle_type>)
+	{
+		if constexpr (::fast_io::operations::decay::defines::input_stream_operations_nothrow<handle_type>)
+		{
+			return this->generate();
+		}
+		else
+		{
+#ifdef __HERBCEPTIONS__
+			try
+#endif
+			{
+				return this->generate();
+			}
+#ifdef __HERBCEPTIONS__
+			catch throws(::std::error e)
+			{
+#if (defined(__cpp_exceptions) && (!defined(_MSC_VER) || defined(__clang__))) || __HAS_EXCEPTIONS == 1
+				e.throw_legacy_exception();
+#else
+				::fast_io::fast_terminate();
+#endif
+			}
+#endif
+		}
 	}
 };
 
 using native_white_hole_engine = basic_white_hole_engine<native_white_hole>;
 using ibuf_white_hole_engine = basic_white_hole_engine<ibuf_white_hole>;
 
+template <typename Distribution, typename Engine>
+constexpr auto random_generate(Distribution &dis, Engine &eng) FAST_IO_HERBCEPTIONS_THROWS -> decltype(dis(eng))
+{
+#ifdef __HERBCEPTIONS__
+	try
+	{
+		return dis(eng);
+	}
+	catch throws(::std::error e)
+	{
+		if (auto eh = ::std::exception_cast_std_error<::std::cxx_std_error_legacy_exception *>(e))
+		{
+			throw throws eh->release();
+		}
+		throw throws;
+	}
+#else
+	return dis(eng);
+#endif
+}
 } // namespace fast_io

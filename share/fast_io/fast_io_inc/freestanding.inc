@@ -51,7 +51,6 @@ using ::fast_io::freestanding::bytes_clear_n;
 using ::fast_io::freestanding::overlapped_copy;
 using ::fast_io::freestanding::overlapped_copy_n;
 
-using ::fast_io::freestanding::errc;
 
 } // namespace freestanding
 } // namespace fast_io

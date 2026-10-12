@@ -93,7 +93,7 @@ inline constexpr bool operator!=(list_iterator<T, isconst1> a, list_iterator<T, 
 }
 
 template <typename allocator>
-inline void list_trivially_destroy(void *first, void *last, ::std::size_t sz)
+inline void list_trivially_destroy(void *first, void *last, ::std::size_t sz) noexcept
 {
 	for (void *it{first}; it != last;)
 	{
@@ -105,7 +105,7 @@ inline void list_trivially_destroy(void *first, void *last, ::std::size_t sz)
 
 template <typename allocator>
 inline void list_trivially_destroy_aligned(void *first, void *last,
-										   ::std::size_t align, ::std::size_t sz)
+										   ::std::size_t align, ::std::size_t sz) noexcept
 {
 	for (void *it{first}; it != last;)
 	{
@@ -116,7 +116,7 @@ inline void list_trivially_destroy_aligned(void *first, void *last,
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz>
-inline void list_trivially_destroy_sa(void *first, void *last)
+inline void list_trivially_destroy_sa(void *first, void *last) noexcept
 {
 	if constexpr (align <= allocator::default_alignment)
 	{
@@ -160,23 +160,26 @@ inline constexpr void list_main_erase_ptr_common(void *iter) noexcept
 }
 
 template <typename allocator>
-inline constexpr void *list_trivially_allocate_insert(void *iter, ::std::size_t sz) noexcept
+inline constexpr void *list_trivially_allocate_insert(void *iter, ::std::size_t sz)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_on_allocation_failure<allocator>)
 {
-	void *newnode = generic_allocator_adapter<allocator>::allocate(sz);
+	void *newnode = ::fast_io::containers::details::generic_allocator_adapter_preserving_flags<allocator>::allocate(sz);
 	list_main_insert_ptr_common(newnode, iter);
 	return newnode;
 }
 
 template <typename allocator>
-inline constexpr void *list_trivially_allocate_insert_aligned(void *iter, ::std::size_t align, ::std::size_t sz) noexcept
+inline constexpr void *list_trivially_allocate_insert_aligned(void *iter, ::std::size_t align, ::std::size_t sz)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_on_allocation_failure<allocator>)
 {
-	void *newnode = generic_allocator_adapter<allocator>::allocate_aligned(align, sz);
+	void *newnode = ::fast_io::containers::details::generic_allocator_adapter_preserving_flags<allocator>::allocate_aligned(align, sz);
 	list_main_insert_ptr_common(newnode, iter);
 	return newnode;
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz>
-inline constexpr void *list_trivially_allocate_insert_sa(void *iter) noexcept
+inline constexpr void *list_trivially_allocate_insert_sa(void *iter)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_on_allocation_failure<allocator>)
 {
 	if constexpr (align <= allocator::default_alignment)
 	{
@@ -189,23 +192,26 @@ inline constexpr void *list_trivially_allocate_insert_sa(void *iter) noexcept
 }
 
 template <typename allocator>
-inline constexpr void *list_trivially_allocate_push_front(void *imp, ::std::size_t sz) noexcept
+inline constexpr void *list_trivially_allocate_push_front(void *imp, ::std::size_t sz)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_on_allocation_failure<allocator>)
 {
-	void *newnode = generic_allocator_adapter<allocator>::allocate(sz);
+	void *newnode = ::fast_io::containers::details::generic_allocator_adapter_preserving_flags<allocator>::allocate(sz);
 	list_main_push_front_ptr_common(newnode, imp);
 	return newnode;
 }
 
 template <typename allocator>
-inline constexpr void *list_trivially_allocate_push_front_aligned(void *imp, ::std::size_t align, ::std::size_t sz) noexcept
+inline constexpr void *list_trivially_allocate_push_front_aligned(void *imp, ::std::size_t align, ::std::size_t sz)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_on_allocation_failure<allocator>)
 {
-	void *newnode = generic_allocator_adapter<allocator>::allocate_aligned(align, sz);
+	void *newnode = ::fast_io::containers::details::generic_allocator_adapter_preserving_flags<allocator>::allocate_aligned(align, sz);
 	list_main_push_front_ptr_common(newnode, imp);
 	return newnode;
 }
 
 template <typename allocator, ::std::size_t align, ::std::size_t sz>
-inline constexpr void *list_trivially_allocate_push_front_sa(void *imp) noexcept
+inline constexpr void *list_trivially_allocate_push_front_sa(void *imp)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::containers::details::allocator_throws_on_allocation_failure<allocator>)
 {
 	if constexpr (align <= allocator::default_alignment)
 	{
@@ -291,6 +297,7 @@ inline constexpr void *list_ptr_advance(void *firstptr, ::std::size_t n) noexcep
 
 template <typename T, typename Cmp>
 inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, void *rightfirstptr, void *rightlastptr, Cmp cmp)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<Cmp &>()(::std::declval<T &>(), ::std::declval<T &>())))
 {
 	for (; leftfirstptr != leftlastptr;)
 	{
@@ -314,6 +321,7 @@ inline constexpr void list_merge_common(void *leftfirstptr, void *leftlastptr, v
 
 template <typename T, typename Cmp>
 inline constexpr void list_sort_n_common(void *firstptr, void *lastptr, ::std::size_t n, Cmp cmp)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<Cmp &>()(::std::declval<T &>(), ::std::declval<T &>())))
 {
 	switch (n)
 	{
@@ -377,6 +385,7 @@ inline constexpr void list_sort_n_common(void *firstptr, void *lastptr, ::std::s
 
 template <typename T, typename Cmp>
 inline constexpr void list_sort_common(void *firstptr, void *lastptr, Cmp cmp)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<Cmp &>()(::std::declval<T &>(), ::std::declval<T &>())))
 {
 	if (firstptr == lastptr)
 	{
@@ -397,9 +406,12 @@ public:
 
 private:
 	using node_type = ::fast_io::containers::details::list_node<value_type>;
-	using untyped_allocator_type = generic_allocator_adapter<allocator_type>;
+	using untyped_allocator_type = ::fast_io::containers::details::generic_allocator_adapter_preserving_flags<allocator_type>;
 	using typed_allocator_type = typed_generic_allocator_adapter<untyped_allocator_type, node_type>;
 	static inline constexpr bool alloc_with_status{untyped_allocator_type::has_status};
+	static inline constexpr bool throwing_allocation{untyped_allocator_type::throws_on_allocation_failure};
+	static inline constexpr bool throwing_violations{untyped_allocator_type::throws_on_violations};
+	static inline constexpr bool throwing_any{throwing_allocation || throwing_violations};
 	using handle_type = ::std::conditional_t<alloc_with_status, typename untyped_allocator_type::handle_type, allocator_type>;
 	using handle_holder_type = ::fast_io::containers::details::handle_holder<handle_type>;
 #ifndef __INTELLISENSE__
@@ -411,7 +423,8 @@ private:
 #endif
 	handle_holder_type allochdl;
 
-	inline constexpr auto allocate_new_raw_node() noexcept
+	inline constexpr auto allocate_new_raw_node()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation)
 	{
 		if constexpr (alloc_with_status)
 		{
@@ -435,7 +448,7 @@ private:
 #endif
 		::std::conditional_t<alloc_with_status, list<T, allocator> *, allocator> v;
 		inline explicit constexpr new_handle_guard(::fast_io::containers::details::list_node<value_type> *p,
-												   list<T, allocator> *va)
+												   list<T, allocator> *va) noexcept
 		{
 			ptr = p;
 			if constexpr (alloc_with_status)
@@ -445,7 +458,7 @@ private:
 		}
 		inline new_handle_guard(new_handle_guard const &) = delete;
 		inline new_handle_guard &operator=(new_handle_guard const &) = delete;
-		inline constexpr ~new_handle_guard()
+		inline constexpr ~new_handle_guard() noexcept
 		{
 			if (ptr == nullptr)
 			{
@@ -468,13 +481,13 @@ private:
 		inline explicit constexpr list_destroyer(list<T, allocator> *pl) noexcept
 			: plst(pl)
 		{}
-		inline constexpr void release()
+		inline constexpr void release() noexcept
 		{
 			plst = nullptr;
 		}
 		inline list_destroyer(list_destroyer const &) = delete;
 		inline list_destroyer &operator=(list_destroyer const &) = delete;
-		inline constexpr ~list_destroyer()
+		inline constexpr ~list_destroyer() noexcept
 		{
 			if (plst == nullptr)
 			{
@@ -510,6 +523,9 @@ public:
 private:
 	template <::std::forward_iterator Iter, typename Sentinel>
 	inline constexpr void construct_list_common_impl(Iter first, Sentinel last)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any ||
+									   !::std::is_nothrow_constructible_v<value_type, decltype(*first)> ||
+									   !noexcept(++first) || !noexcept(first != last))
 	{
 		if constexpr (::std::same_as<Iter, Sentinel> && ::std::contiguous_iterator<Iter> && !::std::is_pointer_v<Iter>)
 		{
@@ -529,18 +545,22 @@ private:
 public:
 	template <::std::ranges::range R>
 	inline explicit constexpr list(::fast_io::freestanding::from_range_t, R &&rg)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any ||
+									   !::std::is_nothrow_constructible_v<value_type, ::std::ranges::range_reference_t<R>>)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 		this->construct_list_common_impl(::std::ranges::begin(rg), ::std::ranges::end(rg));
 	}
 
 	inline explicit constexpr list(::std::initializer_list<value_type> ilist)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_copy_constructible_v<value_type>)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 		this->construct_list_common_impl(ilist.begin(), ilist.end());
 	}
 
 	inline explicit constexpr list(::std::size_t n)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_default_constructible_v<value_type>)
 		: imp{__builtin_addressof(imp), __builtin_addressof(imp)}
 	{
 		list_destroyer destroyer(this);
@@ -566,7 +586,7 @@ public:
 	}
 	[[nodiscard]] inline constexpr const_iterator end() const noexcept
 	{
-		return {const_cast<::fast_io::containers::details::list_node_common*>(__builtin_addressof(imp))};
+		return {const_cast<::fast_io::containers::details::list_node_common *>(__builtin_addressof(imp))};
 	}
 
 	[[nodiscard]] inline constexpr const_iterator cbegin() const noexcept
@@ -575,7 +595,7 @@ public:
 	}
 	[[nodiscard]] inline constexpr const_iterator cend() const noexcept
 	{
-		return {const_cast<::fast_io::containers::details::list_node_common*>(__builtin_addressof(imp))};
+		return {const_cast<::fast_io::containers::details::list_node_common *>(__builtin_addressof(imp))};
 	}
 
 	[[nodiscard]] inline constexpr reverse_iterator rbegin() noexcept
@@ -594,7 +614,7 @@ public:
 	}
 	[[nodiscard]] inline constexpr const_reverse_iterator rbegin() const noexcept
 	{
-		return const_reverse_iterator({const_cast<::fast_io::containers::details::list_node_common*>(__builtin_addressof(imp))});
+		return const_reverse_iterator({const_cast<::fast_io::containers::details::list_node_common *>(__builtin_addressof(imp))});
 	}
 
 	[[nodiscard]] inline constexpr const_reverse_iterator crend() const noexcept
@@ -603,13 +623,9 @@ public:
 	}
 	[[nodiscard]] inline constexpr const_reverse_iterator crbegin() const noexcept
 	{
-		return const_reverse_iterator({const_cast<::fast_io::containers::details::list_node_common*>(__builtin_addressof(imp))});
+		return const_reverse_iterator({const_cast<::fast_io::containers::details::list_node_common *>(__builtin_addressof(imp))});
 	}
 
-	[[nodiscard]] inline constexpr bool empty() const noexcept
-	{
-		return imp.next == __builtin_addressof(imp);
-	}
 
 	[[nodiscard]] inline constexpr bool is_empty() const noexcept
 	{
@@ -649,21 +665,18 @@ public:
 private:
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	inline constexpr auto allocate_construct_new_node(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	inline constexpr auto allocate_construct_new_node(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation || !::std::is_nothrow_constructible_v<value_type, Args &&...>)
 	{
 		auto newnode = allocate_new_raw_node();
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
-			::std::construct_at(
-				__builtin_addressof(newnode->element),
-				::std::forward<Args>(args)...);
+			::new (static_cast<void *>(__builtin_addressof(newnode->element))) value_type(::std::forward<Args>(args)...);
 		}
 		else
 		{
 			new_handle_guard guard(newnode, this);
-			::std::construct_at(
-				__builtin_addressof(newnode->element),
-				::std::forward<Args>(args)...);
+			::new (static_cast<void *>(__builtin_addressof(newnode->element))) value_type(::std::forward<Args>(args)...);
 			guard.ptr = nullptr;
 		}
 		return newnode;
@@ -672,14 +685,13 @@ private:
 public:
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	inline constexpr reference emplace_back(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	inline constexpr reference emplace_back(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation || !::std::is_nothrow_constructible_v<value_type, Args &&...>)
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
 			auto newnode = static_cast<node_type *>(list_trivially_allocate_insert_sa<allocator_type, alignof(node_type), sizeof(node_type)>(__builtin_addressof(imp)));
-			::std::construct_at(
-				__builtin_addressof(newnode->element),
-				::std::forward<Args>(args)...);
+			::new (static_cast<void *>(__builtin_addressof(newnode->element))) value_type(::std::forward<Args>(args)...);
 			return newnode->element;
 		}
 		else
@@ -692,14 +704,13 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	inline constexpr reference emplace_front(Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	inline constexpr reference emplace_front(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation || !::std::is_nothrow_constructible_v<value_type, Args &&...>)
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
 			auto newnode = static_cast<node_type *>(list_trivially_allocate_push_front_sa<allocator_type, alignof(node_type), sizeof(node_type)>(__builtin_addressof(imp)));
-			::std::construct_at(
-				__builtin_addressof(newnode->element),
-				::std::forward<Args>(args)...);
+			::new (static_cast<void *>(__builtin_addressof(newnode->element))) value_type(::std::forward<Args>(args)...);
 			return newnode->element;
 		}
 		else
@@ -712,14 +723,13 @@ public:
 
 	template <typename... Args>
 		requires ::std::constructible_from<value_type, Args...>
-	inline constexpr reference emplace(const_iterator iter, Args &&...args) noexcept(::std::is_nothrow_constructible_v<value_type, Args...>)
+	inline constexpr reference emplace(const_iterator iter, Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_allocation || !::std::is_nothrow_constructible_v<value_type, Args &&...>)
 	{
 		if constexpr (::std::is_nothrow_constructible_v<value_type, Args...>)
 		{
 			auto newnode = static_cast<node_type *>(::fast_io::containers::details::list_trivially_allocate_insert_sa<allocator_type, alignof(node_type), sizeof(node_type)>(iter.iter));
-			::std::construct_at(
-				__builtin_addressof(newnode->element),
-				::std::forward<Args>(args)...);
+			::new (static_cast<void *>(__builtin_addressof(newnode->element))) value_type(::std::forward<Args>(args)...);
 			return newnode->element;
 		}
 		else
@@ -749,42 +759,49 @@ private:
 	}
 
 public:
-	inline constexpr void push_back(const_reference value) noexcept(noexcept(this->emplace_back(value)))
+	inline constexpr void push_back(const_reference value)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		this->emplace_back(value);
 	}
 
-	inline constexpr void push_front(const_reference value) noexcept(noexcept(this->emplace_back(value)))
+	inline constexpr void push_front(const_reference value)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		this->emplace_front(value);
 	}
 
-	inline constexpr void push_back(T &&value) noexcept(noexcept(this->emplace_back(::std::move(value))))
+	inline constexpr void push_back(T &&value)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_move_constructible_v<value_type>)
 	{
 		this->emplace_back(std::move(value));
 	}
 
-	inline constexpr void push_front(T &&value) noexcept(noexcept(this->emplace_front(::std::move(value))))
+	inline constexpr void push_front(T &&value)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_move_constructible_v<value_type>)
 	{
 		this->emplace_front(std::move(value));
 	}
 
-	inline constexpr void insert(const_iterator iter, T &&value) noexcept(noexcept(this->emplace_front(::std::move(value))))
+	inline constexpr void insert(const_iterator iter, T &&value)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_move_constructible_v<value_type>)
 	{
 		this->emplace(iter, std::move(value));
 	}
 
-	inline constexpr void insert(const_iterator iter, const_reference value) noexcept(noexcept(this->emplace(iter, value)))
+	inline constexpr void insert(const_iterator iter, const_reference value)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_copy_constructible_v<value_type>)
 	{
 		this->emplace(iter, value);
 	}
 
-	inline constexpr void pop_back() noexcept
+	inline constexpr void pop_back()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 		if (node == __builtin_addressof(imp))
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 #if 0
 		auto prev = static_cast<::fast_io::containers::details::list_node_common *>(node->prev);
@@ -796,12 +813,13 @@ public:
 #endif
 	}
 
-	inline constexpr void pop_front() noexcept
+	inline constexpr void pop_front()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
 		if (node == __builtin_addressof(imp))
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 #if 0
 		auto next = static_cast<::fast_io::containers::details::list_node_common *>(node->next);
@@ -831,44 +849,48 @@ public:
 		this->destroy_node(node);
 	}
 
-	[[nodiscard]] inline constexpr const_reference front() const noexcept
+	[[nodiscard]] inline constexpr const_reference front() const
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		auto nodeptr{imp.next};
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
 		if (node == __builtin_addressof(imp)) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
-	[[nodiscard]] inline constexpr reference front() noexcept
+	[[nodiscard]] inline constexpr reference front()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		auto nodeptr{imp.next};
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
 		if (node == __builtin_addressof(imp)) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
 
-	[[nodiscard]] inline constexpr const_reference back() const noexcept
+	[[nodiscard]] inline constexpr const_reference back() const
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		auto nodeptr{imp.prev};
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
 		if (node == __builtin_addressof(imp)) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
-	[[nodiscard]] inline constexpr reference back() noexcept
+	[[nodiscard]] inline constexpr reference back()
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		auto nodeptr{imp.prev};
 		auto node = static_cast<::fast_io::containers::details::list_node_common *>(nodeptr);
 		if (node == __builtin_addressof(imp)) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return static_cast<::fast_io::containers::details::list_node<T> *>(nodeptr)->element;
 	}
@@ -903,6 +925,7 @@ public:
 	}
 
 	inline constexpr list(list const &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_copy_constructible_v<value_type>)
 		requires(::std::copyable<value_type>)
 	{
 		list_destroyer destroyer(this);
@@ -914,6 +937,7 @@ public:
 	}
 
 	inline constexpr list &operator=(list const &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_any || !::std::is_nothrow_copy_constructible_v<value_type>)
 		requires(::std::copyable<value_type>)
 	{
 		if (__builtin_addressof(other) == this) [[unlikely]]
@@ -926,13 +950,16 @@ public:
 	}
 
 	inline constexpr list(list &&other) noexcept
-		  #if 0
+#if 0
 		  : allochdl(std::move(other.allochdl))
-		  #endif
+#endif
 	{
-		if (other.is_empty()) {
+		if (other.is_empty())
+		{
 			imp = {__builtin_addressof(imp), __builtin_addressof(imp)};
-		} else {
+		}
+		else
+		{
 			imp = other.imp;
 			auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 			auto next = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
@@ -947,9 +974,9 @@ public:
 		{
 			this->destroy();
 			imp = other.imp;
-			#if 0
+#if 0
 			allochdl = ::std::move(other.allochdl);
-			#endif
+#endif
 			auto prev = static_cast<::fast_io::containers::details::list_node_common *>(imp.prev);
 			auto next = static_cast<::fast_io::containers::details::list_node_common *>(imp.next);
 			next->prev = prev->next = __builtin_addressof(imp);
@@ -961,11 +988,7 @@ public:
 private:
 	inline constexpr void destroy() noexcept
 	{
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if (!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			if constexpr (::std::is_trivially_destructible_v<value_type> && !alloc_with_status)
 			{
@@ -1016,7 +1039,8 @@ public:
 	}
 
 	template <typename Cmp>
-	inline constexpr void merge(list &&other, Cmp cmp) noexcept
+	inline constexpr void merge(list &&other, Cmp cmp)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<Cmp &>()(::std::declval<value_type &>(), ::std::declval<value_type &>())))
 	{
 		if (__builtin_addressof(other) == this)
 		{
@@ -1032,7 +1056,8 @@ public:
 	}
 
 	template <typename Cmp>
-	inline constexpr void sort(Cmp cmp) noexcept
+	inline constexpr void sort(Cmp cmp)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<Cmp &>()(::std::declval<value_type &>(), ::std::declval<value_type &>())))
 	{
 		::fast_io::containers::details::list_sort_common<value_type, Cmp>(imp.next, __builtin_addressof(imp), cmp);
 	}
@@ -1043,7 +1068,8 @@ public:
 	}
 
 	template <typename Cmp>
-	inline constexpr void sort(const_iterator first, const_iterator last, Cmp cmp) noexcept
+	inline constexpr void sort(const_iterator first, const_iterator last, Cmp cmp)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<Cmp &>()(::std::declval<value_type &>(), ::std::declval<value_type &>())))
 	{
 		::fast_io::containers::details::list_sort_common<value_type, Cmp>(first.iter, last.iter, cmp);
 	}
@@ -1053,7 +1079,7 @@ public:
 		this->sort(first, last, ::std::ranges::less{});
 	}
 
-	inline constexpr ~list()
+	inline constexpr ~list() noexcept
 	{
 		this->destroy();
 	}
@@ -1061,16 +1087,18 @@ public:
 
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::equality_comparable<T>
-inline constexpr bool operator==(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs) noexcept
+inline constexpr bool operator==(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<T const &>() == ::std::declval<T const &>()))
 {
-	return ::std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
+	return ::fast_io::freestanding::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
 #if __cpp_impl_three_way_comparison >= 201907L
 
 template <typename T, typename allocator1, typename allocator2>
 	requires ::std::three_way_comparable<T>
-inline constexpr auto operator<=>(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs) noexcept
+inline constexpr auto operator<=>(list<T, allocator1> const &lhs, list<T, allocator2> const &rhs)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<T const &>() <=> ::std::declval<T const &>()))
 {
 	return ::fast_io::freestanding::lexicographical_compare_three_way(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend(), ::std::compare_three_way{});
 }

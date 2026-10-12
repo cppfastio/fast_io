@@ -91,24 +91,24 @@ inline constexpr char_type *chrono_year_impl(char_type *it, integ i) noexcept
 
 // assert(end - begin >= 2)
 template <::std::integral char_type, ::std::integral T>
-inline constexpr parse_code chrono_scan_two_digits_unsafe_impl(char_type const *begin, T &t) noexcept
+inline constexpr ::fast_io::freestanding::parse_errc chrono_scan_two_digits_unsafe_impl(char_type const *begin, T &t) noexcept
 {
 	T retval{};
 	auto ch{*begin};
 	if (!::fast_io::char_category::is_c_digit(ch)) [[unlikely]]
 	{
-		return parse_code::invalid;
+		return ::fast_io::freestanding::parse_errc::invalid;
 	}
 	retval = static_cast<T>(retval + static_cast<T>(ch - char_literal_v<u8'0', char_type>) * 10);
 	++begin;
 	ch = *begin;
 	if (!::fast_io::char_category::is_c_digit(ch)) [[unlikely]]
 	{
-		return parse_code::invalid;
+		return ::fast_io::freestanding::parse_errc::invalid;
 	}
 	retval += static_cast<T>(ch - char_literal_v<u8'0', char_type>);
 	t = retval;
-	return parse_code::ok;
+	return ::fast_io::freestanding::parse_errc::ok;
 }
 
 template <::std::integral char_type, ::std::signed_integral I>
@@ -118,7 +118,7 @@ inline constexpr parse_result<char_type const *> chrono_scan_year_impl(char_type
 	I retval{};
 	if (end - begin < 20) [[unlikely]]
 	{
-		return {end, parse_code::invalid};
+		return {end, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	[[maybe_unused]] bool sign{};
 	if (*begin == char_literal_v<u8'-', char_type>) [[unlikely]]
@@ -131,13 +131,13 @@ inline constexpr parse_result<char_type const *> chrono_scan_year_impl(char_type
 	{
 		if (!details::char_is_digit<10, char_type>(*itr)) [[unlikely]]
 		{
-			return {itr, parse_code::invalid};
+			return {itr, ::fast_io::freestanding::parse_errc::invalid};
 		}
 	}
 	if (details::char_is_digit<10, char_type>(*itr)) [[unlikely]]
 	{
 		auto [itr2, ec] = scan_int_contiguous_define_impl<10, true, false, false>(begin, end, retval);
-		if (ec != parse_code::ok) [[unlikely]]
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -151,7 +151,7 @@ inline constexpr parse_result<char_type const *> chrono_scan_year_impl(char_type
 		retval += static_cast<::std::int_least64_t>(*begin++ - char_literal_v<u8'0', char_type>);
 	}
 	i = sign ? -retval : retval;
-	return {begin, parse_code::ok};
+	return {begin, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <::std::integral char_type, my_integral T>
@@ -189,7 +189,7 @@ chrono_scan_decimal_fraction_part_never_overflow_impl(char_type const *begin, ch
 {
 	if (begin == end) [[unlikely]]
 	{
-		return {end, parse_code::invalid};
+		return {end, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	T retval{};
 	constexpr ::std::size_t digitsm1{::std::numeric_limits<T>::digits10};
@@ -199,13 +199,13 @@ chrono_scan_decimal_fraction_part_never_overflow_impl(char_type const *begin, ch
 		new_end = end;
 	}
 	auto [itr, ec] = scan_int_contiguous_define_impl<10, true, false, true>(begin, new_end, retval);
-	if (ec != parse_code::ok) [[unlikely]]
+	if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {itr, ec};
 	}
 	if (begin == itr) [[unlikely]]
 	{
-		return {itr, parse_code::invalid};
+		return {itr, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	::std::size_t zero_cnt{digitsm1 - static_cast<::std::size_t>(itr - begin)};
 	for (::std::size_t i{}; i < zero_cnt; ++i)
@@ -225,7 +225,7 @@ chrono_scan_decimal_fraction_part_never_overflow_impl(char_type const *begin, ch
 		}
 	}
 	t = retval;
-	return {itr, parse_code::ok};
+	return {itr, ::fast_io::freestanding::parse_errc::ok};
 }
 
 } // namespace fast_io::details

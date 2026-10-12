@@ -1,7 +1,5 @@
-﻿#pragma once
+#pragma once
 
-#include "version.h"
-#if 0
-#include "cipher_suite.h"
-#include "client_hello.h"
-#endif
+/* TLS 1.3 client protocol layer; aggregates the module. */
+
+#include "impl.h"

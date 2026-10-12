@@ -2,12 +2,15 @@
 
 namespace fast_io::containers
 {
-template <::std::integral char_type>
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags flags = ::fast_io::allocator_adapter_flags::none>
 class basic_cstring_view;
 
-template <::std::integral char_type>
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags flags = ::fast_io::allocator_adapter_flags::none>
 class basic_string_view
 {
+	static inline constexpr bool throwing_violations{
+		flags == ::fast_io::allocator_adapter_flags::throws_on_violations};
+
 public:
 	using value_type = char_type;
 	using size_type = ::std::size_t;
@@ -29,7 +32,8 @@ public:
 		: ptr{p}, n{s}
 	{}
 
-	inline constexpr basic_string_view(basic_cstring_view<char_type> csv) noexcept
+	template <::fast_io::allocator_adapter_flags flags2>
+	inline constexpr basic_string_view(basic_cstring_view<char_type, flags2> csv) noexcept
 		: ptr{csv.data()}, n{csv.size()}
 	{
 	}
@@ -71,10 +75,6 @@ public:
 		return !n;
 	}
 
-	[[nodiscard]] inline constexpr bool empty() const noexcept
-	{
-		return !n;
-	}
 
 	[[nodiscard]] inline constexpr size_type size() const noexcept
 	{
@@ -162,11 +162,11 @@ public:
 	[[msvc::forceinline]]
 #endif
 	inline constexpr const_reference
-	operator[](size_type idx) const noexcept
+	operator[](size_type idx) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (n <= idx) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return ptr[idx];
 	}
@@ -188,11 +188,11 @@ public:
 	[[msvc::forceinline]]
 #endif
 	inline constexpr const_reference
-	back() const noexcept
+	back() const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!n) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		size_type const nm1{n - 1};
 		return ptr[nm1];
@@ -216,11 +216,11 @@ public:
 	[[msvc::forceinline]]
 #endif
 	inline constexpr const_reference
-	front() const noexcept
+	front() const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (!n) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return *ptr;
 	}
@@ -266,11 +266,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr void remove_suffix(size_type svn) noexcept
+	inline constexpr void remove_suffix(size_type svn) FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (n <= svn) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->n -= svn;
 	}
@@ -285,11 +285,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr void remove_prefix(size_type svn) noexcept
+	inline constexpr void remove_prefix(size_type svn) FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (n <= svn) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		this->ptr += svn;
 		this->n -= svn;
@@ -315,11 +315,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view subview_front(size_type count) const noexcept
+	inline constexpr basic_string_view subview_front(size_type count) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->n < count) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return basic_string_view(this->ptr, count);
 	}
@@ -339,11 +339,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view subview_back(size_type count) const noexcept
+	inline constexpr basic_string_view subview_back(size_type count) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->n < count) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return basic_string_view(this->ptr + (this->n - count), count);
 	}
@@ -363,18 +363,18 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr basic_string_view subview(size_type pos, size_type count = ::fast_io::containers::npos) const noexcept
+	inline constexpr basic_string_view subview(size_type pos, size_type count = ::fast_io::containers::npos) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (this->n < pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		size_type const val{this->n - pos};
 		if (val < count)
 		{
 			if (count != ::fast_io::containers::npos) [[unlikely]]
 			{
-				::fast_io::fast_terminate();
+				::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 			}
 			count = val;
 		}
@@ -399,12 +399,12 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr size_type copy(char_type *dest, size_type count, size_type pos = 0) const noexcept
+	inline constexpr size_type copy(char_type *dest, size_type count, size_type pos = 0) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		size_type const thisn{this->n};
 		if (thisn < pos) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return this->copy_unchecked(dest, count, pos);
 	}
@@ -662,54 +662,54 @@ public:
 	}
 };
 
-template <::std::integral char_type>
-inline constexpr void swap(::fast_io::containers::basic_string_view<char_type> &a, ::fast_io::containers::basic_string_view<char_type> &b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags flags>
+inline constexpr void swap(::fast_io::containers::basic_string_view<char_type, flags> &a, ::fast_io::containers::basic_string_view<char_type, flags> &b) noexcept
 {
 	a.swap(b);
 }
 
-template <::std::integral char_type>
-inline constexpr ::fast_io::basic_io_scatter_t<char_type> print_alias_define(::fast_io::io_alias_t, ::fast_io::containers::basic_string_view<char_type> str) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags flags>
+inline constexpr ::fast_io::basic_io_scatter_t<char_type> print_alias_define(::fast_io::io_alias_t, ::fast_io::containers::basic_string_view<char_type, flags> str) noexcept
 {
 	return {str.ptr, str.n};
 }
 
-template <::std::integral char_type>
-inline constexpr bool operator==(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+inline constexpr bool operator==(::fast_io::containers::basic_string_view<char_type, f1> a, ::fast_io::containers::basic_string_view<char_type, f2> b) noexcept
 {
 	return ::std::equal(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n);
 }
 
-template <::std::integral char_type, ::std::size_t n>
-inline constexpr bool operator==(::fast_io::containers::basic_string_view<char_type> a, char_type const (&buffer)[n]) noexcept
+template <::std::integral char_type, ::std::size_t n, ::fast_io::allocator_adapter_flags flags>
+inline constexpr bool operator==(::fast_io::containers::basic_string_view<char_type, flags> a, char_type const (&buffer)[n]) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::std::equal(a.ptr, a.ptr + a.n, buffer, buffer + nm1);
 }
 
-template <::std::integral char_type, ::std::size_t n>
-inline constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::basic_string_view<char_type> a) noexcept
+template <::std::integral char_type, ::std::size_t n, ::fast_io::allocator_adapter_flags flags>
+inline constexpr bool operator==(char_type const (&buffer)[n], ::fast_io::containers::basic_string_view<char_type, flags> a) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::std::equal(buffer, buffer + nm1, a.ptr, a.ptr + a.n);
 }
 
 #if __cpp_impl_three_way_comparison >= 201907L
-template <::std::integral char_type>
-inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, ::fast_io::containers::basic_string_view<char_type> b) noexcept
+template <::std::integral char_type, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type, f1> a, ::fast_io::containers::basic_string_view<char_type, f2> b) noexcept
 {
 	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, b.ptr, b.ptr + b.n, ::std::compare_three_way{});
 }
 
-template <::std::integral char_type, ::std::size_t n>
-inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type> a, char_type const (&buffer)[n]) noexcept
+template <::std::integral char_type, ::std::size_t n, ::fast_io::allocator_adapter_flags flags>
+inline constexpr auto operator<=>(::fast_io::containers::basic_string_view<char_type, flags> a, char_type const (&buffer)[n]) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::fast_io::freestanding::lexicographical_compare_three_way(a.ptr, a.ptr + a.n, buffer, buffer + nm1, ::std::compare_three_way{});
 }
 
-template <::std::integral char_type, ::std::size_t n>
-inline constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_string_view<char_type> a) noexcept
+template <::std::integral char_type, ::std::size_t n, ::fast_io::allocator_adapter_flags flags>
+inline constexpr auto operator<=>(char_type const (&buffer)[n], ::fast_io::containers::basic_string_view<char_type, flags> a) noexcept
 {
 	constexpr ::std::size_t nm1{n - 1u};
 	return ::fast_io::freestanding::lexicographical_compare_three_way(buffer, buffer + nm1, a.ptr, a.ptr + a.n, ::std::compare_three_way{});

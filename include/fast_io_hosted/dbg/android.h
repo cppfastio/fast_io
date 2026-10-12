@@ -33,6 +33,7 @@ template <android_logger_family_tag fam, ::std::integral ch_type>
 struct basic_android_family_logger
 {
 	using char_type = ch_type;
+	using output_char_type = char_type;
 	::std::conditional_t<fam == android_logger_family_tag::base, android_logmessage_meta_base,
 						 android_logmessage_meta_v30>
 		meta{};
@@ -204,17 +205,18 @@ inline void android_logger_writev_impl(android_logmessage_meta_v30 const &meta, 
 }
 } // namespace details
 
-template <android_logger_family_tag fam, ::std::integral char_type, ::std::contiguous_iterator Iter>
-inline void write(basic_android_family_logger<fam, char_type> const &b, Iter first, Iter last) noexcept
+template <android_logger_family_tag fam, ::std::integral char_type>
+inline void write_all_bytes_overflow_define(basic_android_family_logger<fam, char_type> const &b,
+											::std::byte const *first, ::std::size_t count) noexcept
 {
-	::fast_io::details::android_logger_write_impl(b.meta, ::std::to_address(first),
-												  static_cast<::std::size_t>(last - first) * sizeof(*first));
+	::fast_io::details::android_logger_write_impl(b.meta, first, count);
 }
 
 template <android_logger_family_tag fam, ::std::integral char_type>
-inline void scatter_write(basic_android_family_logger<fam, char_type> const &b, io_scatters_t scatters) noexcept
+inline void scatter_write_all_bytes_overflow_define(basic_android_family_logger<fam, char_type> const &b,
+													io_scatter_t const *pscatters, ::std::size_t n) noexcept
 {
-	::fast_io::details::android_logger_writev_impl(b.meta, scatters.base, scatters.len);
+	::fast_io::details::android_logger_writev_impl(b.meta, pscatters, n);
 }
 
 #if (!defined(__ANDROID__) || __ANDROID_API__ > 30) && __cpp_lib_source_location >= 201907

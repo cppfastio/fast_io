@@ -1,5 +1,15 @@
 ﻿#pragma once
 
+/*
+Legacy-EH shim payload only: when the library is built without
+herbceptions but with C++ exceptions enabled, errc-family throw
+functions raise this plain {domain, code} struct instead of
+terminating. No comparisons, no printing, no domain registry --
+consumers read the two fields and that is all. It exists only in
+that build mode; -fno-exceptions builds terminate and herbceptions
+builds use the throws channel, so neither may name this type.
+*/
+#if !defined(__HERBCEPTIONS__) && defined(FAST_IO_CPP_EXCEPTIONS)
 namespace fast_io
 {
 
@@ -10,70 +20,5 @@ struct error
 	value_type code{};
 };
 
-inline constexpr bool operator==(error e1, error e2) noexcept
-{
-	return e1.domain == e2.domain && e1.code == e2.code;
-}
-
-inline constexpr bool operator!=(error e1, error e2) noexcept
-{
-	return !(e1 == e2);
-}
-
-template <typename T>
-struct error_type_t
-{
-	explicit inline constexpr error_type_t() noexcept = default;
-};
-
-template <typename T>
-inline constexpr error_type_t<T> error_type{};
-
-template <typename T>
-concept error_domain =
-	::std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(::std::size_t) && requires(error e, T t) {
-		{ domain_define(error_type<T>) } -> ::std::same_as<::std::size_t>;
-		{ equivalent_define(error_type<T>, e, t) } -> ::std::same_as<bool>;
-#if 0
-	{to_code_define(error_type<T>,e)}->::std::same_as<T>;
-#endif
-	};
-
-template <error_domain D>
-inline constexpr bool is_domain(error e) noexcept
-{
-	constexpr ::std::size_t v{domain_define(error_type<D>)};
-	return v == e.domain;
-}
-
-template <error_domain D>
-inline constexpr D to_code(error e) noexcept
-{
-	return to_code_define(error_type<D>, e);
-}
-
-template <error_domain D>
-inline constexpr bool operator==(error e, D t) noexcept
-{
-	return equivalent_define(error_type<D>, e, t);
-}
-
-template <error_domain D>
-inline constexpr bool operator==(D t, error e) noexcept
-{
-	return equivalent_define(error_type<D>, e, t);
-}
-
-template <error_domain D>
-inline constexpr bool operator!=(error e, D t) noexcept
-{
-	return !equivalent_define(error_type<D>, e, t);
-}
-
-template <error_domain D>
-inline constexpr bool operator!=(D t, error e) noexcept
-{
-	return !equivalent_define(error_type<D>, e, t);
-}
-
 } // namespace fast_io
+#endif

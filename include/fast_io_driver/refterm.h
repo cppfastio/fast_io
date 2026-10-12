@@ -11,6 +11,7 @@ inline constexpr ::fast_io::manipulators::scalar_flags fast_pipe_hex_scl_flg{
 
 template <win32_family family>
 inline void *win32_family_refterm_fast_pipe_impl(open_mode mode, perms pm)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least32_t process_id{::fast_io::win32::GetCurrentProcessId()};
 	using type = ::fast_io::mnp::scalar_manip_t<fast_pipe_hex_scl_flg, ::std::uint_least32_t>;
@@ -36,18 +37,21 @@ inline void *win32_family_refterm_fast_pipe_impl(open_mode mode, perms pm)
 
 inline win32_file_factory win32_refterm_fast_pipe_9xa(open_mode mode = open_mode::in | open_mode::out | open_mode::excl,
 													  perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return win32_file_factory{details::win32_family_refterm_fast_pipe_impl<win32_family::ansi_9x>(mode, pm)};
 }
 
 inline win32_file_factory win32_refterm_fast_pipe_ntw(open_mode mode = open_mode::in | open_mode::out | open_mode::excl,
 													  perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return win32_file_factory{details::win32_family_refterm_fast_pipe_impl<win32_family::wide_nt>(mode, pm)};
 }
 
 inline win32_file_factory win32_refterm_fast_pipe(open_mode mode = open_mode::in | open_mode::out | open_mode::excl,
 												  perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return win32_file_factory{details::win32_family_refterm_fast_pipe_impl<win32_family::native>(mode, pm)};
 }

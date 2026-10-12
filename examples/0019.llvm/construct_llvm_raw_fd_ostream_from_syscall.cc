@@ -28,62 +28,36 @@ FILE* or fstream apis
 	print(osf, "Hello World from fast_io::llvm::raw_fd_ostream_file\n");
 	fast_io::posix_tzset();
 	auto unix_ts{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
-	println("Unix Timestamp:", unix_ts,
-			"\n"
-			"Universe Timestamp:",
-			static_cast<fast_io::universe_timestamp>(unix_ts),
-			"\n"
-			"UTC:",
-			utc(unix_ts), "\n", "Local:", local(unix_ts), " Timezone:", fast_io::timezone_name(),
-			"\n"
+	println("Unix Timestamp:", unix_ts, "\n"
+			"UTC:", utc(unix_ts), "\n" "Local:", local(unix_ts), " Timezone:", fast_io::timezone_name(), "\n"
 #ifdef __clang__
 			"LLVM clang " __clang_version__ "\n"
 #elif defined(__GNUC__) && defined(__VERSION__)
 			"GCC " __VERSION__ "\n"
 #elif defined(_MSC_VER)
-			"Microsoft Visual C++ ",
-			_MSC_VER,
-			"\n"
+			"Microsoft Visual C++ ", _MSC_VER, "\n"
 #else
 			"Unknown C++ compiler\n"
 #endif
 #if defined(_LIBCPP_VERSION)
-			"LLVM libc++ ",
-			_LIBCPP_VERSION,
-			"\n"
+			"LLVM libc++ ", _LIBCPP_VERSION, "\n"
 #elif defined(__GLIBCXX__)
-			"GCC libstdc++ ",
-			__GLIBCXX__,
-			"\n"
+			"GCC libstdc++ ", __GLIBCXX__, "\n"
 #elif defined(_MSVC_STL_UPDATE)
-			"Microsoft Visual C++ STL ",
-			_MSVC_STL_UPDATE,
-			"\n"
+			"Microsoft Visual C++ STL ", _MSVC_STL_UPDATE, "\n"
 #else
 			"Unknown C++ standard library\n"
 #endif
-			"LLVM raw_fd_stream address:",
-			osf.os,
-			"\n"
-			"fd:",
-			static_cast<fast_io::posix_io_observer>(osf).fd
-#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
-			,
-			"\n"
-			"win32 HANDLE:",
-			static_cast<fast_io::win32_io_observer>(osf).handle
+			"LLVM raw_fd_stream address:", osf.os, "\n"
+			"fd:", static_cast<fast_io::posix_io_observer>(osf).fd
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__), "\n"
+			"win32 HANDLE:", static_cast<fast_io::win32_io_observer>(osf).handle
 #ifndef _WIN32_WINDOWS
-			// NT kernel
-			,
-			"\n"
-			"zw HANDLE:",
-			static_cast<fast_io::zw_io_observer>(osf).handle,
-			"\n"
-			"nt HANDLE:",
-			static_cast<fast_io::nt_io_observer>(osf).handle
+			// NT kernel, "\n"
+			"zw HANDLE:", static_cast<fast_io::zw_io_observer>(osf).handle, "\n"
+			"nt HANDLE:", static_cast<fast_io::nt_io_observer>(osf).handle
 #endif
-#endif
-	);
+#endif);
 }
 /*
 MinGW-w64 needs -lntdll

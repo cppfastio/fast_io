@@ -170,7 +170,7 @@ scn_ctx_define_leb128_impl(::std::size_t &group_count, char_type const *begin, c
 			constexpr unsigned_char_type digits256{static_cast<unsigned_char_type>(256)};
 			if (digits256 <= static_cast<unsigned_char_type>(*begin))
 			{
-				return {begin, parse_code::invalid};
+				return {begin, ::fast_io::freestanding::parse_errc::invalid};
 			}
 		}
 		bool sign = static_cast<unsigned_char_type>(*begin) & 0x80;
@@ -182,14 +182,14 @@ scn_ctx_define_leb128_impl(::std::size_t &group_count, char_type const *begin, c
 			constexpr auto upper_limit{remains ? (0xffu << (remains - 1)) & 0x7f : 0x7f};
 			if (cnt > digits - 7 && (cnt > digits || (byte >= lower_limit && byte < upper_limit))) [[unlikely]]
 			{
-				return {begin, parse_code::overflow};
+				return {begin, ::fast_io::freestanding::parse_errc::overflow};
 			}
 		}
 		else
 		{
 			if (cnt > digits - 7 && (cnt > digits || byte >= (1u << remains))) [[unlikely]]
 			{
-				return {begin, parse_code::overflow};
+				return {begin, ::fast_io::freestanding::parse_errc::overflow};
 			}
 		}
 		tmp |= static_cast<U>(byte) << cnt;
@@ -203,12 +203,12 @@ scn_ctx_define_leb128_impl(::std::size_t &group_count, char_type const *begin, c
 				}
 			}
 			t |= tmp;
-			return {begin, parse_code::ok};
+			return {begin, ::fast_io::freestanding::parse_errc::ok};
 		}
 	}
 	t |= tmp;
 	group_count = cnt;
-	return {begin, parse_code::partial};
+	return {begin, ::fast_io::freestanding::parse_errc::partial};
 }
 
 template <::std::integral char_type, ::fast_io::details::my_integral I>
@@ -229,7 +229,7 @@ inline constexpr parse_result<char_type const *> scn_cnt_define_leb128_impl(char
 			constexpr unsigned_char_type digits256{static_cast<unsigned_char_type>(256)};
 			if (digits256 <= static_cast<unsigned_char_type>(*begin))
 			{
-				return {begin, parse_code::invalid};
+				return {begin, ::fast_io::freestanding::parse_errc::invalid};
 			}
 		}
 		bool sign = static_cast<unsigned_char_type>(*begin) & 0x80;
@@ -241,14 +241,14 @@ inline constexpr parse_result<char_type const *> scn_cnt_define_leb128_impl(char
 			constexpr auto upper_limit{remains ? (0xffu << (remains - 1)) & 0x7f : 0x7f};
 			if (cnt > digits - 7 && (cnt > digits || (byte >= lower_limit && byte < upper_limit))) [[unlikely]]
 			{
-				return {begin, parse_code::overflow};
+				return {begin, ::fast_io::freestanding::parse_errc::overflow};
 			}
 		}
 		else
 		{
 			if (cnt > digits - 7 && (cnt > digits || byte >= (1u << remains))) [[unlikely]]
 			{
-				return {begin, parse_code::overflow};
+				return {begin, ::fast_io::freestanding::parse_errc::overflow};
 			}
 		}
 		tmp |= static_cast<U>(byte) << cnt;
@@ -262,10 +262,10 @@ inline constexpr parse_result<char_type const *> scn_cnt_define_leb128_impl(char
 				}
 			}
 			t |= tmp;
-			return {begin, parse_code::ok};
+			return {begin, ::fast_io::freestanding::parse_errc::ok};
 		}
 	}
-	return {begin, parse_code::invalid};
+	return {begin, ::fast_io::freestanding::parse_errc::invalid};
 }
 
 } // namespace details
@@ -279,11 +279,11 @@ scan_context_define(io_reserve_type_t<char_type, manipulators::basic_leb128_get_
 }
 
 template <::std::integral char_type, ::fast_io::details::my_integral I>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_context_eof_define(io_reserve_type_t<char_type, manipulators::basic_leb128_get_put<I *>>, leb128_scan_state_t &,
 						manipulators::basic_leb128_get_put<I *>) noexcept
 {
-	return parse_code::end_of_file;
+	return ::fast_io::freestanding::parse_errc::end_of_file;
 }
 
 template <::std::integral char_type, ::fast_io::details::my_integral I>

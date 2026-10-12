@@ -72,6 +72,7 @@ namespace details
 {
 
 inline void check_dos_fd_is_dir(int fd)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto const dir{::fast_io::posix::my_dos_fdopendir(fd)};
 	if (dir == nullptr) [[unlikely]]
@@ -82,6 +83,7 @@ inline void check_dos_fd_is_dir(int fd)
 }
 
 inline dos_DIR sys_dup_dir(dos_DIR dirp)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (dirp.dirp == nullptr) [[unlikely]]
 	{
@@ -115,12 +117,13 @@ public:
 
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	inline constexpr dos_directory_file(native_hd dirp1)
+	inline constexpr dos_directory_file(native_hd dirp1) noexcept
 		: dos_directory_io_observer{dirp1}
 	{
 	}
 
 	inline dos_directory_file(posix_file &&pioh)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: dos_directory_io_observer{posix::my_dos_fdopendir(pioh.fd), pioh.fd}
 	{
 		if (this->dirp.dirp == nullptr)
@@ -131,6 +134,7 @@ public:
 	}
 
 	inline dos_directory_file &operator=(dos_directory_file const &other)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
@@ -175,7 +179,7 @@ public:
 	{
 		if (this->dirp.dirp) [[likely]]
 		{
-			::fast_io::posix::my_dos_closedir(this->dirp.dirp);		
+			::fast_io::posix::my_dos_closedir(this->dirp.dirp);
 		}
 		if (this->dirp.fd != -1) [[likely]]
 		{
@@ -185,6 +189,7 @@ public:
 	}
 
 	inline void close()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (*this) [[likely]]
 		{
@@ -203,7 +208,7 @@ public:
 		}
 	}
 
-	inline ~dos_directory_file()
+	inline ~dos_directory_file() noexcept
 	{
 		if (this->dirp.dirp) [[likely]]
 		{
@@ -335,6 +340,7 @@ inline dos_directory_entry operator*(dos_directory_iterator pdit) noexcept
 }
 
 inline dos_directory_iterator &operator++(dos_directory_iterator &pdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	/*
 	To fix: avoid setting errno
@@ -363,6 +369,7 @@ inline dos_directory_iterator &operator++(dos_directory_iterator &pdit)
 }
 
 inline dos_directory_iterator begin(posix_directory_generator const &pdg)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto dirp{pdg.dir_fl.dirp.dirp};
 	::fast_io::noexcept_call(::rewinddir, dirp);
@@ -397,6 +404,7 @@ inline constexpr bool operator!=(dos_directory_iterator const &b, ::std::default
 }
 
 inline posix_directory_generator current(posix_at_entry pate)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return {.dir_fl = dos_directory_file(posix_file(details::sys_dup(pate.fd)))};
 }
@@ -411,7 +419,7 @@ struct basic_dos_recursive_directory_iterator
 	stack_type stack;
 	inline constexpr basic_dos_recursive_directory_iterator() = default;
 
-	inline explicit constexpr basic_dos_recursive_directory_iterator(dos_DIR dp)
+	inline explicit constexpr basic_dos_recursive_directory_iterator(dos_DIR dp) noexcept
 		: dirp(dp)
 	{}
 
@@ -429,7 +437,9 @@ struct basic_posix_recursive_directory_generator
 };
 
 using posix_recursive_directory_generator =
-	basic_posix_recursive_directory_generator<::fast_io::containers::vector<dos_directory_file, ::fast_io::posix_api_encoding_converter::allocator_type>>;
+	basic_posix_recursive_directory_generator<::fast_io::containers::deque<dos_directory_file,
+																		   ::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator,
+																												::fast_io::allocator_adapter_flags::throws_on_allocation_failure>>>;
 
 template <typename StackType>
 inline ::std::size_t depth(basic_dos_recursive_directory_iterator<StackType> const &prdit) noexcept
@@ -439,11 +449,12 @@ inline ::std::size_t depth(basic_dos_recursive_directory_iterator<StackType> con
 
 template <typename StackType>
 inline basic_dos_recursive_directory_iterator<StackType> &operator++(basic_dos_recursive_directory_iterator<StackType> &prdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (;;)
 	{
 		errno = 0;
-		if (prdit.stack.empty())
+		if (prdit.stack.is_empty())
 		{
 			auto entry{::fast_io::noexcept_call(::readdir, prdit.dirp.dirp)};
 			if (entry == nullptr)
@@ -468,7 +479,7 @@ inline basic_dos_recursive_directory_iterator<StackType> &operator++(basic_dos_r
 				{
 					throw_posix_error(en);
 				}
-				prdit.stack.pop_back();
+				prdit.stack.pop_back_unchecked();
 				continue;
 			}
 			prdit.entry = entry;
@@ -487,7 +498,7 @@ inline basic_dos_recursive_directory_iterator<StackType> &operator++(basic_dos_r
 				continue;
 			}
 			prdit.stack.emplace_back(
-				::fast_io::posix_file(::fast_io::posix_fs_dirent{details::dirp_to_fd(prdit.stack.empty() ? prdit.dirp : prdit.stack.back().dirp), name},
+				::fast_io::posix_file(::fast_io::posix_fs_dirent{details::dirp_to_fd(prdit.stack.is_empty() ? prdit.dirp : prdit.stack.back().dirp), name},
 									  ::fast_io::open_mode::directory));
 		}
 		if (prdit.entry) [[likely]]
@@ -507,22 +518,24 @@ inline basic_dos_recursive_directory_iterator<StackType> &operator++(basic_dos_r
 }
 
 template <typename StackType>
-inline void pop(basic_dos_recursive_directory_iterator<StackType> &prdit) noexcept
+inline void pop(basic_dos_recursive_directory_iterator<StackType> &prdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (prdit.stack.empty())
+	if (prdit.stack.is_empty())
 	{
 		prdit.entry = nullptr;
 		prdit.d_namlen = 0;
 	}
 	else
 	{
-		prdit.stack.pop_back();
+		prdit.stack.pop_back_unchecked();
 		++prdit;
 	}
 }
 
 template <typename StackType>
 inline basic_dos_recursive_directory_iterator<StackType> begin(basic_posix_recursive_directory_generator<StackType> const &pdg)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::noexcept_call(::rewinddir, pdg.dir_fl.dirp.dirp);
 	basic_dos_recursive_directory_iterator<StackType> pdit{pdg.dir_fl.dirp};
@@ -539,13 +552,13 @@ inline ::std::default_sentinel_t end(basic_posix_recursive_directory_generator<S
 template <typename StackType>
 inline dos_directory_entry operator*(basic_dos_recursive_directory_iterator<StackType> const &prdit) noexcept
 {
-	return {prdit.stack.empty() ? prdit.dirp : prdit.stack.back().dirp, prdit.entry, prdit.d_namlen};
+	return {prdit.stack.is_empty() ? prdit.dirp : prdit.stack.back().dirp, prdit.entry, prdit.d_namlen};
 }
 
 template <typename StackType>
 inline bool operator==(::std::default_sentinel_t, basic_dos_recursive_directory_iterator<StackType> const &b) noexcept
 {
-	return b.stack.empty() && b.entry == nullptr;
+	return b.stack.is_empty() && b.entry == nullptr;
 }
 
 template <typename StackType>
@@ -567,6 +580,7 @@ inline bool operator!=(basic_dos_recursive_directory_iterator<StackType> const &
 }
 
 inline posix_recursive_directory_generator recursive(posix_at_entry pate)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return {.dir_fl = dos_directory_file(posix_file(details::sys_dup(pate.fd)))};
 }

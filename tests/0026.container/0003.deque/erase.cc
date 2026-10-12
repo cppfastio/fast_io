@@ -26,7 +26,7 @@ inline void test_erase()
 						   ::std::source_location src = ::std::source_location::current()) {
 		if (dq.size() != ref.size())
 		{
-			::fast_io::io::panicln(src, "\tERROR: size mismatch: ", msg);
+			::fast_io::io::panicln(src, "\tERROR: size mismatch: ", ::fast_io::mnp::os_c_str(msg));
 		}
 		for (::std::size_t i{}; i != dq.size(); ++i)
 		{
@@ -40,7 +40,7 @@ inline void test_erase()
 									   "\tref[i]=",
 									   ref[i],
 									   " : ",
-									   msg);
+									   ::fast_io::mnp::os_c_str(msg));
 			}
 		}
 	};
@@ -54,7 +54,7 @@ inline void test_erase()
 
 	// 2. Erase single element in the middle
 	{
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::std::size_t pos{dq.size() / 2};
 			dq.erase(dq.begin() + pos);
@@ -65,7 +65,7 @@ inline void test_erase()
 
 	// 3. Erase single element at back (last element)
 	{
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::std::size_t pos{dq.size() - 1};
 			dq.erase(dq.begin() + pos);
@@ -117,7 +117,7 @@ inline void test_erase()
 	// 7. Randomized erases: erase random ranges until we have done enough iterations
 	for (::std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -168,7 +168,7 @@ inline void test_erase_index()
 						   ::std::source_location src = ::std::source_location::current()) {
 		if (dq.size() != ref.size())
 		{
-			::fast_io::io::panicln(src, "\tERROR: size mismatch: ", msg);
+			::fast_io::io::panicln(src, "\tERROR: size mismatch: ", ::fast_io::mnp::os_c_str(msg));
 		}
 		for (::std::size_t i{}; i != dq.size(); ++i)
 		{
@@ -179,7 +179,7 @@ inline void test_erase_index()
 									   i,
 									   "\tdq[i]=", dq[i],
 									   "\tref[i]=", ref[i],
-									   " : ", msg);
+									   " : ", ::fast_io::mnp::os_c_str(msg));
 			}
 		}
 	};
@@ -197,7 +197,7 @@ inline void test_erase_index()
 
 	// Erase in middle
 	{
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::std::size_t pos{dq.size() / 2};
 			dq.erase_index(pos);
@@ -208,7 +208,7 @@ inline void test_erase_index()
 
 	// Erase at back
 	{
-		if (!dq.empty())
+		if (!dq.is_empty())
 		{
 			::std::size_t pos{dq.size() - 1};
 			dq.erase_index(pos);
@@ -266,7 +266,7 @@ inline void test_erase_index()
 	//
 	for (::std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -284,7 +284,7 @@ inline void test_erase_index()
 	//
 	for (::std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -326,14 +326,14 @@ inline void test_erase_value()
 						   ::std::source_location src = ::std::source_location::current()) {
 		if (dq.size() != ref.size())
 		{
-			::fast_io::io::panicln(src, "size mismatch: ", msg);
+			::fast_io::io::panicln(src, "size mismatch: ", ::fast_io::mnp::os_c_str(msg));
 		}
 
 		for (::std::size_t i{}; i != dq.size(); ++i)
 		{
 			if (dq[i] != ref[i])
 			{
-				::fast_io::io::panicln(src, "value mismatch at ", i, " : ", msg);
+				::fast_io::io::panicln(src, "value mismatch at ", i, " : ", ::fast_io::mnp::os_c_str(msg));
 			}
 		}
 	};
@@ -344,7 +344,7 @@ inline void test_erase_value()
 		auto r2 = std::erase(ref, static_cast<T>(3));
 		if (r1 != r2)
 		{
-			::fast_io::io::panicln("erase(value) count mismatch");
+			::fast_io::io::panic("erase(value) count mismatch\n");
 		}
 		check_equal("erase(value) many occurrences");
 	}
@@ -358,7 +358,7 @@ inline void test_erase_value()
 		auto r2 = std::erase(ref, static_cast<T>(12345));
 		if (r1 != r2)
 		{
-			::fast_io::io::panicln("erase(value) count mismatch (single)");
+			::fast_io::io::panic("erase(value) count mismatch (single)\n");
 		}
 		check_equal("erase(value) single occurrence");
 	}
@@ -369,7 +369,7 @@ inline void test_erase_value()
 		auto r2 = std::erase(ref, static_cast<T>(99999));
 		if (r1 != r2)
 		{
-			::fast_io::io::panicln("erase(value) count mismatch (none)");
+			::fast_io::io::panic("erase(value) count mismatch (none)\n");
 		}
 		check_equal("erase(value) none");
 	}
@@ -377,7 +377,7 @@ inline void test_erase_value()
 	// 4. Randomized erase(value)
 	for (std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -389,7 +389,7 @@ inline void test_erase_value()
 
 		if (r1 != r2)
 		{
-			::fast_io::io::panicln("erase(value) randomized count mismatch");
+			::fast_io::io::panic("erase(value) randomized count mismatch\n");
 		}
 
 		check_equal("erase(value) randomized");
@@ -417,14 +417,14 @@ inline void test_erase_if()
 						   ::std::source_location src = ::std::source_location::current()) {
 		if (dq.size() != ref.size())
 		{
-			::fast_io::io::panicln(src, "size mismatch: ", msg);
+			::fast_io::io::panicln(src, "size mismatch: ", ::fast_io::mnp::os_c_str(msg));
 		}
 
 		for (::std::size_t i{}; i != dq.size(); ++i)
 		{
 			if (dq[i] != ref[i])
 			{
-				::fast_io::io::panicln(src, "value mismatch at ", i, " : ", msg);
+				::fast_io::io::panicln(src, "value mismatch at ", i, " : ", ::fast_io::mnp::os_c_str(msg));
 			}
 		}
 	};
@@ -438,7 +438,7 @@ inline void test_erase_if()
 
 		if (r1 != r2)
 		{
-			::fast_io::io::panicln("erase_if(pred) count mismatch (even)");
+			::fast_io::io::panic("erase_if(pred) count mismatch (even)\n");
 		}
 
 		check_equal("erase_if even");
@@ -453,7 +453,7 @@ inline void test_erase_if()
 
 		if (r1 != r2)
 		{
-			::fast_io::io::panicln("erase_if(pred) count mismatch (div3)");
+			::fast_io::io::panic("erase_if(pred) count mismatch (div3)\n");
 		}
 
 		check_equal("erase_if divisible by 3");
@@ -468,7 +468,7 @@ inline void test_erase_if()
 
 		if (r1 != r2)
 		{
-			::fast_io::io::panicln("erase_if(pred) count mismatch (none)");
+			::fast_io::io::panic("erase_if(pred) count mismatch (none)\n");
 		}
 
 		check_equal("erase_if none");
@@ -477,7 +477,7 @@ inline void test_erase_if()
 	// 4. Randomized erase_if
 	for (std::size_t iter{}; iter != 200u; ++iter)
 	{
-		if (dq.empty())
+		if (dq.is_empty())
 		{
 			break;
 		}
@@ -491,7 +491,7 @@ inline void test_erase_if()
 
 		if (r1 != r2)
 		{
-			::fast_io::io::panicln("erase_if(pred) randomized count mismatch");
+			::fast_io::io::panic("erase_if(pred) randomized count mismatch\n");
 		}
 
 		check_equal("erase_if randomized");

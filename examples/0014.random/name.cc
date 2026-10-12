@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 	fast_io::vector<char8_t> vec;
 	{
 		char8_t c;
-		for (std::size_t f; scan<true>(ibuf, fast_io::mnp::ch_get(c), f);)
+		for (std::size_t f; scan_some(ibuf, fast_io::mnp::ch_get(c), f);)
 		{
 			for (std::size_t i{}; i != f; ++i)
 			{
@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	if (vec.empty())
+	if (vec.is_empty())
 	{
 		perr("No frequency\n");
 		return 1;

@@ -15,7 +15,7 @@ int main()
 		try
 		{
 			soc.reopen(fast_io::tcp_accept(socket));
-			transmit64(fast_io::mnp::as_file(ctx), soc, UINT64_MAX);
+			::fast_io::operations::transmit_all_bytes(fast_io::mnp::as_file(ctx), {}, soc, {}, UINT64_MAX);
 			soc.close();
 			println("sha256:", fast_io::mnp::hash_digest(ctx));
 		}

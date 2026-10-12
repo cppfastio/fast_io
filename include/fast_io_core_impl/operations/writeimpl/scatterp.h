@@ -11,14 +11,20 @@ template <typename outstmtype>
 #endif
 inline constexpr io_scatter_status_t scatter_pwrite_some_bytes_cold_impl(outstmtype outsm,
 																		 io_scatter_t const *pscatters, ::std::size_t n,
-																		 ::fast_io::intfpos_t off);
+																		 ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
+	requires ::fast_io::operations::decay::defines::bytes_pwritable<outstmtype>
+;
 
 template <typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
 inline constexpr void scatter_pwrite_all_bytes_cold_impl(outstmtype outsm, io_scatter_t const *pscatters,
-														 ::std::size_t n, ::fast_io::intfpos_t off);
+														 ::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
+	requires ::fast_io::operations::decay::defines::bytes_pwritable<outstmtype>
+;
 
 template <typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
@@ -28,6 +34,8 @@ inline constexpr io_scatter_status_t
 scatter_pwrite_some_cold_impl(outstmtype outsm,
 							  basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
 							  ::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
+	requires ::fast_io::operations::decay::defines::pwritable<outstmtype>
 {
 	using char_type = typename outstmtype::output_char_type;
 	if constexpr (::fast_io::operations::decay::defines::has_scatter_pwrite_some_overflow_define<outstmtype>)
@@ -39,13 +47,13 @@ scatter_pwrite_some_cold_impl(outstmtype outsm,
 		for (::std::size_t i{}; i != n; ++i)
 		{
 			auto [base, len] = pscatters[i];
-			auto ed{base + len};
-			auto written{::fast_io::details::pwrite_some_impl(outsm, base, ed)};
+			auto written{::fast_io::details::pwrite_some_impl(outsm, base, len, off)};
 			::std::size_t sz{static_cast<::std::size_t>(written - base)};
 			if (sz != len)
 			{
 				return {i, sz};
 			}
+			off = ::fast_io::fposoffadd_nonegative(off, len);
 		}
 		return {n, 0};
 	}
@@ -81,7 +89,7 @@ scatter_pwrite_some_cold_impl(outstmtype outsm,
 				auto edf{basef + len};
 				::std::byte const *base{reinterpret_cast<::std::byte const *>(basef)};
 				::std::byte const *ed{reinterpret_cast<::std::byte const *>(edf)};
-				auto written{::fast_io::details::pwrite_some_bytes_impl(outsm, base, ed, off)};
+				auto written{::fast_io::details::pwrite_some_bytes_impl(outsm, base, static_cast<::std::size_t>(ed - base), off)};
 				::std::size_t diff{static_cast<::std::size_t>(written - base)};
 				off = ::fast_io::fposoffadd_nonegative(off, diff);
 				::std::size_t md{diff % sizeof(char_type)};
@@ -89,7 +97,7 @@ scatter_pwrite_some_cold_impl(outstmtype outsm,
 				if (md)
 				{
 					::std::size_t dfd{sizeof(char_type) - md};
-					::fast_io::details::pwrite_all_bytes_impl(outsm, written, written + dfd, off);
+					::fast_io::details::pwrite_all_bytes_impl(outsm, written, dfd, off);
 					off = ::fast_io::fposoffadd_nonegative(off, dfd);
 					++sz;
 				}
@@ -107,13 +115,15 @@ template <typename outstmtype>
 inline constexpr io_scatter_status_t
 scatter_pwrite_some_impl(outstmtype outsm, basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
 						 ::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
+	requires(::fast_io::operations::decay::defines::pwritable<outstmtype> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{
 			::fast_io::operations::decay::output_stream_mutex_ref_decay(outsm)};
 		return ::fast_io::details::scatter_pwrite_some_impl(
-			::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm), pscatters, n);
+			::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm), pscatters, n, off);
 	}
 	else
 	{
@@ -133,6 +143,8 @@ inline constexpr void
 scatter_pwrite_all_cold_impl(outstmtype outsm,
 							 basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
 							 ::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
+	requires ::fast_io::operations::decay::defines::pwritable<outstmtype>
 {
 	if constexpr (::fast_io::operations::decay::defines::has_scatter_pwrite_all_overflow_define<outstmtype>)
 	{
@@ -143,7 +155,7 @@ scatter_pwrite_all_cold_impl(outstmtype outsm,
 		for (auto i{pscatters}, e{pscatters + n}; i != e; ++i)
 		{
 			auto [base, len] = *i;
-			::fast_io::details::pwrite_all_impl(outsm, base, base + len, off);
+			::fast_io::details::pwrite_all_impl(outsm, base, len, off);
 			off = ::fast_io::fposoffadd_nonegative(off, len);
 		}
 	}
@@ -162,7 +174,7 @@ scatter_pwrite_all_cold_impl(outstmtype outsm,
 			if (pisc)
 			{
 				auto pi = pscatters[ret.position];
-				::fast_io::details::pwrite_all_impl(outsm, pi.base + pisc, pi.base + pi.len, off);
+				::fast_io::details::pwrite_all_impl(outsm, pi.base + pisc, pi.len - pisc, off);
 				off = ::fast_io::fposoffadd_nonegative(off, pi.len - pisc);
 				++retpos;
 			}
@@ -175,7 +187,7 @@ scatter_pwrite_all_cold_impl(outstmtype outsm,
 		for (auto i{pscatters}, e{pscatters + n}; i != e; ++i)
 		{
 			auto [base, len] = *i;
-			::fast_io::details::pwrite_all_impl(outsm, base, base + len, off);
+			::fast_io::details::pwrite_all_impl(outsm, base, len, off);
 			off = ::fast_io::fposoffadd_nonegative(off, len);
 		}
 	}
@@ -211,7 +223,7 @@ if constexpr ((::fast_io::operations::decay::defines::has_pwrite_all_bytes_overf
 				auto edf{basef + len};
 				::std::byte const *base{reinterpret_cast<::std::byte const *>(basef)};
 				::std::byte const *ed{reinterpret_cast<::std::byte const *>(edf)};
-				::fast_io::details::pwrite_all_bytes_impl(outsm, base, ed, off);
+				::fast_io::details::pwrite_all_bytes_impl(outsm, base, static_cast<::std::size_t>(ed - base), off);
 				off = ::fast_io::fposoffadd_nonegative(off, len);
 			}
 		}
@@ -222,13 +234,15 @@ template <typename outstmtype>
 inline constexpr void
 scatter_pwrite_all_impl(outstmtype outsm, basic_io_scatter_t<typename outstmtype::output_char_type> const *pscatters,
 						::std::size_t n, ::fast_io::intfpos_t off)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
+	requires(::fast_io::operations::decay::defines::pwritable<outstmtype> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 	{
 		::fast_io::operations::decay::stream_ref_decay_lock_guard lg{
 			::fast_io::operations::decay::output_stream_mutex_ref_decay(outsm)};
 		return ::fast_io::details::scatter_pwrite_all_impl(
-			::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm), pscatters, n);
+			::fast_io::operations::decay::output_stream_unlocked_ref_decay(outsm), pscatters, n, off);
 	}
 	else
 	{

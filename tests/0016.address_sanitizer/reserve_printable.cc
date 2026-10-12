@@ -22,7 +22,7 @@ using namespace fast_io::io;
 int main()
 {
 	foo f;
-	println("Hellowefqewjopfewjf");
+	print("Hellowefqewjopfewjf\n");
 	print(f);
 }
 

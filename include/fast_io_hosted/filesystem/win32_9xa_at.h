@@ -53,8 +53,9 @@ inline constexpr win32_9xa_at_flags &operator^=(win32_9xa_at_flags &x, win32_9xa
 namespace win32::details
 {
 inline void win32_9xa_unlinkat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, win32_9xa_at_flags flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto file_or_path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto file_or_path{concat_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 
 	if ((flags & ::fast_io::win32_9xa_at_flags::removedir) == ::fast_io::win32_9xa_at_flags::removedir)
 	{
@@ -73,8 +74,9 @@ inline void win32_9xa_unlinkat_impl(::fast_io::win32_9xa_dir_handle const &dirhd
 }
 
 inline void win32_9xa_mkdirat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, perms pm)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto path{concat_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 
 	if (!::fast_io::win32::CreateDirectoryA(reinterpret_cast<char const *>(path.c_str()), nullptr)) [[unlikely]]
 	{
@@ -105,6 +107,7 @@ inline void win32_9xa_mkdirat_impl(::fast_io::win32_9xa_dir_handle const &dirhd,
 }
 
 inline void win32_9xa_faccessat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, access_how mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	switch (mode)
 	{
@@ -120,7 +123,7 @@ inline void win32_9xa_faccessat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 		throw_win32_error(0x57);
 	}
 
-	auto path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto path{concat_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 
 	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
 
@@ -152,8 +155,9 @@ inline void win32_9xa_faccessat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 }
 
 inline void win32_9xa_fchmodat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, perms pm)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto path{concat_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 
 	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
 
@@ -180,8 +184,9 @@ inline void win32_9xa_fchmodat_impl(::fast_io::win32_9xa_dir_handle const &dirhd
 
 [[noreturn]] inline void win32_9xa_fchownat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size,
 												 [[maybe_unused]] ::std::uintmax_t owner, [[maybe_unused]] ::std::uintmax_t group)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto path{concat_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 
 	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
 
@@ -215,18 +220,20 @@ inline constexpr auto calculate_win32_9xa_readonly_open_mode(bool write_attribut
 }
 
 inline posix_file_status win32_9xa_fstatat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, win32_9xa_at_flags flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto path{concat_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 	auto md{calculate_win32_9xa_readonly_open_mode(false, (flags & win32_9xa_at_flags::symlink_nofollow) == win32_9xa_at_flags::symlink_nofollow)};
 	::fast_io::win32_file_9xa f{::fast_io::details::win32_family_create_file_internal_impl<win32_family::ansi_9x>(reinterpret_cast<char const *>(path.c_str()), md)};
 
 	return ::fast_io::win32::details::win32_status_impl(f.native_handle());
 }
 
-inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, unix_timestamp_option creation_time,
-									 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time, win32_9xa_at_flags flags)
+inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size, statx_timestamp_option creation_time,
+									 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time, win32_9xa_at_flags flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto path{concat_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 	auto md{calculate_win32_9xa_readonly_open_mode(true, (flags & win32_9xa_at_flags::symlink_nofollow) == win32_9xa_at_flags::symlink_nofollow)};
 	::fast_io::win32_file_9xa f{::fast_io::details::win32_family_create_file_internal_impl<win32_family::ansi_9x>(reinterpret_cast<char const *>(path.c_str()), md)};
 
@@ -235,7 +242,6 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 
 	// ::std::uint_least64_t current_time{(static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32) | ftm.dwLowDateTime};
 
-	// constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000ULL};
 
 	::fast_io::win32::filetime CreationTime;
 	::fast_io::win32::filetime *pCreationTime{__builtin_addressof(CreationTime)};
@@ -248,8 +254,7 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		auto const win32_time{static_cast<::fast_io::win32_timestamp>(creation_time.timestamp)};
-		CreationTime = ::fast_io::win32::win32_timestamp_to_filetime(win32_time);
+		CreationTime = ::fast_io::win32::unix_timestamp_to_filetime(creation_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:
@@ -266,8 +271,7 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		auto const win32_time{static_cast<::fast_io::win32_timestamp>(last_access_time.timestamp)};
-		LastAccessTime = ::fast_io::win32::win32_timestamp_to_filetime(win32_time);
+		LastAccessTime = ::fast_io::win32::unix_timestamp_to_filetime(last_access_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:
@@ -284,8 +288,7 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		auto const win32_time{static_cast<::fast_io::win32_timestamp>(last_modification_time.timestamp)};
-		LastWriteTime = ::fast_io::win32::win32_timestamp_to_filetime(win32_time);
+		LastWriteTime = ::fast_io::win32::unix_timestamp_to_filetime(last_modification_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:
@@ -305,8 +308,9 @@ inline void win32_9xa_utimensat_impl(::fast_io::win32_9xa_dir_handle const &dirh
 }
 
 inline void win32_9xa_symlinkat_impl([[maybe_unused]] char8_t const *oldpath_c_str, [[maybe_unused]] ::std::size_t oldpath_size,
-									 [[maybe_unused]] ::fast_io::win32_9xa_dir_handle const &newdirhd, 
-                                     [[maybe_unused]] char8_t const *newpath_c_str, [[maybe_unused]] ::std::size_t newpath_size)
+									 [[maybe_unused]] ::fast_io::win32_9xa_dir_handle const &newdirhd,
+									 [[maybe_unused]] char8_t const *newpath_c_str, [[maybe_unused]] ::std::size_t newpath_size)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(FAST_IO_USE_DJGPP_SYMLINK)
 	::fast_io::containers::basic_cstring_view<char8_t> path{::fast_io::containers::null_terminated, oldpath_c_str, oldpath_size};
@@ -321,18 +325,19 @@ inline void win32_9xa_symlinkat_impl([[maybe_unused]] char8_t const *oldpath_c_s
 
 	::fast_io::operations::print_freestanding<false>(u8obv, u8"!<symlink>", path, u8"\nThis is just a text to force symlink file to be 510 bytes long. Do not delete it nor spaces following it.");
 
-	::fast_io::operations::write_all(f, buffer, buffer + 510);
+	::fast_io::operations::write_all(f, buffer, 510);
 
-#else 
+#else
 	throw_win32_error(0x1);
 #endif
 }
 
 inline void win32_9xa_linkat_impl(::fast_io::win32_9xa_dir_handle const &olddirhd, char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
 								  ::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto oldpath{concat_tlc_win32_9xa_path_uncheck_whether_exist(olddirhd, oldpath_c_str, oldpath_size)};
-	auto newpath{concat_tlc_win32_9xa_path_uncheck_whether_exist(newdirhd, newpath_c_str, newpath_size)};
+	auto oldpath{concat_win32_9xa_path_uncheck_whether_exist(olddirhd, oldpath_c_str, oldpath_size)};
+	auto newpath{concat_win32_9xa_path_uncheck_whether_exist(newdirhd, newpath_c_str, newpath_size)};
 
 	// Because of limitations of win32_9xa, this function doesn't really link two files together.
 	// However, it simulates a real link by copying the file at exists to new.
@@ -345,9 +350,10 @@ inline void win32_9xa_linkat_impl(::fast_io::win32_9xa_dir_handle const &olddirh
 
 inline void win32_9xa_renameat_impl(::fast_io::win32_9xa_dir_handle const &olddirhd, char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
 									::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto oldpath{concat_tlc_win32_9xa_path_uncheck_whether_exist(olddirhd, oldpath_c_str, oldpath_size)};
-	auto newpath{concat_tlc_win32_9xa_path_uncheck_whether_exist(newdirhd, newpath_c_str, newpath_size)};
+	auto oldpath{concat_win32_9xa_path_uncheck_whether_exist(olddirhd, oldpath_c_str, oldpath_size)};
+	auto newpath{concat_win32_9xa_path_uncheck_whether_exist(newdirhd, newpath_c_str, newpath_size)};
 
 	if (!::fast_io::win32::MoveFileA(reinterpret_cast<char const *>(oldpath.c_str()), reinterpret_cast<char const *>(newpath.c_str())))
 	{
@@ -357,8 +363,9 @@ inline void win32_9xa_renameat_impl(::fast_io::win32_9xa_dir_handle const &olddi
 
 template <::std::integral char_type>
 inline ::fast_io::details::basic_ct_string<char_type> win32_9xa_readlinkat_impl(::fast_io::win32_9xa_dir_handle const &dirhd, char8_t const *path_c_str, ::std::size_t path_size)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto const path{concat_tlc_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
+	auto const path{concat_win32_9xa_path_uncheck_whether_exist(dirhd, path_c_str, path_size)};
 
 	auto const attr{::fast_io::win32::GetFileAttributesA(reinterpret_cast<char const *>(path.c_str()))};
 	if (attr == static_cast<::std::uint_least32_t>(-1)) [[unlikely]]
@@ -374,6 +381,7 @@ inline ::fast_io::details::basic_ct_string<char_type> win32_9xa_readlinkat_impl(
 template <::fast_io::details::posix_api_22 dsp, typename... Args>
 inline auto win32_9xa_22_api_dispatcher(::fast_io::win32_9xa_dir_handle const &olddirhd, char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
 										::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_22::renameat)
 	{
@@ -388,6 +396,7 @@ inline auto win32_9xa_22_api_dispatcher(::fast_io::win32_9xa_dir_handle const &o
 template <::fast_io::details::posix_api_12 dsp>
 inline auto win32_9xa_12_api_dispatcher(char8_t const *oldpath_c_str, ::std::size_t oldpath_size,
 										::fast_io::win32_9xa_dir_handle const &newdirhd, char8_t const *newpath_c_str, ::std::size_t newpath_size)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_12::symlinkat)
 	{
@@ -397,6 +406,7 @@ inline auto win32_9xa_12_api_dispatcher(char8_t const *oldpath_c_str, ::std::siz
 
 template <::fast_io::details::posix_api_1x dsp, typename... Args>
 inline auto win32_9xa_1x_api_dispatcher(::fast_io::win32_9xa_dir_handle const &dir_handle, char8_t const *path_c_str, ::std::size_t path_size, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 
 	if constexpr (dsp == ::fast_io::details::posix_api_1x::faccessat)
@@ -431,6 +441,7 @@ inline auto win32_9xa_1x_api_dispatcher(::fast_io::win32_9xa_dir_handle const &d
 
 template <::std::integral char_type, ::fast_io::details::posix_api_ct dsp, typename... Args>
 inline auto win32_9xa_ct_api_dispatcher(::fast_io::win32_9xa_dir_handle const &dir_handle, char8_t const *path_c_str, ::std::size_t path_size, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_ct::readlinkat)
 	{
@@ -440,6 +451,7 @@ inline auto win32_9xa_ct_api_dispatcher(::fast_io::win32_9xa_dir_handle const &d
 
 template <::fast_io::details::posix_api_1x dsp, typename path_type, typename... Args>
 inline auto win32_9xa_deal_with1x(::fast_io::win32_9xa_dir_handle const &dir_handle, path_type const &path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	using char8_t_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -448,12 +460,13 @@ inline auto win32_9xa_deal_with1x(::fast_io::win32_9xa_dir_handle const &dir_han
 		= char8_t const *;
 
 	return win32_api_common_9xa(
-		path, [&](char const *path_c_str, ::std::size_t path_size) { return win32_9xa_1x_api_dispatcher<dsp>(dir_handle, reinterpret_cast<char8_t_const_may_alias_ptr>(path_c_str), path_size, args...); });
+		path, [&](char const *path_c_str, ::std::size_t path_size) FAST_IO_HERBCEPTIONS_THROWS { return win32_9xa_1x_api_dispatcher<dsp>(dir_handle, reinterpret_cast<char8_t_const_may_alias_ptr>(path_c_str), path_size, args...); });
 }
 
 template <::fast_io::details::posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type, typename... Args>
 inline auto win32_9xa_deal_with12(old_path_type const &oldpath, ::fast_io::win32_9xa_dir_handle const &newdirfd, new_path_type const &newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	using char8_t_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -463,9 +476,9 @@ inline auto win32_9xa_deal_with12(old_path_type const &oldpath, ::fast_io::win32
 
 	return win32_api_common_9xa(
 		oldpath,
-		[&](char const *oldpath_c_str, ::std::size_t oldpath_size) {
+		[&](char const *oldpath_c_str, ::std::size_t oldpath_size) FAST_IO_HERBCEPTIONS_THROWS {
 			return win32_api_common_9xa(
-				newpath, [&](char const *newpath_c_str, ::std::size_t newpath_size) {
+				newpath, [&](char const *newpath_c_str, ::std::size_t newpath_size) FAST_IO_HERBCEPTIONS_THROWS {
 					return win32_9xa_12_api_dispatcher<dsp>(reinterpret_cast<char8_t_const_may_alias_ptr>(oldpath_c_str), oldpath_size, newdirfd, reinterpret_cast<char8_t_const_may_alias_ptr>(newpath_c_str), newpath_size, args...);
 				});
 		});
@@ -473,6 +486,7 @@ inline auto win32_9xa_deal_with12(old_path_type const &oldpath, ::fast_io::win32
 
 template <::fast_io::details::posix_api_22 dsp, typename oldpath_type, typename newpath_type, typename... Args>
 inline auto win32_9xa_deal_with22(::fast_io::win32_9xa_dir_handle const &olddirhd, oldpath_type const &oldpath, ::fast_io::win32_9xa_dir_handle const &newdirhd, newpath_type const &newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	using char8_t_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -481,9 +495,9 @@ inline auto win32_9xa_deal_with22(::fast_io::win32_9xa_dir_handle const &olddirh
 		= char8_t const *;
 
 	return win32_api_common_9xa(oldpath,
-								[&](char const *oldpath_c_str, ::std::size_t oldpath_size) {
+								[&](char const *oldpath_c_str, ::std::size_t oldpath_size) FAST_IO_HERBCEPTIONS_THROWS {
 									return win32_api_common_9xa(newpath,
-																[&](char const *newpath_c_str, ::std::size_t newpath_size) {
+																[&](char const *newpath_c_str, ::std::size_t newpath_size) FAST_IO_HERBCEPTIONS_THROWS {
 																	return win32_9xa_22_api_dispatcher<dsp>(olddirhd, reinterpret_cast<char8_t_const_may_alias_ptr>(oldpath_c_str), oldpath_size, newdirhd,
 																											reinterpret_cast<char8_t_const_may_alias_ptr>(newpath_c_str), newpath_size, args...);
 																});
@@ -491,9 +505,9 @@ inline auto win32_9xa_deal_with22(::fast_io::win32_9xa_dir_handle const &olddirh
 }
 
 
-
 template <::std::integral char_type, ::fast_io::details::posix_api_ct dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
 inline auto win32_9xa_deal_withct(::fast_io::win32_9xa_dir_handle const &dir_handle, path_type const &path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	using char8_t_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -502,7 +516,7 @@ inline auto win32_9xa_deal_withct(::fast_io::win32_9xa_dir_handle const &dir_han
 		= char8_t const *;
 
 	return win32_api_common_9xa(
-		path, [&](char const *path_c_str, ::std::size_t path_size) {
+		path, [&](char const *path_c_str, ::std::size_t path_size) FAST_IO_HERBCEPTIONS_THROWS {
 			return win32_9xa_ct_api_dispatcher<char_type, dsp>(
 				dir_handle,
 				reinterpret_cast<char8_t_const_may_alias_ptr>(path_c_str),
@@ -517,44 +531,51 @@ inline auto win32_9xa_deal_withct(::fast_io::win32_9xa_dir_handle const &dir_han
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void win32_9xa_unlinkat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, win32_9xa_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::unlinkat>(ent.handle, path, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void win32_9xa_mkdirat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::mkdirat>(ent.handle, path, pm);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void win32_9xa_faccessat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, access_how mode, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::faccessat>(ent.handle, path, mode);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void win32_9xa_fchownat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::fchownat>(ent.handle, path, owner, group);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status win32_9xa_fstatat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::fstatat>(ent.handle, path, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void win32_9xa_utimensat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, unix_timestamp_option creation_time,
-								unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void win32_9xa_utimensat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, statx_timestamp_option creation_time,
+								statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 								win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void win32_9xa_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry const &newdirfd, new_path_type &&newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with12<details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
 }
@@ -563,6 +584,7 @@ inline void win32_9xa_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry cons
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void win32_9xa_linkat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with22<::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath, newent.handle, newpath);
 }
@@ -571,12 +593,14 @@ inline void win32_9xa_linkat(win32_9xa_at_entry const &oldent, old_path_type &&o
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void win32_9xa_renameat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath, newent.handle, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void win32_9xa_fchmodat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, perms mode, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::fchmodat>(ent.handle, path, mode);
 }
@@ -585,6 +609,7 @@ inline void win32_9xa_fchmodat(::fast_io::win32_9xa_at_entry const &ent, path_ty
 
 template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
 inline ::fast_io::details::basic_ct_string<char_type> win32_9xa_readlinkat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::details::win32_9xa_deal_withct<char_type, details::posix_api_ct::readlinkat>(ent.handle, path);
 }
@@ -595,43 +620,50 @@ using native_at_flags = win32_9xa_at_flags;
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_unlinkat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, win32_9xa_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::unlinkat>(ent.handle, path, flags);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_mkdirat(::fast_io::win32_9xa_at_entry const &ent, path_type &&path, perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::mkdirat>(ent.handle, path, pm);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_faccessat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, access_how mode, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::faccessat>(ent.handle, path, mode);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchmodat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, perms mode, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::fchmodat>(ent.handle, path, mode);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchownat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::fchownat>(ent.handle, path, owner, group);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status native_fstatat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::fstatat>(ent.handle, path, flags);
 }
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_utimensat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, unix_timestamp_option creation_time,
-							 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void native_utimensat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path, statx_timestamp_option creation_time,
+							 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 							 win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with1x<details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags);
 }
@@ -640,6 +672,7 @@ inline void native_utimensat(::fast_io::win32_9xa_at_entry const &ent, path_type
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry const &newdirfd, new_path_type &&newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with12<details::posix_api_12::symlinkat>(oldpath, newdirfd.handle, newpath);
 }
@@ -648,12 +681,14 @@ inline void native_symlinkat(old_path_type &&oldpath, win32_9xa_at_entry const &
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_linkat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath, [[maybe_unused]] win32_9xa_at_flags flags = win32_9xa_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with22<::fast_io::details::posix_api_22::linkat>(oldent.handle, oldpath, newent.handle, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_renameat(win32_9xa_at_entry const &oldent, old_path_type &&oldpath, win32_9xa_at_entry const &newent, new_path_type &&newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::details::win32_9xa_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.handle, oldpath, newent.handle, newpath);
 }
@@ -662,6 +697,7 @@ inline void native_renameat(win32_9xa_at_entry const &oldent, old_path_type &&ol
 
 template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
 inline ::fast_io::details::basic_ct_string<char_type> native_readlinkat(::fast_io::win32_9xa_at_entry const &ent, path_type const &path)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::details::win32_9xa_deal_withct<char_type, details::posix_api_ct::readlinkat>(ent.handle, path);
 }

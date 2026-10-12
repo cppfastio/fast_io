@@ -1,22 +1,19 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io
 {
 
-class settings
+using settings_observer = details::observer<OPENSSL_INIT_SETTINGS *>;
+
+class settings : public settings_observer
 {
 public:
 	using native_handle_type = OPENSSL_INIT_SETTINGS *;
-	native_handle_type ptr{};
-	constexpr operator native_handle_type() noexcept
-	{
-		return ptr;
-	}
-	constexpr settings(native_handle_type handle)
-		: settings_observer(handle)
+	constexpr settings(native_handle_type handle) noexcept
+		: settings_observer{handle}
 	{}
-	settings()
-		: settings_observer(OPENSSL_INIT_new())
+	settings() noexcept
+		: settings_observer{OPENSSL_INIT_new()}
 	{}
 	settings(settings const &) = delete;
 	settings &operator=(settings const &) = delete;
@@ -32,7 +29,7 @@ public:
 		{
 			OPENSSL_INIT_free(this->native_handle());
 		}
-		this->native_handle() = bmv->native_handle();
+		this->native_handle() = bmv.native_handle();
 		bmv->native_handle() = nullptr;
 		return *this;
 	}

@@ -3,3 +3,6 @@ will_fail = "runtime"
 
 ["reject_filename.cc"]
 will_fail = "runtime"
+
+["white_hole_herbception.cc"]
+will_fail = "runtime"

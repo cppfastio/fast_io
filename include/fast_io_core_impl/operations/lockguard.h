@@ -14,6 +14,7 @@ struct stream_ref_decay_lock_guard
 	[[msvc::forceinline]]
 #endif
 	inline explicit constexpr stream_ref_decay_lock_guard(mutex_type d)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(d.lock()))
 		: device(d)
 	{
 		device.lock();
@@ -25,7 +26,7 @@ struct stream_ref_decay_lock_guard
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr ~stream_ref_decay_lock_guard()
+	inline constexpr ~stream_ref_decay_lock_guard() noexcept
 	{
 		device.unlock();
 	}
@@ -36,12 +37,13 @@ struct unlock_stream_ref_decay_lock_guard
 {
 	using mutex_type = mtx_type;
 	mutex_type device;
-	#if __has_cpp_attribute(__gnu__::__always_inline__)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline explicit constexpr unlock_stream_ref_decay_lock_guard(stream_ref_decay_lock_guard<mtx_type> const& lg)
+	inline explicit constexpr unlock_stream_ref_decay_lock_guard(stream_ref_decay_lock_guard<mtx_type> const &lg)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(lg.device.unlock()))
 		: device(lg.device)
 	{
 		device.unlock();
@@ -53,7 +55,7 @@ struct unlock_stream_ref_decay_lock_guard
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr ~unlock_stream_ref_decay_lock_guard()
+	inline constexpr ~unlock_stream_ref_decay_lock_guard() noexcept
 	{
 		device.lock();
 	}

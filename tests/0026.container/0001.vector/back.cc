@@ -7,7 +7,7 @@ int main()
 {
 	fast_io::vector<char> letters{'a', 'b', 'c', 'd', 'e', 'f'};
 
-	if (!letters.empty())
+	if (!letters.is_empty())
 	{
 		print("The last character is '", chvw(letters.back()), "'.\n");
 	}

@@ -14,4 +14,16 @@ struct from_range_t
 inline constexpr ::fast_io::freestanding::from_range_t from_range{};
 #endif
 
+struct from_hasher_t
+{
+	inline explicit constexpr from_hasher_t() noexcept = default;
+};
+inline constexpr ::fast_io::freestanding::from_hasher_t from_hasher{};
+
 } // namespace fast_io::freestanding
+
+namespace fast_io
+{
+using ::fast_io::freestanding::from_hasher_t;
+using ::fast_io::freestanding::from_hasher;
+} // namespace fast_io

@@ -111,7 +111,7 @@ template <typename CharT, typename Traits>
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
-inline ::std::basic_filebuf<CharT, Traits> *open_msvc_hacked_basic_filebuf_impl(FILE *fp)
+inline ::std::basic_filebuf<CharT, Traits> *open_msvc_hacked_basic_filebuf_impl(FILE *fp) FAST_IO_HERBCEPTIONS_THROWS
 {
 	using filebuf_model_type = basic_filebuf_model<CharT, Traits>;
 	static_assert(sizeof(filebuf_model_type) == sizeof(::std::basic_filebuf<CharT, Traits>),
@@ -130,7 +130,7 @@ template <typename CharT, typename Traits>
 #if __has_cpp_attribute(nodiscard)
 [[nodiscard]]
 #endif
-inline ::std::basic_filebuf<CharT, Traits> *open_hacked_basic_filebuf(FILE *fp, ::fast_io::open_mode)
+inline ::std::basic_filebuf<CharT, Traits> *open_hacked_basic_filebuf(FILE *fp, ::fast_io::open_mode) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return open_msvc_hacked_basic_filebuf_impl<CharT, Traits>(fp);
 }

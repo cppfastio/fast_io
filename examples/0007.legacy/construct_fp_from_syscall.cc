@@ -32,9 +32,6 @@ FILE* or fstream apis
 	auto unix_ts{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 	println("Unix Timestamp:", unix_ts,
 			"\n"
-			"Universe Timestamp:",
-			static_cast<fast_io::universe_timestamp>(unix_ts),
-			"\n"
 			"UTC:",
 			utc(unix_ts),
 			"\n"

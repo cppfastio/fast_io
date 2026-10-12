@@ -266,3 +266,83 @@ Internal assert macros for fuzzing fast_io.
 #define FAST_IO_CPP_EXCEPTIONS
 #endif
 #endif
+
+#pragma push_macro("FAST_IO_HERBCEPTIONS_THROWS")
+#pragma push_macro("FAST_IO_HERBCEPTIONS_THROWS_IF")
+#pragma push_macro("FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT")
+#pragma push_macro("FAST_IO_HERBCEPTIONS_TRY")
+#pragma push_macro("FAST_IO_HERBCEPTIONS_CATCH_ALL")
+#undef FAST_IO_HERBCEPTIONS_THROWS
+#undef FAST_IO_HERBCEPTIONS_THROWS_IF
+#undef FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT
+#undef FAST_IO_HERBCEPTIONS_TRY
+#undef FAST_IO_HERBCEPTIONS_CATCH_ALL
+#ifdef __HERBCEPTIONS__
+#define FAST_IO_HERBCEPTIONS_THROWS throws
+#define FAST_IO_HERBCEPTIONS_THROWS_IF(...) throws(__VA_ARGS__)
+#define FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(...) throws(!noexcept(__VA_ARGS__))
+#define FAST_IO_HERBCEPTIONS_TRY try
+#define FAST_IO_HERBCEPTIONS_CATCH_ALL catch throws(::std::error)
+#else
+#define FAST_IO_HERBCEPTIONS_THROWS
+#define FAST_IO_HERBCEPTIONS_THROWS_IF(...) noexcept(!(__VA_ARGS__))
+#define FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(...) noexcept(noexcept(__VA_ARGS__))
+#ifdef FAST_IO_CPP_EXCEPTIONS
+#define FAST_IO_HERBCEPTIONS_TRY try
+#define FAST_IO_HERBCEPTIONS_CATCH_ALL catch (...)
+#else
+#define FAST_IO_HERBCEPTIONS_TRY if constexpr (true)
+#define FAST_IO_HERBCEPTIONS_CATCH_ALL if constexpr (false)
+#endif
+#endif
+
+#pragma push_macro("FAST_IO_INDETERMINATE")
+#undef FAST_IO_INDETERMINATE
+#if __has_cpp_attribute(indeterminate)
+#define FAST_IO_INDETERMINATE [[indeterminate]]
+#else
+#define FAST_IO_INDETERMINATE
+#endif
+
+/* [[no_unique_address]] is spelled [[msvc::no_unique_address]] on the
+ * msvc target — the standard attribute is ignored there */
+#pragma push_macro("FAST_IO_NO_UNIQUE_ADDRESS")
+#undef FAST_IO_NO_UNIQUE_ADDRESS
+#if __has_cpp_attribute(msvc::no_unique_address)
+#define FAST_IO_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#elif __has_cpp_attribute(no_unique_address) >= 201803
+#define FAST_IO_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#define FAST_IO_NO_UNIQUE_ADDRESS
+#endif
+
+/*
+the wine platform layer needs no winelibc headers — platforms/wine/api.h
+declares the wineunix.dll imports itself, so it is enabled on every windows
+target (dllimport decls only pull in wineunix.dll when actually used).
+*/
+#pragma push_macro("FAST_IO_HAS_WINE_UNIX")
+#undef FAST_IO_HAS_WINE_UNIX
+#if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+#define FAST_IO_HAS_WINE_UNIX
+#endif
+
+/* if consteval is C++23. GCC/Clang accept it as an extension in older
+ * modes (warning only); where it is unavailable entirely, fall back to
+ * __builtin_is_constant_evaluated(), and where even that is missing,
+ * assume the runtime path. */
+#pragma push_macro("FAST_IO_IF_CONSTEVAL")
+#pragma push_macro("FAST_IO_IF_NOT_CONSTEVAL")
+#undef FAST_IO_IF_CONSTEVAL
+#undef FAST_IO_IF_NOT_CONSTEVAL
+#if defined(__cpp_if_consteval) && __cpp_if_consteval >= 202106L
+#define FAST_IO_IF_CONSTEVAL if consteval
+#define FAST_IO_IF_NOT_CONSTEVAL if !consteval
+#elif (defined(__cpp_lib_is_constant_evaluated) && __cpp_lib_is_constant_evaluated >= 201811L) || \
+	FAST_IO_HAS_BUILTIN(__builtin_is_constant_evaluated)
+#define FAST_IO_IF_CONSTEVAL if (__builtin_is_constant_evaluated())
+#define FAST_IO_IF_NOT_CONSTEVAL if (!__builtin_is_constant_evaluated())
+#else
+#define FAST_IO_IF_CONSTEVAL if (false)
+#define FAST_IO_IF_NOT_CONSTEVAL if (true)
+#endif

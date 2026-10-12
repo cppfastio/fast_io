@@ -24,7 +24,9 @@ inline constexpr ::std::uint_least64_t K512[]{
 	0x113f9804bef90dae, 0x1b710b35131c471b, 0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc,
 	0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817};
 
-#if __has_cpp_attribute(msvc::forceinline)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
 inline constexpr auto Sigma0(auto x) noexcept
@@ -32,7 +34,9 @@ inline constexpr auto Sigma0(auto x) noexcept
 	return ::std::rotr(x, 28) ^ ::std::rotr(x, 34) ^ ::std::rotr(x, 39);
 }
 
-#if __has_cpp_attribute(msvc::forceinline)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
 inline constexpr auto Sigma1(auto x) noexcept
@@ -50,7 +54,9 @@ inline constexpr auto sigma1(auto x) noexcept
 	return ::std::rotr(x, 19) ^ ::std::rotr(x, 61) ^ (x >> 6);
 }
 
-#if __has_cpp_attribute(msvc::forceinline)
+#if __has_cpp_attribute(__gnu__::__always_inline__)
+[[__gnu__::__always_inline__]]
+#elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
 inline constexpr auto Ch(auto x, auto y, auto z) noexcept

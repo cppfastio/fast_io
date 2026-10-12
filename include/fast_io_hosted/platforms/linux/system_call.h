@@ -30,47 +30,33 @@ inline constexpr bool linux_system_call_fails(int_type v) noexcept
 
 template <::std::integral I>
 	requires(sizeof(I) >= 1)
-inline void linux_system_call_throw_error(I v)
+inline void linux_system_call_throw_error(I v) FAST_IO_HERBCEPTIONS_THROWS
 {
 	using unsigned_t = ::std::make_unsigned_t<I>;
 	if (static_cast<unsigned_t>(static_cast<unsigned_t>(v) + static_cast<unsigned_t>(4095)) <
 		static_cast<unsigned_t>(4095))
 	{
-		throw_posix_error(static_cast<int>(-v));
+		::fast_io::herbceptions::throws_errc_with_value(static_cast<int>(-v));
 	}
 }
 
 #endif
 
-template <bool always_terminate = false, ::std::integral I>
+template <::std::integral I>
 	requires(sizeof(I) >= 1)
-inline void system_call_throw_error(I v)
+inline void system_call_throw_error(I v) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__)
 	using unsigned_t = ::std::make_unsigned_t<I>;
 	if (static_cast<unsigned_t>(static_cast<unsigned_t>(v) + static_cast<unsigned_t>(4095)) <
 		static_cast<unsigned_t>(4095))
 	{
-		if constexpr (always_terminate)
-		{
-			fast_terminate();
-		}
-		else
-		{
-			throw_posix_error(static_cast<int>(-v));
-		}
+		::fast_io::herbceptions::throws_errc_with_value(static_cast<int>(-v));
 	}
 #else
 	if (v < 0)
 	{
-		if constexpr (always_terminate)
-		{
-			fast_terminate();
-		}
-		else
-		{
-			throw_posix_error();
-		}
+		throw_posix_error();
 	}
 #endif
 }

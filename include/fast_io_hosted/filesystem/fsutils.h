@@ -70,8 +70,9 @@ using basic_ct_string = ::fast_io::containers::basic_string<char_type, ::fast_io
 
 template <::std::integral char_type, typename... Args>
 inline constexpr basic_ct_string<char_type> concat_ct(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char_type>,Args...>};
+	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char_type>, Args...>};
 	if constexpr (type_error)
 	{
 		return ::fast_io::details::decay::basic_general_concat_phase1_decay_impl<false, char_type, ::fast_io::containers::basic_string<char_type, ::fast_io::native_global_allocator>>(

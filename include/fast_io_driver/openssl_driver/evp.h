@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 namespace fast_io
 {
@@ -62,7 +62,7 @@ public:
 	constexpr evp_pkey(native_handle_type ctx)
 		: evp_pkey_observer{ctx}
 	{}
-	evp_pkey(native_interface_t)
+	evp_pkey(native_interface_t) FAST_IO_HERBCEPTIONS_THROWS
 		: evp_pkey_observer{EVP_PKEY_new()}
 	{
 		if (this->native_handle() == nullptr) [[unlikely]]
@@ -139,6 +139,7 @@ public:
 		: evp_pkey_ctx_observer{ctx}
 	{}
 	evp_pkey_ctx(native_interface_t, EVP_PKEY *pkey, ENGINE *e)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: evp_pkey_ctx_observer{EVP_PKEY_CTX_new(pkey, e)}
 	{
 		if (this->native_handle() == nullptr) [[unlikely]]
@@ -147,6 +148,7 @@ public:
 		}
 	}
 	evp_pkey_ctx(native_interface_t, int id, ENGINE *e)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: evp_pkey_ctx_observer{EVP_PKEY_CTX_new_id(id, e)}
 	{
 		if (this->native_handle() == nullptr) [[unlikely]]
@@ -154,7 +156,7 @@ public:
 			throw_openssl_error();
 		}
 	}
-	evp_pkey_ctx(evp_pkey_ctx const &other)
+	evp_pkey_ctx(evp_pkey_ctx const &other) FAST_IO_HERBCEPTIONS_THROWS
 		: evp_pkey_ctx_observer{EVP_PKEY_CTX_dup(other.native_handle())}
 	{
 		if (this->native_handle() == nullptr) [[unlikely]]
@@ -162,7 +164,7 @@ public:
 			throw_openssl_error();
 		}
 	}
-	evp_pkey_ctx &operator=(evp_pkey_ctx const &other)
+	evp_pkey_ctx &operator=(evp_pkey_ctx const &other) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto newp{EVP_PKEY_CTX_dup(other.native_handle())};
 		if (newp == nullptr) [[unlikely]]
@@ -208,7 +210,7 @@ public:
 	}
 };
 
-inline void keygen_init(evp_pkey_ctx_observer evob)
+inline void keygen_init(evp_pkey_ctx_observer evob) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (EVP_PKEY_keygen_init(evob.ctx) <= 0)
 	{
@@ -216,7 +218,7 @@ inline void keygen_init(evp_pkey_ctx_observer evob)
 	}
 }
 
-inline evp_pkey keygen(evp_pkey_ctx_observer evob)
+inline evp_pkey keygen(evp_pkey_ctx_observer evob) FAST_IO_HERBCEPTIONS_THROWS
 {
 	EVP_PKEY *add{};
 	if (EVP_PKEY_keygen(evob.ctx, __builtin_addressof(add)) <= 0)
@@ -250,6 +252,7 @@ template <output_stream output>
 			 (::std::derived_from<::std::remove_cvref_t<output>, bio_io_observer> ||
 			  buffer_output_stream<::std::remove_cvref_t<output>>))
 inline void print_define(io_reserve_type_t<typename output::char_type, private_key>, output out, private_key const &key)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (::std::derived_from<::std::remove_cvref_t<output>, bio_io_observer>)
 	{
@@ -270,6 +273,7 @@ template <output_stream output>
 			 (::std::derived_from<::std::remove_cvref_t<output>, bio_io_observer> ||
 			  buffer_output_stream<::std::remove_cvref_t<output>>))
 inline void print_define(io_reserve_type_t<typename output::char_type, public_key>, output out, public_key key)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (::std::derived_from<::std::remove_cvref_t<output>, bio_io_observer>)
 	{

@@ -6,8 +6,8 @@ namespace fast_io::win32::nt
 struct rtl_unicode_string_unique_ptr
 {
 	unicode_string *heap_ptr{};
-	inline constexpr rtl_unicode_string_unique_ptr() = default;
-	inline constexpr rtl_unicode_string_unique_ptr(unicode_string *ptr)
+	inline constexpr rtl_unicode_string_unique_ptr() noexcept = default;
+	inline constexpr rtl_unicode_string_unique_ptr(unicode_string *ptr) noexcept
 		: heap_ptr(ptr)
 	{}
 	inline rtl_unicode_string_unique_ptr(rtl_unicode_string_unique_ptr const &) = delete;

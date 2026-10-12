@@ -51,7 +51,13 @@ struct is_trivially_copyable_or_relocatable<::dll_ref_entry>
 };
 } // namespace fast_io::freestanding
 
-inline auto get_dependencies(void *hMod)
+#ifdef __HERBCEPTIONS__
+#define HERBCEPTIONS_THROWS throws
+#else
+#define HERBCEPTIONS_THROWS
+#endif
+
+inline auto get_dependencies(void *hMod) HERBCEPTIONS_THROWS
 {
 	::fast_io::vector<dll_ref_entry> deps;
 
@@ -67,7 +73,7 @@ inline auto get_dependencies(void *hMod)
 		if (hmoddep) [[likely]]
 		{
 			::fast_io::win32_dll_file df(hmoddep);
-			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep](char16_t *buffer, size_t len) {
+			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep](char16_t *buffer, size_t len) HERBCEPTIONS_THROWS {
 				if (!::GetModuleFileNameW((HMODULE)hmoddep, reinterpret_cast<wchar_t *>(buffer), static_cast<::std::uint_least32_t>(len)))
 				{
 					::fast_io::throw_win32_error();
@@ -81,12 +87,17 @@ inline auto get_dependencies(void *hMod)
 }
 
 int main(int argc, char const **argv)
-#if (defined(__cpp_exceptions) && (!defined(_MSC_VER) || defined(__clang__))) || __HAS_EXCEPTIONS == 1
+#if defined(__HERBCEPTIONS__) || (defined(__cpp_exceptions) && (!defined(_MSC_VER) || defined(__clang__))) || __HAS_EXCEPTIONS == 1
 try
 #endif
 {
-	if (argc == 0)
+	if (argc < 2)
 	{
+		if (argc == 0)
+		{
+			return 1;
+		}
+		::fast_io::io::perr("Usage:", ::fast_io::mnp::os_c_str(*argv), " <.exe>...\n");
 		return 1;
 	}
 	::fast_io::out_buf_type obf(::fast_io::out());
@@ -101,7 +112,13 @@ try
 		}
 	}
 }
-#if (defined(__cpp_exceptions) && (!defined(_MSC_VER) || defined(__clang__))) || __HAS_EXCEPTIONS == 1
+#ifdef __HERBCEPTIONS__
+catch throws(::std::error e)
+{
+	::fast_io::io::perrln(e);
+	return 1;
+}
+#elif (defined(__cpp_exceptions) && (!defined(_MSC_VER) || defined(__clang__))) || __HAS_EXCEPTIONS == 1
 catch (::fast_io::error e)
 {
 	::fast_io::io::perrln(e);

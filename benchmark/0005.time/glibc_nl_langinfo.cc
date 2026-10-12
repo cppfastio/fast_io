@@ -14,9 +14,7 @@ int main()
 
 	std::time_t t{};
 	t = time(__builtin_addressof(t));
-	struct tm tm_value
-	{
-	};
+	struct tm tm_value{};
 	gmtime_r(__builtin_addressof(t), __builtin_addressof(tm_value));
 	{
 		auto nl_str{nl_langinfo_l(_DATE_FMT, glibc_locale)};
@@ -25,7 +23,7 @@ int main()
 		for (std::size_t i{}; i != N; ++i)
 		{
 			std::size_t diff{strftime_l(buffer, buffer_size, nl_str, __builtin_addressof(tm_value), glibc_locale)};
-			fast_io::operations::write_all(obf, buffer, buffer + diff);
+			fast_io::operations::write_all(obf, buffer, diff);
 			println(obf);
 		}
 	}

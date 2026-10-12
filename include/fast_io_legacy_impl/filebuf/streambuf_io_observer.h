@@ -58,6 +58,15 @@ public:
 		return static_cast<basic_nt_family_io_observer<fam, char_type>>(
 			static_cast<basic_posix_io_observer<char_type>>(*this));
 	}
+#if defined(FAST_IO_HAS_WINE_UNIX)
+	template <wine_family fam>
+	inline explicit operator basic_wine_family_io_observer<fam, char_type>() const
+		FAST_IO_HERBCEPTIONS_THROWS
+	{
+		return {::fast_io::details::my_fp_to_wine_host_fd_impl<::fast_io::c_family::standard>(
+			::fast_io::details::streambuf_hack::fp_hack(fb))};
+	}
+#endif
 #endif
 #endif
 #endif
@@ -90,20 +99,29 @@ using wstreambuf_io_observer = basic_streambuf_io_observer<wchar_t>;
 
 #if defined(_LIBCPP_VERSION) || defined(__GLIBCXX__) || defined(_MSVC_STL_UPDATE)
 
-#if 0
-template<::std::integral ch_type,typename Traits>
-requires zero_copy_input_stream<basic_c_io_observer<ch_type>>
-inline constexpr decltype(auto) zero_copy_in_handle(basic_filebuf_io_observer<ch_type,Traits> h)
+template <::std::integral ch_type, typename Traits>
+	requires(::fast_io::operations::decay::defines::has_ibuffer_basic_operations<
+				 basic_general_streambuf_io_observer<::std::basic_filebuf<ch_type, Traits>>> &&
+			 ::fast_io::operations::decay::defines::has_input_transmit_handle_define<
+				 basic_c_family_io_observer<::fast_io::c_family::native_unlocked, ch_type>>)
+inline constexpr decltype(auto) input_transmit_handle_define(
+	basic_general_streambuf_io_observer<::std::basic_filebuf<ch_type, Traits>> h) noexcept
 {
-	return zero_copy_in_handle(static_cast<basic_c_io_observer<ch_type>>(h));
+	return input_transmit_handle_define(
+		static_cast<basic_c_family_io_observer<::fast_io::c_family::native_unlocked, ch_type>>(h));
 }
-template<::std::integral ch_type,typename Traits>
-requires zero_copy_output_stream<basic_c_io_observer<ch_type>>
-inline constexpr decltype(auto) zero_copy_out_handle(basic_filebuf_io_observer<ch_type,Traits> h)
+
+template <::std::integral ch_type, typename Traits>
+	requires(::fast_io::operations::decay::defines::has_output_or_io_stream_buffer_flush_define<
+				 basic_general_streambuf_io_observer<::std::basic_filebuf<ch_type, Traits>>> &&
+			 ::fast_io::operations::decay::defines::has_output_transmit_handle_define<
+				 basic_c_family_io_observer<::fast_io::c_family::native_unlocked, ch_type>>)
+inline constexpr decltype(auto) output_transmit_handle_define(
+	basic_general_streambuf_io_observer<::std::basic_filebuf<ch_type, Traits>> h) noexcept
 {
-	return zero_copy_out_handle(static_cast<basic_c_io_observer<ch_type>>(h));
+	return output_transmit_handle_define(
+		static_cast<basic_c_family_io_observer<::fast_io::c_family::native_unlocked, ch_type>>(h));
 }
-#endif
 
 #if !defined(_LIBCPP_HAS_NO_FILESYSTEM) || defined(_LIBCPP_HAS_FSTREAM)
 
@@ -117,6 +135,7 @@ using wfilebuf_io_observer = basic_filebuf_io_observer<wchar_t>;
 template <::std::integral ch_type, typename traits_type>
 	requires requires(basic_c_io_observer<ch_type> piob) { status(piob); }
 inline constexpr auto status(basic_streambuf_io_observer<ch_type, traits_type> ciob)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return status(static_cast<basic_c_io_observer<ch_type>>(ciob));
 }
@@ -124,12 +143,14 @@ inline constexpr auto status(basic_streambuf_io_observer<ch_type, traits_type> c
 template <::std::integral ch_type, typename traits_type>
 	requires requires(basic_c_io_observer<ch_type> piob) { status(piob); }
 inline constexpr auto status(basic_filebuf_io_observer<ch_type, traits_type> ciob)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return status(static_cast<basic_c_io_observer<ch_type>>(ciob));
 }
 
 template <::std::integral ch_type, typename traits_type>
 inline ::std::size_t file_size(basic_filebuf_io_observer<ch_type, traits_type> ciob)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::posix_loader_get_file_size(details::fp_to_fd(details::streambuf_hack::fp_hack(ciob.fb)));
 }

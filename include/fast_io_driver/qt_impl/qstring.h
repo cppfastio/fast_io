@@ -118,12 +118,14 @@ inline QString strlike_single_character_construct_define(io_strlike_type_t<char1
 
 template <typename... Args>
 inline QString u16concat_qt_qstring(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::basic_general_concat<false, char16_t, QString>(::std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline QString u16concatln_qt_qstring(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::basic_general_concat<true, char16_t, QString>(::std::forward<Args>(args)...);
 }

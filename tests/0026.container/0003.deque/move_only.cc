@@ -49,7 +49,7 @@ inline void test_move_only_push_back()
 	{
 		if (dq[i].value != i)
 		{
-			::fast_io::io::panicln("value mismatch at ", i, " after push_back move-only");
+			::fast_io::io::panic("value mismatch at ", i, " after push_back move-only\n");
 		}
 	}
 
@@ -75,7 +75,7 @@ inline void test_move_only_push_front()
 	{
 		if (dq[i].value != 4095u - i)
 		{
-			::fast_io::io::panicln("value mismatch at ", i, " after push_front move-only");
+			::fast_io::io::panic("value mismatch at ", i, " after push_front move-only\n");
 		}
 	}
 

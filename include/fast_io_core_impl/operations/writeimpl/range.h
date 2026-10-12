@@ -16,6 +16,7 @@ struct bytes_copy_punning_result
 template <typename FromItbg, typename FromIted, typename ToIter>
 inline constexpr bytes_copy_punning_result<FromItbg, ToIter>
 bytes_copy_punning_impl(FromItbg fromfirst, FromIted fromlast, ToIter tofirst, ToIter tolast)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(*tofirst = *fromfirst))
 {
 	using fromvaluetype = ::std::iter_value_t<FromItbg>;
 	using tovaluetype = ::std::iter_value_t<ToIter>;
@@ -48,9 +49,10 @@ bytes_copy_punning_impl(FromItbg fromfirst, FromIted fromlast, ToIter tofirst, T
 
 template <::std::size_t blocksize, typename outstmtype, typename T1, typename T>
 inline constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype outsm, T1 **controller_first,
-															   T const *firstblock_curr, T const *firstblock_end,
-															   T1 **controller_last, T const *lastblock_first,
-															   T const *lastblock_curr)
+																	  T const *firstblock_curr, T const *firstblock_end,
+																	  T1 **controller_last, T const *lastblock_first,
+																	  T const *lastblock_curr)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 {
 	using output_char_type = typename outstmtype::output_char_type;
 	using nocref = ::std::remove_cvref_t<T>;
@@ -60,7 +62,16 @@ inline constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype
 	{
 		if (controller_first == controller_last)
 		{
-			::fast_io::operations::decay::write_all_decay(outsm, firstblock_curr, lastblock_curr);
+			if constexpr (::std::same_as<nocref, ::std::byte>)
+			{
+				::fast_io::operations::decay::write_all_bytes_decay(
+					outsm, firstblock_curr, static_cast<::std::size_t>(lastblock_curr - firstblock_curr));
+			}
+			else
+			{
+				::fast_io::operations::decay::write_all_decay(outsm, firstblock_curr,
+															  static_cast<::std::size_t>(lastblock_curr - firstblock_curr));
+			}
 			return;
 		}
 		using scattertype = ::std::conditional_t<hasbytesop, io_scatter_t, basic_io_scatter_t<output_char_type>>;
@@ -130,6 +141,7 @@ inline constexpr void write_all_iterator_decay_multiblock_common_impl(outstmtype
 
 template <typename outstmtype, typename Iter, typename Iterlast>
 inline constexpr void write_all_iterator_decay_impl(outstmtype outsm, Iter first, Iterlast last)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 {
 	if constexpr (::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 	{
@@ -161,7 +173,7 @@ inline constexpr void write_all_iterator_decay_impl(outstmtype outsm, Iter first
 				{
 					auto [fromiter, toiter] =
 						::fast_io::details::bytes_copy_punning_impl(first, last, buffer, buffer + bfsz);
-					::fast_io::operations::decay::write_all_decay(outsm, buffer, toiter);
+					::fast_io::operations::decay::write_all_decay(outsm, buffer, static_cast<::std::size_t>(toiter - buffer));
 					first = fromiter;
 				}
 			}
@@ -180,7 +192,7 @@ inline constexpr void write_all_iterator_decay_impl(outstmtype outsm, Iter first
 					}
 					if constexpr (::std::same_as<output_char_type, itvt>)
 					{
-						::fast_io::operations::decay::write_all_decay(outsm, firstaddr, firstaddr + 1);
+						::fast_io::operations::decay::write_all_decay(outsm, firstaddr, 1);
 					}
 					else
 					{
@@ -191,7 +203,7 @@ inline constexpr void write_all_iterator_decay_impl(outstmtype outsm, Iter first
 							= output_char_type const *;
 						::fast_io::operations::decay::write_all_decay(outsm,
 																	  reinterpret_cast<type_const_ptr>(firstaddr),
-																	  reinterpret_cast<type_const_ptr>(firstaddr + 1));
+																	  sizeof(itvt) / sizeof(output_char_type));
 					}
 				}
 			}
@@ -210,6 +222,7 @@ template <typename outstmtype, ::std::ranges::input_range rg>
 			   (sizeof(::std::ranges::range_value_t<rg>) % sizeof(typename outstmtype::output_char_type) == 0))) &&
 			 ::fast_io::freestanding::is_trivially_copyable_or_relocatable_v<::std::ranges::range_value_t<rg>>)
 inline constexpr void write_all_range_decay(outstmtype outsm, rg &&r)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 {
 	using output_char_type = typename outstmtype::output_char_type;
 	using rgvlt = ::std::ranges::range_value_t<rg>;
@@ -222,7 +235,7 @@ inline constexpr void write_all_range_decay(outstmtype outsm, rg &&r)
 		{
 			if constexpr (::std::same_as<rgvlt, output_char_type>)
 			{
-				::fast_io::operations::decay::write_all_decay(outsm, firstptr, lastptr);
+				::fast_io::operations::decay::write_all_decay(outsm, firstptr, static_cast<::std::size_t>(lastptr - firstptr));
 			}
 			else
 			{
@@ -233,14 +246,16 @@ inline constexpr void write_all_range_decay(outstmtype outsm, rg &&r)
 					= output_char_type const *;
 				auto firstptrbt{reinterpret_cast<type_const_ptr>(firstptr)};
 				auto lastptrbt{reinterpret_cast<type_const_ptr>(lastptr)};
-				::fast_io::operations::decay::write_all_decay(outsm, firstptrbt, lastptrbt);
+				::fast_io::operations::decay::write_all_decay(outsm, firstptrbt,
+															  static_cast<::std::size_t>(lastptrbt - firstptrbt));
 			}
 		}
 		else
 		{
 			auto firstptrbt{reinterpret_cast<::std::byte const *>(firstptr)};
 			auto lastptrbt{reinterpret_cast<::std::byte const *>(lastptr)};
-			::fast_io::operations::decay::write_all_bytes_decay(outsm, firstptrbt, lastptrbt);
+			::fast_io::operations::decay::write_all_bytes_decay(outsm, firstptrbt,
+																static_cast<::std::size_t>(lastptrbt - firstptrbt));
 		}
 	}
 	else
@@ -261,6 +276,7 @@ template <typename outstmtype, ::std::ranges::input_range R>
 [[msvc::forceinline]]
 #endif
 inline constexpr void write_all_range(outstmtype &&outstm, R &&r)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::defines::output_stream_operations_nothrow<outstmtype>)
 {
 	::fast_io::operations::decay::write_all_range_decay(::fast_io::operations::output_stream_ref(outstm),
 														::std::forward<R>(r));

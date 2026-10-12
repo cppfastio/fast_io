@@ -13,12 +13,18 @@ namespace fast_io
 {
 
 template <typename T, ::std::size_t N>
-using array = ::fast_io::containers::array<T, N>;
+using array = ::fast_io::containers::array<T, N, ::fast_io::allocator_adapter_flags::none>;
+
+template <::std::size_t N>
+using zu_array = ::fast_io::containers::array<::std::size_t, N>;
 
 namespace tlc
 {
 template <typename T, ::std::size_t N>
-using array = ::fast_io::containers::array<T, N>;
+using array = ::fast_io::containers::array<T, N, ::fast_io::allocator_adapter_flags::none>;
+
+template <::std::size_t N>
+using zu_array = ::fast_io::containers::array<::std::size_t, N>;
 
 using ::fast_io::containers::to_array;
 } // namespace tlc

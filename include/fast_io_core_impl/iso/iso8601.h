@@ -3,96 +3,36 @@
 namespace fast_io
 {
 
-template <::std::int_least64_t off_to_epoch>
-struct basic_timestamp
-{
-	static inline constexpr ::std::int_least64_t seconds_offset_to_epoch{off_to_epoch};
-	::std::int_least64_t seconds{};
-	::std::uint_least64_t subseconds{};
-	template <::std::int_least64_t new_off_to_epoch>
-	inline explicit constexpr operator basic_timestamp<new_off_to_epoch>() noexcept
-		requires(off_to_epoch != new_off_to_epoch)
-	{
-		constexpr ::std::int_least64_t diff{off_to_epoch - new_off_to_epoch};
-		return {seconds + diff, subseconds};
-	}
-
-	template <::std::floating_point flt_type>
-	inline explicit constexpr operator flt_type() const noexcept
-	{
-		// I know this is not accurate. but it is better than nothing
-		constexpr flt_type precision{static_cast<flt_type>(::fast_io::uint_least64_subseconds_per_second)};
-		return static_cast<flt_type>(seconds) + static_cast<flt_type>(subseconds) / precision;
-	}
-};
-
-template <::std::int_least64_t off_to_epoch>
-inline constexpr bool operator==(basic_timestamp<off_to_epoch> a, basic_timestamp<off_to_epoch> b) noexcept
-{
-	return (a.seconds == b.seconds) & (a.subseconds == b.subseconds);
-}
-
-template <::std::int_least64_t off_to_epoch>
-inline constexpr auto operator<=>(basic_timestamp<off_to_epoch> a, basic_timestamp<off_to_epoch> b) noexcept
-{
-	auto v{a.seconds <=> b.seconds};
-	if (v == ::std::strong_ordering::equal)
-	{
-		if (a.seconds < 0)
-		{
-			return b.subseconds <=> a.subseconds;
-		}
-		return a.subseconds <=> b.subseconds;
-	}
-	return v;
-}
-
 namespace details
 {
-struct timestamp_u
-{
-	::std::uint_least64_t seconds;
-	::std::uint_least64_t subseconds;
-};
+inline constexpr ::std::uint_least64_t statx_timestamp64_nanoseconds_per_second{1000000000u};
 
-inline constexpr timestamp_u add_impl(::std::uint_least64_t aseconds, ::std::uint_least64_t asubseconds, ::std::uint_least64_t bseconds, ::std::uint_least64_t bsubseconds) noexcept
-{
-	bool carry{};
-	::std::uint_least64_t res{::fast_io::intrinsics::addc(asubseconds, bsubseconds, carry, carry)};
-	carry |= (::fast_io::uint_least64_subseconds_per_second <= res);
-	res -= carry ? ::fast_io::uint_least64_subseconds_per_second : 0;
-	::std::uint_least64_t secs{::fast_io::intrinsics::addc(aseconds, bseconds, carry, carry)};
-	return {secs, res};
-}
-
-inline constexpr timestamp_u sub_impl(::std::uint_least64_t aseconds, ::std::uint_least64_t asubseconds, ::std::uint_least64_t bseconds, ::std::uint_least64_t bsubseconds) noexcept
-{
-	bool carry{};
-	::std::uint_least64_t res{::fast_io::intrinsics::subc(asubseconds, bsubseconds, carry, carry)};
-	res += (static_cast<::std::uint_least64_t>(0u - static_cast<::std::uint_least64_t>(carry)) & ::fast_io::uint_least64_subseconds_per_second);
-	return {::fast_io::intrinsics::subc(aseconds, bseconds, carry, carry), res};
-}
-
-inline constexpr basic_timestamp<0> div_uint(::std::int_least64_t rseconds, ::std::uint_least64_t subseconds,
-											 ::std::uint_least64_t d) noexcept
+inline constexpr posix_statx_timestamp64 div_uint(::std::int_least64_t rseconds, ::std::uint_least32_t nanoseconds,
+												::std::uint_least64_t d) noexcept
 {
 	if (d == 0) [[unlikely]]
 	{
 		fast_terminate();
 	}
+	constexpr ::std::uint_least64_t zero{};
 	bool minus{rseconds < 0};
 	::std::uint_least64_t seconds{static_cast<::std::uint_least64_t>(rseconds)};
-	constexpr ::std::uint_least64_t zero{};
+	::std::uint_least64_t nsec{nanoseconds};
 	if (minus)
 	{
 		seconds = zero - seconds;
+		if (nsec)
+		{
+			--seconds;
+			nsec = ::fast_io::details::statx_timestamp64_nanoseconds_per_second - nsec;
+		}
 	}
 #ifdef __SIZEOF_INT128__
-	__uint128_t total_subseconds{static_cast<__uint128_t>(seconds) * ::fast_io::uint_least64_subseconds_per_second + subseconds};
+	__uint128_t total_nanoseconds{static_cast<__uint128_t>(seconds) * ::fast_io::details::statx_timestamp64_nanoseconds_per_second + nsec};
 	::std::uint_least64_t mid{d >> 1};
-	__uint128_t rr{total_subseconds % d};
+	__uint128_t rr{total_nanoseconds % d};
 	::std::uint_least64_t r{static_cast<::std::uint_least64_t>(rr)};
-	__uint128_t q{total_subseconds / d};
+	__uint128_t q{total_nanoseconds / d};
 	if (mid < r)
 	{
 		++q;
@@ -104,304 +44,109 @@ inline constexpr basic_timestamp<0> div_uint(::std::int_least64_t rseconds, ::st
 			++q;
 		}
 	}
-	::std::uint_least64_t result_seconds{static_cast<::std::uint_least64_t>(q / ::fast_io::uint_least64_subseconds_per_second)};
-	::std::uint_least64_t result_subseconds{static_cast<::std::uint_least64_t>(q % ::fast_io::uint_least64_subseconds_per_second)};
+	::std::uint_least64_t result_seconds{static_cast<::std::uint_least64_t>(q / ::fast_io::details::statx_timestamp64_nanoseconds_per_second)};
+	::std::uint_least64_t result_nanoseconds{static_cast<::std::uint_least64_t>(q % ::fast_io::details::statx_timestamp64_nanoseconds_per_second)};
 	if (minus)
 	{
+		if (result_nanoseconds)
+		{
+			result_nanoseconds = ::fast_io::details::statx_timestamp64_nanoseconds_per_second - result_nanoseconds;
+			result_seconds = result_seconds + 1u;
+		}
 		result_seconds = zero - result_seconds;
 	}
-	return {static_cast<::std::int_least64_t>(result_seconds), result_subseconds};
+	return {static_cast<::std::int_least64_t>(result_seconds), static_cast<::std::uint_least32_t>(result_nanoseconds)};
 #else
 	constexpr ::std::uint_least64_t one{1};
-	::std::uint_least64_t total_seconds_high;
-	::std::uint_least64_t total_seconds_low{
-		::fast_io::intrinsics::umul(seconds, ::fast_io::uint_least64_subseconds_per_second, total_seconds_high)};
+	::std::uint_least64_t total_nanoseconds_high;
+	::std::uint_least64_t total_nanoseconds_low{
+		::fast_io::intrinsics::umul(seconds, ::fast_io::details::statx_timestamp64_nanoseconds_per_second, total_nanoseconds_high)};
 
 	bool carry{};
 
-	total_seconds_low = ::fast_io::intrinsics::addc(total_seconds_low, subseconds, carry, carry);
-	total_seconds_high = ::fast_io::intrinsics::addc(total_seconds_high, zero, carry, carry);
+	total_nanoseconds_low = ::fast_io::intrinsics::addc(total_nanoseconds_low, nsec, carry, carry);
+	total_nanoseconds_high = ::fast_io::intrinsics::addc(total_nanoseconds_high, zero, carry, carry);
 
 	::std::uint_least64_t mid{d >> 1};
-	auto [q_low, q_high, r, r_high] = ::fast_io::intrinsics::udivmod(total_seconds_low, total_seconds_high, d, zero);
+	auto [q_low, q_high, r, r_high] = ::fast_io::intrinsics::udivmod(total_nanoseconds_low, total_nanoseconds_high, d, zero);
 	if (mid < r || (mid == r && (q_low & 1) == 1))
 	{
 		carry = 0u;
 		q_low = ::fast_io::intrinsics::addc(q_low, one, carry, carry);
 		q_high = ::fast_io::intrinsics::addc(q_high, zero, carry, carry);
 	}
-	auto [result_seconds_low, result_seconds_high, result_subseconds_low, result_subseconds_high] =
-		::fast_io::intrinsics::udivmod(q_low, q_high, ::fast_io::uint_least64_subseconds_per_second, zero);
+	auto [result_seconds_low, result_seconds_high, result_nanoseconds_low, result_nanoseconds_high] =
+		::fast_io::intrinsics::udivmod(q_low, q_high, ::fast_io::details::statx_timestamp64_nanoseconds_per_second, zero);
 	if (minus)
 	{
+		if (result_nanoseconds_low)
+		{
+			result_nanoseconds_low = ::fast_io::details::statx_timestamp64_nanoseconds_per_second - result_nanoseconds_low;
+			result_seconds_low = result_seconds_low + 1u;
+		}
 		result_seconds_low = zero - result_seconds_low;
 	}
-	return {static_cast<::std::int_least64_t>(result_seconds_low), result_subseconds_low};
+	return {static_cast<::std::int_least64_t>(result_seconds_low), static_cast<::std::uint_least32_t>(result_nanoseconds_low)};
 #endif
-}
-
-inline constexpr basic_timestamp<0> div_unix_timestamp(::std::int_least64_t dividend_seconds, ::std::uint_least64_t dividend_subseconds,
-													   ::std::int_least64_t divisor_seconds, ::std::uint_least64_t divisor_subseconds) noexcept
-{
-	if (divisor_seconds == 0 && divisor_subseconds == 0)
-	{
-		::fast_io::fast_terminate();
-	}
-	bool const dividend_negative{dividend_seconds < 0};
-	bool const divisor_negative{divisor_seconds < 0};
-	bool const result_negative{(static_cast<char unsigned>(divisor_negative) ^ static_cast<char unsigned>(dividend_negative)) != 0};
-	constexpr ::std::uint_least64_t zero{};
-	::std::uint_least64_t udividend_seconds{static_cast<::std::uint_least64_t>(dividend_seconds)};
-	::std::uint_least64_t udivisor_seconds{static_cast<::std::uint_least64_t>(divisor_seconds)};
-
-	if (dividend_negative)
-	{
-		udividend_seconds = zero - udividend_seconds;
-	}
-	if (divisor_negative)
-	{
-		udivisor_seconds = zero - udivisor_seconds;
-	}
-
-	::std::uint_least64_t dividend_total_seconds_high;
-	::std::uint_least64_t dividend_total_seconds_low{
-		::fast_io::intrinsics::umul(udividend_seconds, ::fast_io::uint_least64_subseconds_per_second, dividend_total_seconds_high)};
-
-	bool carry{};
-
-	dividend_total_seconds_low = ::fast_io::intrinsics::addc(dividend_total_seconds_low, dividend_subseconds, carry, carry);
-	dividend_total_seconds_high = ::fast_io::intrinsics::addc(dividend_total_seconds_high, zero, carry, carry);
-
-	::std::uint_least64_t divisor_total_seconds_high;
-	::std::uint_least64_t divisor_total_seconds_low{
-		::fast_io::intrinsics::umul(udivisor_seconds, ::fast_io::uint_least64_subseconds_per_second, divisor_total_seconds_high)};
-
-	carry = 0;
-
-	divisor_total_seconds_low = ::fast_io::intrinsics::addc(divisor_total_seconds_low, divisor_subseconds, carry, carry);
-	divisor_total_seconds_high = ::fast_io::intrinsics::addc(divisor_total_seconds_high, zero, carry, carry);
-
-	auto [q_low, q_high, r_low, r_high] = ::fast_io::intrinsics::udivmod(dividend_total_seconds_low, dividend_total_seconds_high, divisor_total_seconds_low, divisor_total_seconds_high);
-
-	auto divisor_total_seconds_div2_low{::fast_io::intrinsics::shiftright(divisor_total_seconds_low, divisor_total_seconds_high, 1u)};
-	auto divisor_total_seconds_div2_high{divisor_total_seconds_high >> 1u};
-
-	carry = false;
-
-	::fast_io::intrinsics::subc(divisor_total_seconds_div2_low, r_low, carry, carry);
-	::fast_io::intrinsics::subc(divisor_total_seconds_div2_high, r_high, carry, carry);
-	if ((!carry) && (((divisor_total_seconds_low & 1u) == 0u) && (r_low == divisor_total_seconds_div2_low || r_high == divisor_total_seconds_div2_high)))
-	{
-		// mid point case
-		carry = ((q_low & 1u) != 0u);
-	}
-	q_low = ::fast_io::intrinsics::addc(q_low, zero, carry, carry);
-	q_high = ::fast_io::intrinsics::addc(q_high, zero, carry, carry);
-	if (carry)
-	{
-		::fast_io::fast_terminate();
-	}
-	auto [seconds_low, seconds_high, subseconds_low, subseconds_high] = ::fast_io::intrinsics::udivmod(q_low, q_high, ::fast_io::uint_least64_subseconds_per_second, zero);
-#if __has_cpp_attribute(assume)
-	[[assume(subseconds_high == 0u)]];
-#endif
-	if (seconds_high || subseconds_high)
-	{
-		::fast_io::fast_terminate();
-	}
-
-	if (result_negative)
-	{
-		constexpr ::std::uint_least64_t mx{(::std::numeric_limits<::std::uint_least64_t>::max() >> 1u) + 1u};
-		if (mx < seconds_low)
-		{
-			::fast_io::fast_terminate();
-		}
-		seconds_low = static_cast<::std::uint_least64_t>(zero - seconds_low);
-	}
-	else
-	{
-		constexpr ::std::uint_least64_t mx{(::std::numeric_limits<::std::uint_least64_t>::max() >> 1u)};
-		if (mx < seconds_low)
-		{
-			::fast_io::fast_terminate();
-		}
-	}
-	return {static_cast<::std::int_least64_t>(seconds_low), subseconds_low};
 }
 
 } // namespace details
 
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> operator-(basic_timestamp<off_to_epoch> a) noexcept
+inline constexpr posix_statx_timestamp64 operator-(posix_statx_timestamp64 a) noexcept
 {
-	::std::uint_least64_t high{static_cast<::std::uint_least64_t>(a.seconds)};
-	high = 0u - high;
-	return {static_cast<::std::int_least64_t>(high), a.subseconds};
+	::std::uint_least64_t sec{static_cast<::std::uint_least64_t>(a.tv_sec)};
+	::std::uint_least32_t nsec{a.tv_nsec};
+	sec = 0u - sec;
+	if (nsec)
+	{
+		--sec;
+		nsec = static_cast<::std::uint_least32_t>(::fast_io::details::statx_timestamp64_nanoseconds_per_second - nsec);
+	}
+	return {static_cast<::std::int_least64_t>(sec), nsec};
 }
 
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> operator+(basic_timestamp<off_to_epoch> a,
-														 basic_timestamp<off_to_epoch> b) noexcept
+inline constexpr posix_statx_timestamp64 operator+(posix_statx_timestamp64 a,
+												   posix_statx_timestamp64 b) noexcept
 {
-	if (a.seconds < 0)
+	::std::uint_least64_t sec{static_cast<::std::uint_least64_t>(a.tv_sec) + static_cast<::std::uint_least64_t>(b.tv_sec)};
+	::std::uint_least32_t nsec{a.tv_nsec + b.tv_nsec};
+	if (::fast_io::details::statx_timestamp64_nanoseconds_per_second <= nsec)
 	{
-		::std::uint_least64_t a_abs{static_cast<::std::uint_least64_t>(a.seconds)};
-		a_abs = 0u - a_abs;
-		if (b.seconds < 0)
-		{
-			::std::uint_least64_t b_abs{static_cast<::std::uint_least64_t>(b.seconds)};
-			b_abs = 0u - b_abs;
-			auto res{::fast_io::details::add_impl(a_abs, a.subseconds, b_abs, b.subseconds)};
-			res.seconds = 0u - res.seconds;
-			return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
-		}
-		else
-		{
-			::std::uint_least64_t b_abs{static_cast<::std::uint_least64_t>(b.seconds)};
-			if (a_abs < b_abs || (a_abs == b_abs && a.subseconds < b.subseconds))
-			{
-				auto res{::fast_io::details::sub_impl(b_abs, b.subseconds, a_abs, a.subseconds)};
-				return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
-			}
-			else
-			{
-				auto res{::fast_io::details::sub_impl(a_abs, a.subseconds, b_abs, b.subseconds)};
-				res.seconds = 0u - res.seconds;
-				return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
-			}
-		}
+		nsec = static_cast<::std::uint_least32_t>(nsec - ::fast_io::details::statx_timestamp64_nanoseconds_per_second);
+		++sec;
 	}
-	else
-	{
-		::std::uint_least64_t a_abs{static_cast<::std::uint_least64_t>(a.seconds)};
-		if (b.seconds < 0)
-		{
-			::std::uint_least64_t b_abs{static_cast<::std::uint_least64_t>(b.seconds)};
-			b_abs = 0u - b_abs;
-			if (a_abs < b_abs || (a_abs == b_abs && a.subseconds < b.subseconds))
-			{
-				auto res{::fast_io::details::sub_impl(b_abs, b.subseconds, a_abs, a.subseconds)};
-				res.seconds = 0u - res.seconds;
-				return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
-			}
-			else
-			{
-				auto res{::fast_io::details::sub_impl(a_abs, a.subseconds, b_abs, b.subseconds)};
-				return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
-			}
-		}
-		else
-		{
-			::std::uint_least64_t b_abs{static_cast<::std::uint_least64_t>(b.seconds)};
-			auto res{::fast_io::details::add_impl(a_abs, a.subseconds, b_abs, b.subseconds)};
-			return {static_cast<::std::int_least64_t>(res.seconds), res.subseconds};
-		}
-	}
+	return {static_cast<::std::int_least64_t>(sec), nsec};
 }
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> &operator+=(basic_timestamp<off_to_epoch> &a,
-														   basic_timestamp<off_to_epoch> b) noexcept
+
+inline constexpr posix_statx_timestamp64 &operator+=(posix_statx_timestamp64 &a,
+													 posix_statx_timestamp64 b) noexcept
 {
 	return a = a + b;
 }
 
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> operator-(basic_timestamp<off_to_epoch> a,
-														 basic_timestamp<off_to_epoch> b) noexcept
+inline constexpr posix_statx_timestamp64 operator-(posix_statx_timestamp64 a,
+												   posix_statx_timestamp64 b) noexcept
 {
 	return a + (-b);
 }
 
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> &operator-=(basic_timestamp<off_to_epoch> &a,
-														   basic_timestamp<off_to_epoch> b) noexcept
+inline constexpr posix_statx_timestamp64 &operator-=(posix_statx_timestamp64 &a,
+													 posix_statx_timestamp64 b) noexcept
 {
 	return a = a + (-b);
 }
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> operator/(basic_timestamp<off_to_epoch> a,
-														 ::std::uint_least64_t b) noexcept
+
+inline constexpr posix_statx_timestamp64 operator/(posix_statx_timestamp64 a,
+												   ::std::uint_least64_t b) noexcept
 {
-	if constexpr (off_to_epoch == 0)
-	{
-		return ::fast_io::details::div_uint(a.seconds, a.subseconds, b);
-	}
-	else
-	{
-		auto [seconds, subseconds] = ::fast_io::details::div_uint(a.seconds, a.subseconds, b);
-		return {seconds, subseconds};
-	}
+	return ::fast_io::details::div_uint(a.tv_sec, a.tv_nsec, b);
 }
 
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> &operator/=(basic_timestamp<off_to_epoch> &a,
-														   ::std::uint_least64_t b) noexcept
+inline constexpr posix_statx_timestamp64 &operator/=(posix_statx_timestamp64 &a,
+													 ::std::uint_least64_t b) noexcept
 {
-	if constexpr (off_to_epoch == 0)
-	{
-		return a = ::fast_io::details::div_uint(a.seconds, a.subseconds, b);
-	}
-	else
-	{
-		auto [seconds, subseconds] = ::fast_io::details::div_uint(a.seconds, a.subseconds, b);
-		a.seconds = seconds;
-		a.subseconds = subseconds;
-		return a;
-	}
+	return a = ::fast_io::details::div_uint(a.tv_sec, a.tv_nsec, b);
 }
-#if 0
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> &operator/=(basic_timestamp<off_to_epoch> &a,
-														   basic_timestamp<off_to_epoch> b) noexcept
-{
-	if constexpr (off_to_epoch == 0)
-	{
-		return a = ::fast_io::details::div_unix_timestamp(a.seconds, a.subseconds, b.seconds, b.subseconds);
-	}
-	else
-	{
-		auto [seconds, subseconds] = ::fast_io::details::div_unix_timestamp(a.seconds, a.subseconds, b.seconds, b.subseconds);
-		a.seconds = seconds;
-		a.subseconds = subseconds;
-		return a;
-	}
-}
-
-template <::std::int_least64_t off_to_epoch>
-inline constexpr basic_timestamp<off_to_epoch> operator/(basic_timestamp<off_to_epoch> a,
-														 basic_timestamp<off_to_epoch> b) noexcept
-{
-	if constexpr (off_to_epoch == 0)
-	{
-		return ::fast_io::details::div_unix_timestamp(a.seconds, a.subseconds, b.seconds, b.subseconds);
-	}
-	else
-	{
-		auto [seconds, subseconds] = ::fast_io::details::div_unix_timestamp(a.seconds, a.subseconds, b.seconds, b.subseconds);
-		return {seconds, subseconds};
-	}
-}
-#endif
-/*
-https://www.epochconverter.com/seconds-days-since-y0
-Seconds since year 0 (MySQL compatible)
-Seconds since January 1, 1 AD
-Days since year 0 (MySQL compatible)
-Days since January 1, 1 AD
-Days since January 1, 1900, used for Excel DAY functions
-Days since January 1, 1904, formerly used for Excel DAY (Macintosh)
-Days since January 1, 1970, Unix epoch
-*/
-
-using unix_timestamp = basic_timestamp<0>;                         // UNIX
-using win32_timestamp = basic_timestamp<-11644473600LL>;           // Windows
-using csharp_timestamp = basic_timestamp<-62135712000LL>;          // C#
-using year0_timestamp = basic_timestamp<-62167219200LL>;           // 0000-01-01
-using universe_timestamp = basic_timestamp<-434602341429235200LL>; // Pesudo timestamp since the big bang of universe
-/*
-Referenced from: https://81018.com/universeclock/
-*/
 
 struct iso8601_timestamp
 {
@@ -411,7 +156,7 @@ struct iso8601_timestamp
 	::std::uint_least8_t hours{};
 	::std::uint_least8_t minutes{};
 	::std::uint_least8_t seconds{};
-	::std::uint_least64_t subseconds{};
+	::std::uint_least32_t nanoseconds{};
 	::std::int_least32_t timezone{};
 };
 
@@ -474,7 +219,7 @@ inline constexpr T sub_overflow(T a, T b) noexcept
 [[__gnu__::__pure__]]
 #endif
 inline constexpr iso8601_timestamp unix_timestamp_to_iso8601_tsp_impl_internal(::std::int_least64_t seconds,
-																			   ::std::uint_least64_t subseconds,
+																			   ::std::uint_least32_t nanoseconds,
 																			   ::std::int_least32_t timezone) noexcept
 {
 	::std::int_least64_t secs{sub_overflow(seconds, leapoch)};
@@ -530,7 +275,7 @@ inline constexpr iso8601_timestamp unix_timestamp_to_iso8601_tsp_impl_internal(:
 			static_cast<::std::uint_least8_t>(remsecs / 3600),
 			static_cast<::std::uint_least8_t>(remsecs / 60 % 60),
 			static_cast<::std::uint_least8_t>(remsecs % 60),
-			subseconds,
+			nanoseconds,
 			timezone};
 }
 
@@ -538,9 +283,9 @@ inline constexpr iso8601_timestamp unix_timestamp_to_iso8601_tsp_impl_internal(:
 [[__gnu__::__pure__]]
 #endif
 inline constexpr iso8601_timestamp unix_timestamp_to_iso8601_tsp_impl(::std::int_least64_t t,
-																	  ::std::uint_least64_t subseconds) noexcept
+																	  ::std::uint_least32_t nanoseconds) noexcept
 {
-	return unix_timestamp_to_iso8601_tsp_impl_internal(t, subseconds, 0);
+	return unix_timestamp_to_iso8601_tsp_impl_internal(t, nanoseconds, 0);
 }
 
 #if __has_cpp_attribute(__gnu__::__pure__)
@@ -579,7 +324,7 @@ inline constexpr ::std::int_least64_t year_month_to_seconds(::std::int_least64_t
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
 #endif
-inline constexpr unix_timestamp iso8601_to_unix_timestamp_impl(iso8601_timestamp const &tsp) noexcept
+inline constexpr posix_statx_timestamp64 iso8601_to_unix_timestamp_impl(iso8601_timestamp const &tsp) noexcept
 {
 	return {static_cast<::std::int_least64_t>(
 				static_cast<::std::uint_least32_t>(tsp.day - 1) * static_cast<::std::uint_least32_t>(86400LL) +
@@ -587,27 +332,17 @@ inline constexpr unix_timestamp iso8601_to_unix_timestamp_impl(iso8601_timestamp
 				static_cast<::std::uint_least32_t>(tsp.minutes) * static_cast<::std::uint_least32_t>(60LL) +
 				static_cast<::std::uint_least32_t>(tsp.seconds) - static_cast<::std::uint_least32_t>(tsp.timezone)) +
 				year_month_to_seconds(tsp.year, tsp.month),
-			tsp.subseconds};
+			tsp.nanoseconds};
 }
 
 } // namespace details
 
-template <::std::int_least64_t off_to_epoch>
-inline constexpr iso8601_timestamp utc(basic_timestamp<off_to_epoch> timestamp) noexcept
+inline constexpr iso8601_timestamp utc(posix_statx_timestamp64 timestamp) noexcept
 {
-	if constexpr (::std::same_as<basic_timestamp<off_to_epoch>, unix_timestamp>)
-	{
-		return details::unix_timestamp_to_iso8601_tsp_impl(timestamp.seconds, timestamp.subseconds);
-	}
-	else
-	{
-		unix_timestamp tsp{static_cast<unix_timestamp>(timestamp)};
-		return details::unix_timestamp_to_iso8601_tsp_impl(tsp.seconds, tsp.subseconds);
-	}
+	return details::unix_timestamp_to_iso8601_tsp_impl(timestamp.tv_sec, timestamp.tv_nsec);
 }
 
-template <::std::int_least64_t off_to_epoch = 0>
-inline constexpr basic_timestamp<off_to_epoch> to_timestamp(iso8601_timestamp const &timestamp) noexcept
+inline constexpr posix_statx_timestamp64 to_posix_statx_timestamp64(iso8601_timestamp const &timestamp) noexcept
 {
 	return details::iso8601_to_unix_timestamp_impl(timestamp);
 }
@@ -747,9 +482,9 @@ inline constexpr char_type *print_reserve_iso8601_timestamp_impl(char_type *iter
 	*iter = char_literal_v<u8':', char_type>;
 	++iter;
 	iter = chrono_two_digits_impl<true>(iter, timestamp.seconds);
-	if (timestamp.subseconds)
+	if (timestamp.nanoseconds)
 	{
-		iter = output_iso8601_subseconds(iter, timestamp.subseconds);
+		iter = output_iso8601_nanoseconds(iter, timestamp.nanoseconds);
 	}
 	auto const timezone{timestamp.timezone};
 	if (timezone == 0)
@@ -765,38 +500,50 @@ inline constexpr char_type *print_reserve_iso8601_timestamp_impl(char_type *iter
 }
 
 template <bool comma = false, ::std::integral char_type>
-inline constexpr char_type *print_reserve_bsc_timestamp_impl(char_type *iter, unix_timestamp timestamp) noexcept
+inline constexpr char_type *print_reserve_bsc_timestamp_impl(char_type *iter, posix_statx_timestamp64 timestamp) noexcept
 {
-	iter = print_reserve_define(io_reserve_type<char_type, ::std::int_least64_t>, iter, timestamp.seconds);
-	if (timestamp.subseconds)
+	::std::int_least64_t seconds{timestamp.tv_sec};
+	::std::uint_least32_t nanoseconds{timestamp.tv_nsec};
+	if (seconds < 0)
 	{
-		iter = output_iso8601_subseconds<comma>(iter, timestamp.subseconds);
+		// floor-based to sign-magnitude form for printing
+		*iter = char_literal_v<u8'-', char_type>;
+		++iter;
+		::std::uint_least64_t useconds{static_cast<::std::uint_least64_t>(seconds)};
+		useconds = static_cast<::std::uint_least64_t>(0u) - useconds;
+		if (nanoseconds)
+		{
+			--useconds;
+			nanoseconds = static_cast<::std::uint_least32_t>(::fast_io::details::statx_timestamp64_nanoseconds_per_second - nanoseconds);
+		}
+		iter = print_reserve_define(io_reserve_type<char_type, ::std::uint_least64_t>, iter, useconds);
+	}
+	else
+	{
+		iter = print_reserve_define(io_reserve_type<char_type, ::std::int_least64_t>, iter, seconds);
+	}
+	if (nanoseconds)
+	{
+		iter = output_iso8601_nanoseconds<comma>(iter, nanoseconds);
 	}
 	return iter;
 }
 
 } // namespace details
 
-template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
-inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, basic_timestamp<off_to_epoch>>) noexcept
+template <::std::integral char_type>
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, posix_statx_timestamp64>) noexcept
 {
 	constexpr ::std::size_t sz{print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 1u +
-							   ::std::numeric_limits<::std::uint_least64_t>::digits10};
+							   ::std::numeric_limits<::std::uint_least32_t>::digits10};
 	return sz;
 }
 
-template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
-inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, basic_timestamp<off_to_epoch>>,
-												 char_type *iter, basic_timestamp<off_to_epoch> timestamp) noexcept
+template <::std::integral char_type>
+inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, posix_statx_timestamp64>,
+												 char_type *iter, posix_statx_timestamp64 timestamp) noexcept
 {
-	if constexpr (off_to_epoch == 0)
-	{
-		return details::print_reserve_bsc_timestamp_impl(iter, timestamp);
-	}
-	else
-	{
-		return details::print_reserve_bsc_timestamp_impl(iter, {timestamp.seconds, timestamp.subseconds});
-	}
+	return details::print_reserve_bsc_timestamp_impl(iter, timestamp);
 }
 
 template <::std::integral char_type>
@@ -805,7 +552,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, i
 	// ISO 8601 timestamp example : 2021-01-03T10:29:56Z
 	// ISO 8601 timestamp with timezone : 2021-01-03T10:29:56.999999+99:99
 	return print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 16 +
-		   print_reserve_size(io_reserve_type<char_type, ::std::uint_least64_t>) +
+		   print_reserve_size(io_reserve_type<char_type, ::std::uint_least32_t>) +
 		   ::fast_io::details::print_reserve_size_timezone_impl_v<char_type> + 3 + 2;
 }
 
@@ -816,12 +563,32 @@ inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, is
 	return details::print_reserve_iso8601_timestamp_impl(iter, timestamp);
 }
 
-inline constexpr win32_timestamp to_win32_timestamp_ftu64(::std::uint_least64_t ftu64) noexcept
+inline constexpr posix_statx_timestamp64 to_posix_statx_timestamp64_ftu64(::std::uint_least64_t ftu64) noexcept
 {
+	constexpr ::std::uint_least64_t win32_epoch_to_unix_epoch_seconds{11644473600ULL};
 	::std::uint_least64_t seconds{ftu64 / 10000000ULL};
-	::std::uint_least64_t subseconds{ftu64 % 10000000ULL};
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000u};
-	return {static_cast<::std::int_least64_t>(seconds), static_cast<::std::uint_least64_t>(subseconds * mul_factor)};
+	::std::uint_least32_t nanoseconds{static_cast<::std::uint_least32_t>(ftu64 % 10000000ULL) * 100u};
+	return {static_cast<::std::int_least64_t>(seconds - win32_epoch_to_unix_epoch_seconds), nanoseconds};
+}
+
+inline constexpr ::std::uint_least64_t posix_statx_timestamp64_to_ftu64(posix_statx_timestamp64 timestamp)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	constexpr ::std::int_least64_t win32_epoch_to_unix_epoch_seconds{11644473600LL};
+	if (timestamp.tv_sec < -win32_epoch_to_unix_epoch_seconds) [[unlikely]]
+	{
+		::fast_io::herbceptions::throws_errc(::std::errc::value_too_large);
+	}
+	// after the lower-bound check the unsigned addition below cannot wrap:
+	// tv_sec <= INT64_MAX keeps the sum under 2^63 + gap
+	::std::uint_least64_t win32_seconds{static_cast<::std::uint_least64_t>(timestamp.tv_sec) +
+										static_cast<::std::uint_least64_t>(win32_epoch_to_unix_epoch_seconds)};
+	::std::uint_least64_t ftu64;
+	if (__builtin_mul_overflow(win32_seconds, static_cast<::std::uint_least64_t>(10000000ULL), __builtin_addressof(ftu64))) [[unlikely]]
+	{
+		::fast_io::herbceptions::throws_errc(::std::errc::value_too_large);
+	}
+	return ftu64 + timestamp.tv_nsec / 100u;
 }
 
 // warning: relies on the order of the items
@@ -839,11 +606,11 @@ enum class scan_timestamp_context_phase : ::std::uint_least8_t
 	after_minutes,
 	seconds,
 	timezone_marker,
-	after_subseconds_timezone_marker,
+	after_nanoseconds_timezone_marker,
 	timezone_hours,
 	after_timezone_hours,
 	timezone_minutes,
-	subseconds,
+	nanoseconds,
 	waiting_for_five,
 	waiting_for_numbers,
 	ok
@@ -871,7 +638,7 @@ private:
 
 public:
 	static inline constexpr auto year_size = size_common<::std::int_least64_t>;
-	static inline constexpr auto subs_size = size_common<::std::uint_least64_t>;
+	static inline constexpr auto subs_size = size_common<::std::uint_least32_t>;
 	static inline constexpr ::std::size_t max_size{year_size > subs_size ? year_size : subs_size};
 };
 
@@ -888,38 +655,65 @@ struct timestamp_scan_state_t : private timestamp_scan_context_buffer_max_size_t
 namespace details
 {
 
+inline constexpr void normalize_posix_statx_timestamp64_scan_result(posix_statx_timestamp64 &t) noexcept
+{
+	if (::fast_io::details::statx_timestamp64_nanoseconds_per_second <= t.tv_nsec)
+	{
+		t.tv_nsec = static_cast<::std::uint_least32_t>(t.tv_nsec - ::fast_io::details::statx_timestamp64_nanoseconds_per_second);
+		if (t.tv_sec < 0)
+		{
+			t.tv_sec = static_cast<::std::int_least64_t>(static_cast<::std::uint_least64_t>(t.tv_sec) - 1u);
+		}
+		else
+		{
+			t.tv_sec = static_cast<::std::int_least64_t>(static_cast<::std::uint_least64_t>(t.tv_sec) + 1u);
+		}
+	}
+	if (t.tv_sec < 0 && t.tv_nsec)
+	{
+		// parsed as sign-magnitude; convert to floor-based timespec convention
+		t.tv_sec = static_cast<::std::int_least64_t>(static_cast<::std::uint_least64_t>(t.tv_sec) - 1u);
+		t.tv_nsec = static_cast<::std::uint_least32_t>(::fast_io::details::statx_timestamp64_nanoseconds_per_second - t.tv_nsec);
+	}
+}
+
 template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const *>
-scn_cnt_define_unix_timestamp_impl(char_type const *begin, char_type const *end, unix_timestamp &t) noexcept
+scn_cnt_define_unix_timestamp_impl(char_type const *begin, char_type const *end, posix_statx_timestamp64 &t) noexcept
 {
 	// TODO: whether to accept C-like floatings such as 2. and .2
-	auto [itr, ec] = scan_int_contiguous_define_impl<10, false, false, false>(begin, end, t.seconds);
-	if (ec != parse_code::ok) [[unlikely]]
+	auto [itr, ec] = scan_int_contiguous_define_impl<10, false, false, false>(begin, end, t.tv_sec);
+	if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {itr, ec};
 	}
 	if (itr == end) [[unlikely]]
 	{
-		t.subseconds = 0;
-		return {itr, parse_code::ok};
+		t.tv_nsec = 0;
+		return {itr, ::fast_io::freestanding::parse_errc::ok};
 	}
 	begin = itr;
 	if constexpr (comma)
 	{
 		if (*begin != char_literal_v<u8',', char_type>) [[unlikely]]
 		{
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 	}
 	else
 	{
 		if (*begin != char_literal_v<u8'.', char_type>) [[unlikely]]
 		{
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 	}
 	++begin;
-	return chrono_scan_decimal_fraction_part_never_overflow_impl(begin, end, t.subseconds);
+	auto result{chrono_scan_decimal_fraction_part_never_overflow_impl(begin, end, t.tv_nsec)};
+	if (result.code == ::fast_io::freestanding::parse_errc::ok)
+	{
+		normalize_posix_statx_timestamp64_scan_result(t);
+	}
+	return result;
 }
 
 template <::std::integral char_type, ::std::integral T>
@@ -929,7 +723,7 @@ scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_ty
 {
 	if (begin == end)
 	{
-		return {begin, parse_code::partial};
+		return {begin, ::fast_io::freestanding::parse_errc::partial};
 	}
 	auto itr{skip_digits<10, char_type>(begin, end)};
 	auto frag_length{static_cast<::std::uint_least8_t>(itr - begin)};
@@ -942,15 +736,15 @@ scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_ty
 		if (buffer_size == 0)
 		{
 			auto [itr2, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl<false>(begin, itr, t);
-			if (ec != parse_code::ok) [[unlikely]]
+			if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 			{
-				return {itr, parse_code::invalid};
+				return {itr, ::fast_io::freestanding::parse_errc::invalid};
 			}
 			if (itr2 != itr)
 			{
 				chrono_scan_decimal_fraction_part_rounding_impl(itr2, itr, t);
 			}
-			return {itr, parse_code::ok};
+			return {itr, ::fast_io::freestanding::parse_errc::ok};
 		}
 		else
 		{
@@ -961,12 +755,12 @@ scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_ty
 					::fast_io::freestanding::non_overlapped_copy_n(begin, digitsm1 - buffer_size, buffer_begin)};
 				auto digit_end{begin + (digitsm1 - buffer_size)};
 				auto [_, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl<false>(itr_begin, itr_end, t);
-				if (ec != parse_code::ok) [[unlikely]]
+				if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 				{
-					return {itr, parse_code::invalid};
+					return {itr, ::fast_io::freestanding::parse_errc::invalid};
 				}
 				chrono_scan_decimal_fraction_part_rounding_impl(digit_end, itr, t);
-				return {itr, parse_code::ok};
+				return {itr, ::fast_io::freestanding::parse_errc::ok};
 			}
 			else
 			{
@@ -974,11 +768,11 @@ scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_ty
 				auto itr_end{
 					::fast_io::freestanding::non_overlapped_copy_n(begin, frag_length, buffer_begin + buffer_size)};
 				auto [_, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl<false>(itr_begin, itr_end, t);
-				if (ec != parse_code::ok) [[unlikely]]
+				if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 				{
-					return {itr, parse_code::invalid};
+					return {itr, ::fast_io::freestanding::parse_errc::invalid};
 				}
-				return {itr, parse_code::ok};
+				return {itr, ::fast_io::freestanding::parse_errc::ok};
 			}
 		}
 	}
@@ -1001,22 +795,22 @@ scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_ty
 			digit_end = begin + (digitsm1 - buffer_size);
 		}
 		auto [_, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl<false>(itr_begin, itr_end, t);
-		if (ec != parse_code::ok) [[unlikely]]
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
-			return {itr, parse_code::invalid};
+			return {itr, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		if (*digit_end < char_literal_v<u8'5', char_type>)
 		{
 			state.size = 0;
 			state.tsp_phase = scan_timestamp_context_phase::waiting_for_numbers;
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 		else if (*digit_end > char_literal_v<u8'5', char_type>)
 		{
 			++t;
 			state.size = 0;
 			state.tsp_phase = scan_timestamp_context_phase::waiting_for_numbers;
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 		else [[unlikely]]
 		{
@@ -1028,13 +822,13 @@ scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_ty
 					++t;
 					state.size = 0;
 					state.tsp_phase = scan_timestamp_context_phase::waiting_for_numbers;
-					return {end, parse_code::partial};
+					return {end, ::fast_io::freestanding::parse_errc::partial};
 				}
 			}
 			// xxxx500000....(unknown), then it depends on the rest
 			state.size = 0;
 			state.tsp_phase = scan_timestamp_context_phase::waiting_for_five;
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 	}
 	else
@@ -1044,14 +838,14 @@ scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_ty
 		// so put it into the buffer
 		::fast_io::freestanding::non_overlapped_copy_n(begin, frag_length, buffer_begin + buffer_size);
 		state.size += static_cast<::std::uint_least8_t>(frag_length);
-		return {end, parse_code::partial};
+		return {end, ::fast_io::freestanding::parse_errc::partial};
 	}
 }
 
 template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const *>
 scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, char_type const *begin,
-								   char_type const *end, unix_timestamp &t) noexcept
+								   char_type const *end, posix_statx_timestamp64 &t) noexcept
 {
 #if __has_cpp_attribute(assume)
 	[[assume(state.tsp_phase != scan_timestamp_context_phase::after_year)]];
@@ -1064,7 +858,7 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 	[[assume(state.tsp_phase != scan_timestamp_context_phase::minutes)]];
 	[[assume(state.tsp_phase != scan_timestamp_context_phase::after_minutes)]];
 	[[assume(state.tsp_phase != scan_timestamp_context_phase::seconds)]];
-	[[assume(state.tsp_phase != scan_timestamp_context_phase::after_subseconds_timezone_marker)]];
+	[[assume(state.tsp_phase != scan_timestamp_context_phase::after_nanoseconds_timezone_marker)]];
 	[[assume(state.tsp_phase != scan_timestamp_context_phase::timezone_hours)]];
 	[[assume(state.tsp_phase != scan_timestamp_context_phase::after_timezone_hours)]];
 	[[assume(state.tsp_phase != scan_timestamp_context_phase::timezone_minutes)]];
@@ -1073,8 +867,8 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 	{
 	case scan_timestamp_context_phase::year:
 	{
-		auto [itr, ec] = scan_context_define_parse_impl<10, false, false, true>(state, begin, end, t.seconds);
-		if (ec != parse_code::ok)
+		auto [itr, ec] = scan_context_define_parse_impl<10, false, false, true>(state, begin, end, t.tv_sec);
+		if (ec != ::fast_io::freestanding::parse_errc::ok)
 		{
 			return {itr, ec};
 		}
@@ -1088,7 +882,7 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		else
 		{
@@ -1096,26 +890,27 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 			{
 				if (*begin++ != char_literal_v<u8',', char_type>) [[unlikely]]
 				{
-					return {begin, parse_code::invalid};
+					return {begin, ::fast_io::freestanding::parse_errc::invalid};
 				}
 			}
 			else
 			{
 				if (*begin++ != char_literal_v<u8'.', char_type>) [[unlikely]]
 				{
-					return {begin, parse_code::invalid};
+					return {begin, ::fast_io::freestanding::parse_errc::invalid};
 				}
 			}
-			state.tsp_phase = scan_timestamp_context_phase::subseconds;
+			state.tsp_phase = scan_timestamp_context_phase::nanoseconds;
 		}
 		[[fallthrough]];
 	}
-	case scan_timestamp_context_phase::subseconds:
+	case scan_timestamp_context_phase::nanoseconds:
 	{
-		auto result = scn_ctx_decimal_fraction_part_never_overflow_impl(state, begin, end, t.subseconds);
-		if (result.code == parse_code::ok)
+		auto result = scn_ctx_decimal_fraction_part_never_overflow_impl(state, begin, end, t.tv_nsec);
+		if (result.code == ::fast_io::freestanding::parse_errc::ok)
 		{
 			state.tsp_phase = scan_timestamp_context_phase::ok;
+			normalize_posix_statx_timestamp64_scan_result(t);
 		}
 		return result;
 	}
@@ -1125,16 +920,17 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 		{
 			if (!::fast_io::char_category::is_c_digit(*begin))
 			{
-				if (t.subseconds % 2 == 1)
+				if (t.tv_nsec % 2 == 1)
 				{
-					++t.subseconds;
+					++t.tv_nsec;
 				}
 				state.tsp_phase = scan_timestamp_context_phase::ok;
-				return {begin, parse_code::ok};
+				normalize_posix_statx_timestamp64_scan_result(t);
+				return {begin, ::fast_io::freestanding::parse_errc::ok};
 			}
 			if (*begin != char_literal_v<u8'0', char_type>)
 			{
-				++t.subseconds;
+				++t.tv_nsec;
 				state.tsp_phase = scan_timestamp_context_phase::waiting_for_numbers;
 				break;
 			}
@@ -1145,18 +941,19 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 	{
 		if (begin == end)
 		{
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 		auto itr{skip_digits<10>(begin, end)};
 		if (itr == end)
 		{
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 		state.tsp_phase = scan_timestamp_context_phase::ok;
-		return {itr, parse_code::ok};
+		normalize_posix_statx_timestamp64_scan_result(t);
+		return {itr, ::fast_io::freestanding::parse_errc::ok};
 	}
 	case scan_timestamp_context_phase::ok:
-		return {begin, parse_code::ok};
+		return {begin, ::fast_io::freestanding::parse_errc::ok};
 	default:
 		break;
 	}
@@ -1164,34 +961,37 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 }
 
 template <::std::integral char_type>
-inline constexpr parse_code scn_ctx_eof_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state,
-																   unix_timestamp &t) noexcept
+inline constexpr ::fast_io::freestanding::parse_errc scn_ctx_eof_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state,
+																							posix_statx_timestamp64 &t) noexcept
 {
 	switch (state.tsp_phase)
 	{
-	case scan_timestamp_context_phase::subseconds:
+	case scan_timestamp_context_phase::nanoseconds:
 	{
 		auto buffer_begin{state.buffer.begin()};
 		auto buffer_end{buffer_begin + state.size};
 		auto [_, ec] =
-			chrono_scan_decimal_fraction_part_never_overflow_impl(buffer_begin, buffer_end, t.subseconds);
-		if (ec != parse_code::ok) [[unlikely]]
+			chrono_scan_decimal_fraction_part_never_overflow_impl(buffer_begin, buffer_end, t.tv_nsec);
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
-			return parse_code::invalid;
+			return ::fast_io::freestanding::parse_errc::invalid;
 		}
-		return parse_code::ok;
+		normalize_posix_statx_timestamp64_scan_result(t);
+		return ::fast_io::freestanding::parse_errc::ok;
 	}
 	case scan_timestamp_context_phase::waiting_for_five:
-		if (t.subseconds % 2 == 1)
+		if (t.tv_nsec % 2 == 1)
 		{
-			++t.subseconds;
+			++t.tv_nsec;
 		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::waiting_for_numbers:
+		normalize_posix_statx_timestamp64_scan_result(t);
+		return ::fast_io::freestanding::parse_errc::ok;
 	case scan_timestamp_context_phase::ok:
-		return parse_code::ok;
+		return ::fast_io::freestanding::parse_errc::ok;
 	default:
-		return parse_code::end_of_file;
+		return ::fast_io::freestanding::parse_errc::end_of_file;
 	}
 }
 
@@ -1202,7 +1002,7 @@ scn_cnt_define_iso8601_impl(char_type const *begin, char_type const *end, iso860
 {
 	iso8601_timestamp retval{};
 	begin = ::fast_io::find_none_c_space(begin, end);
-	if (auto [itr, ec] = chrono_scan_year_impl(begin, end, retval.year); ec != parse_code::ok) [[unlikely]]
+	if (auto [itr, ec] = chrono_scan_year_impl(begin, end, retval.year); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {itr, ec};
 	}
@@ -1212,71 +1012,71 @@ scn_cnt_define_iso8601_impl(char_type const *begin, char_type const *end, iso860
 	}
 	if (end - begin < 16) [[unlikely]]
 	{
-		return {end, parse_code::invalid};
+		return {end, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	if (*begin++ != char_literal_v<u8'-', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
-	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.month); ec != parse_code::ok) [[unlikely]]
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.month); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {begin, ec};
 	}
 	if (retval.month > 12 || retval.month == 0) [[unlikely]]
 	{
-		return {begin, parse_code::overflow};
+		return {begin, ::fast_io::freestanding::parse_errc::overflow};
 	}
 	begin += 2;
 	if (*begin++ != char_literal_v<u8'-', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
-	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.day); ec != parse_code::ok) [[unlikely]]
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.day); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {begin, ec};
 	}
 	if (retval.day > 31 || retval.day == 0) [[unlikely]]
 	{
-		return {begin, parse_code::overflow};
+		return {begin, ::fast_io::freestanding::parse_errc::overflow};
 	}
 	begin += 2;
 	if (*begin++ != char_literal_v<u8'T', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
-	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.hours); ec != parse_code::ok) [[unlikely]]
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.hours); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {begin, ec};
 	}
 	if (retval.hours >= 24) [[unlikely]]
 	{
-		return {begin, parse_code::overflow};
+		return {begin, ::fast_io::freestanding::parse_errc::overflow};
 	}
 	begin += 2;
 	if (*begin++ != char_literal_v<u8':', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
-	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.minutes); ec != parse_code::ok) [[unlikely]]
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.minutes); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {begin, ec};
 	}
 	if (retval.minutes >= 60) [[unlikely]]
 	{
-		return {begin, parse_code::overflow};
+		return {begin, ::fast_io::freestanding::parse_errc::overflow};
 	}
 	begin += 2;
 	if (*begin++ != char_literal_v<u8':', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
-	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.seconds); ec != parse_code::ok) [[unlikely]]
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.seconds); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {begin, ec};
 	}
 	if (retval.seconds >= 60) [[unlikely]]
 	{
-		return {begin, parse_code::overflow};
+		return {begin, ::fast_io::freestanding::parse_errc::overflow};
 	}
 	begin += 2;
 	bool sign{};
@@ -1284,7 +1084,7 @@ scn_cnt_define_iso8601_impl(char_type const *begin, char_type const *end, iso860
 	{
 		++begin;
 		t = retval;
-		return {begin, parse_code::ok};
+		return {begin, ::fast_io::freestanding::parse_errc::ok};
 	}
 	else if (*begin == char_literal_v<u8'+', char_type>)
 	{
@@ -1300,21 +1100,21 @@ scn_cnt_define_iso8601_impl(char_type const *begin, char_type const *end, iso860
 		++begin;
 		// parse subseconds
 		// warning that there is no garantee on end > begin here anymore
-		auto [itr, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl(begin, end, retval.subseconds);
-		if (ec != parse_code::ok) [[unlikely]]
+		auto [itr, ec] = chrono_scan_decimal_fraction_part_never_overflow_impl(begin, end, retval.nanoseconds);
+		if (ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
 		begin = itr;
 		if (begin == end) [[unlikely]]
 		{
-			return {end, parse_code::invalid};
+			return {end, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		if (*begin == char_literal_v<u8'Z', char_type>)
 		{
 			++begin;
 			t = retval;
-			return {begin, parse_code::ok};
+			return {begin, ::fast_io::freestanding::parse_errc::ok};
 		}
 		else if (*begin == char_literal_v<u8'+', char_type>)
 		{
@@ -1326,40 +1126,40 @@ scn_cnt_define_iso8601_impl(char_type const *begin, char_type const *end, iso860
 		}
 		else [[unlikely]]
 		{
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 	}
 	else [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	// when control flow reaches here, it's to parse time-zone, format HH:MM
 	if (end - begin < 5) [[unlikely]]
 	{
-		return {end, parse_code::invalid};
+		return {end, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	++begin;
-	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.timezone); ec != parse_code::ok) [[unlikely]]
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, retval.timezone); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {begin, ec};
 	}
 	if (retval.timezone >= 24) [[unlikely]]
 	{
-		return {begin, parse_code::overflow};
+		return {begin, ::fast_io::freestanding::parse_errc::overflow};
 	}
 	begin += 2;
 	if (*begin++ != char_literal_v<u8':', char_type>) [[unlikely]]
 	{
-		return {begin, parse_code::invalid};
+		return {begin, ::fast_io::freestanding::parse_errc::invalid};
 	}
 	::std::uint8_t timezone_minutes;
-	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, timezone_minutes); ec != parse_code::ok) [[unlikely]]
+	if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, timezone_minutes); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 	{
 		return {begin, ec};
 	}
 	if (timezone_minutes >= 60) [[unlikely]]
 	{
-		return {begin, parse_code::overflow};
+		return {begin, ::fast_io::freestanding::parse_errc::overflow};
 	}
 	begin += 2;
 	retval.timezone *= 3600;
@@ -1369,7 +1169,7 @@ scn_cnt_define_iso8601_impl(char_type const *begin, char_type const *end, iso860
 		retval.timezone = -retval.timezone;
 	}
 	t = retval;
-	return {begin, parse_code::ok};
+	return {begin, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <::std::integral char_type, ::std::integral T>
@@ -1385,7 +1185,7 @@ scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type> &state, char_t
 	case scan_integral_context_phase::space:
 	{
 		auto phase_ret = sc_int_ctx_space_phase(begin, end);
-		if (phase_ret.code != ongoing_parse_code)
+		if (phase_ret.code != ongoing_parse_ec)
 		{
 			return phase_ret;
 		}
@@ -1397,7 +1197,7 @@ scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type> &state, char_t
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		if (*begin == char_literal_v<u8'-', char_type>)
 		{
@@ -1416,7 +1216,7 @@ scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type> &state, char_t
 	{
 		if (begin == end)
 		{
-			return {begin, parse_code::partial};
+			return {begin, ::fast_io::freestanding::parse_errc::partial};
 		}
 		auto neg{state.buffer.front() == char_literal_v<u8'-', char_type>};
 		if ((state.size == 0 || (neg && state.size == 1)) && end - begin > 4)
@@ -1426,7 +1226,7 @@ scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type> &state, char_t
 			{
 				if (!char_is_digit<10, char_type>(*itr)) [[unlikely]]
 				{
-					return {itr, parse_code::invalid};
+					return {itr, ::fast_io::freestanding::parse_errc::invalid};
 				}
 			}
 			if (char_is_digit<10, char_type>(*itr)) [[unlikely]]
@@ -1444,7 +1244,7 @@ scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type> &state, char_t
 				{
 					t = -t;
 				}
-				return {begin, parse_code::ok};
+				return {begin, ::fast_io::freestanding::parse_errc::ok};
 			}
 		}
 		else
@@ -1459,11 +1259,11 @@ scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type> &state, char_t
 				{
 					if (!char_is_digit<10, char_type>(*begin)) [[unlikely]]
 					{
-						return {begin, parse_code::invalid};
+						return {begin, ::fast_io::freestanding::parse_errc::invalid};
 					}
 					state.buffer[state.size++] = *begin;
 				}
-				return {begin, parse_code::partial};
+				return {begin, ::fast_io::freestanding::parse_errc::partial};
 			}
 			else
 			{
@@ -1471,7 +1271,7 @@ scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type> &state, char_t
 				{
 					if (!char_is_digit<10, char_type>(*begin)) [[unlikely]]
 					{
-						return {begin, parse_code::invalid};
+						return {begin, ::fast_io::freestanding::parse_errc::invalid};
 					}
 					state.buffer[state.size++] = *begin;
 				}
@@ -1491,7 +1291,7 @@ scan_iso8601_context_year_phase(timestamp_scan_state_t<char_type> &state, char_t
 					{
 						t = -t;
 					}
-					return {begin, parse_code::ok};
+					return {begin, ::fast_io::freestanding::parse_errc::ok};
 				}
 			}
 		}
@@ -1509,7 +1309,7 @@ scan_iso8601_context_2_digits_phase(timestamp_scan_state_t<char_type> &state, ch
 	auto diff{end - begin};
 	if (diff == 0)
 	{
-		return {begin, parse_code::partial};
+		return {begin, ::fast_io::freestanding::parse_errc::partial};
 	}
 	auto buffer_begin{state.buffer.begin()};
 #if __has_cpp_attribute(assume)
@@ -1522,7 +1322,7 @@ scan_iso8601_context_2_digits_phase(timestamp_scan_state_t<char_type> &state, ch
 		if (diff >= 2)
 		{
 			/*no copy to buffer*/
-			if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, t); ec != parse_code::ok) [[unlikely]]
+			if (auto ec = chrono_scan_two_digits_unsafe_impl(begin, t); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 			{
 				return {begin, ec};
 			}
@@ -1533,14 +1333,14 @@ scan_iso8601_context_2_digits_phase(timestamp_scan_state_t<char_type> &state, ch
 		{
 			::fast_io::freestanding::non_overlapped_copy_n(begin, 1, buffer_begin);
 			state.size = 1;
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 		break;
 	}
 	case 1:
 	{
 		::fast_io::freestanding::non_overlapped_copy_n(begin, 1, buffer_begin + 1);
-		if (auto ec = chrono_scan_two_digits_unsafe_impl(buffer_begin, t); ec != parse_code::ok) [[unlikely]]
+		if (auto ec = chrono_scan_two_digits_unsafe_impl(buffer_begin, t); ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {begin, ec};
 		}
@@ -1552,7 +1352,7 @@ scan_iso8601_context_2_digits_phase(timestamp_scan_state_t<char_type> &state, ch
 	default:;
 		::fast_io::unreachable();
 	}
-	return {begin, parse_code::ok};
+	return {begin, ::fast_io::freestanding::parse_errc::ok};
 }
 
 template <bool comma, ::std::integral char_type>
@@ -1567,7 +1367,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 	{
 		t = {};
 		auto [itr, ec] = scan_iso8601_context_year_phase(state, begin, end, t.year);
-		if (ec != parse_code::ok)
+		if (ec != ::fast_io::freestanding::parse_errc::ok)
 		{
 			return {itr, ec};
 		}
@@ -1578,22 +1378,22 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		[[fallthrough]];
 	}
 	case scan_timestamp_context_phase::after_year:
-#define FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(TOK)                    \
-	{                                                                    \
-		if (begin == end)                                                \
-			return {begin, parse_code::partial};                         \
-		else                                                             \
-		{                                                                \
-			if (*begin++ != char_literal_v<TOK, char_type>) [[unlikely]] \
-				return {begin, parse_code::invalid};                     \
-			++state.tsp_phase;                                           \
-		}                                                                \
+#define FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(TOK)                         \
+	{                                                                         \
+		if (begin == end)                                                     \
+			return {begin, ::fast_io::freestanding::parse_errc::partial};     \
+		else                                                                  \
+		{                                                                     \
+			if (*begin++ != char_literal_v<TOK, char_type>) [[unlikely]]      \
+				return {begin, ::fast_io::freestanding::parse_errc::invalid}; \
+			++state.tsp_phase;                                                \
+		}                                                                     \
 	}
 
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'-');
 		[[fallthrough]];
 	case scan_timestamp_context_phase::month:
-		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.month); ec != parse_code::ok)
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.month); ec != ::fast_io::freestanding::parse_errc::ok)
 			[[unlikely]]
 		{
 			return {itr, ec};
@@ -1602,7 +1402,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		{
 			if (t.month > 12 || t.month == 0) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 			begin = itr;
 		}
@@ -1611,7 +1411,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'-');
 		[[fallthrough]];
 	case scan_timestamp_context_phase::day:
-		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.day); ec != parse_code::ok)
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.day); ec != ::fast_io::freestanding::parse_errc::ok)
 			[[unlikely]]
 		{
 			return {itr, ec};
@@ -1620,7 +1420,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		{
 			if (t.day > 31 || t.day == 0) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 			begin = itr;
 		}
@@ -1629,7 +1429,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE(u8'T');
 		[[fallthrough]];
 	case scan_timestamp_context_phase::hours:
-		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.hours); ec != parse_code::ok)
+		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.hours); ec != ::fast_io::freestanding::parse_errc::ok)
 			[[unlikely]]
 		{
 			return {itr, ec};
@@ -1638,7 +1438,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		{
 			if (t.hours >= 24) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 			begin = itr;
 		}
@@ -1648,7 +1448,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		[[fallthrough]];
 	case scan_timestamp_context_phase::minutes:
 		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.minutes);
-			ec != parse_code::ok) [[unlikely]]
+			ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -1656,7 +1456,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		{
 			if (t.minutes >= 60) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 			begin = itr;
 		}
@@ -1666,7 +1466,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		[[fallthrough]];
 	case scan_timestamp_context_phase::seconds:
 		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.seconds);
-			ec != parse_code::ok) [[unlikely]]
+			ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -1674,24 +1474,24 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		{
 			if (t.seconds >= 60) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 			begin = itr;
 		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::timezone_marker:
-	case scan_timestamp_context_phase::after_subseconds_timezone_marker:
+	case scan_timestamp_context_phase::after_nanoseconds_timezone_marker:
 	{
 		if (begin == end)
 		{
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 		switch (*begin)
 		{
 		case char_literal_v<u8'Z', char_type>:
 			t.timezone = 0;
 			state.tsp_phase = scan_timestamp_context_phase::ok;
-			return {begin + 1, parse_code::ok};
+			return {begin + 1, ::fast_io::freestanding::parse_errc::ok};
 		case char_literal_v<u8'+', char_type>:
 			++begin;
 			state.integer_phase = static_cast<scan_integral_context_phase>(0);
@@ -1708,18 +1508,18 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 			char_literal_v<u8'.', char_type>
 				: if (state.tsp_phase == scan_timestamp_context_phase::timezone_marker)
 			{
-				state.tsp_phase = scan_timestamp_context_phase::subseconds;
+				state.tsp_phase = scan_timestamp_context_phase::nanoseconds;
 				return scn_ctx_define_iso8601_impl<comma>(state, begin + 1, end, t);
 			}
 			else [[fallthrough]];
 		default:
-			return {begin, parse_code::invalid};
+			return {begin, ::fast_io::freestanding::parse_errc::invalid};
 		}
 		[[fallthrough]];
 	}
 	case scan_timestamp_context_phase::timezone_hours:
 		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, t.timezone);
-			ec != parse_code::ok) [[unlikely]]
+			ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -1727,7 +1527,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		{
 			if (t.timezone >= 24) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 			begin = itr;
 		}
@@ -1739,7 +1539,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 	{
 		::std::uint8_t timezone_minutes;
 		if (auto [itr, ec] = scan_iso8601_context_2_digits_phase(state, begin, end, timezone_minutes);
-			ec != parse_code::ok) [[unlikely]]
+			ec != ::fast_io::freestanding::parse_errc::ok) [[unlikely]]
 		{
 			return {itr, ec};
 		}
@@ -1747,7 +1547,7 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		{
 			if (timezone_minutes >= 60) [[unlikely]]
 			{
-				return {itr, parse_code::overflow};
+				return {itr, ::fast_io::freestanding::parse_errc::overflow};
 			}
 			begin = itr;
 		}
@@ -1758,14 +1558,14 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 			t.timezone = -t.timezone;
 		}
 		state.tsp_phase = scan_timestamp_context_phase::ok;
-		return {begin, parse_code::ok};
+		return {begin, ::fast_io::freestanding::parse_errc::ok};
 	}
-	case scan_timestamp_context_phase::subseconds:
+	case scan_timestamp_context_phase::nanoseconds:
 	{
-		auto [itr, ec] = scn_ctx_decimal_fraction_part_never_overflow_impl(state, begin, end, t.subseconds);
-		if (ec == parse_code::ok)
+		auto [itr, ec] = scn_ctx_decimal_fraction_part_never_overflow_impl(state, begin, end, t.nanoseconds);
+		if (ec == ::fast_io::freestanding::parse_errc::ok)
 		{
-			state.tsp_phase = scan_timestamp_context_phase::after_subseconds_timezone_marker;
+			state.tsp_phase = scan_timestamp_context_phase::after_nanoseconds_timezone_marker;
 			return scn_ctx_define_iso8601_impl<comma>(state, itr, end, t);
 		}
 		else
@@ -1779,16 +1579,16 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 		{
 			if (!::fast_io::char_category::is_c_digit(*begin))
 			{
-				if (t.subseconds % 2 == 1)
+				if (t.nanoseconds % 2 == 1)
 				{
-					++t.subseconds;
+					++t.nanoseconds;
 				}
-				state.tsp_phase = scan_timestamp_context_phase::after_subseconds_timezone_marker;
+				state.tsp_phase = scan_timestamp_context_phase::after_nanoseconds_timezone_marker;
 				return scn_ctx_define_iso8601_impl<comma>(state, begin, end, t);
 			}
 			if (*begin != char_literal_v<u8'0', char_type>)
 			{
-				++t.subseconds;
+				++t.nanoseconds;
 				state.tsp_phase = scan_timestamp_context_phase::waiting_for_numbers;
 				break;
 			}
@@ -1799,18 +1599,18 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 	{
 		if (begin == end)
 		{
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 		auto itr{skip_digits<10>(begin, end)};
 		if (itr == end)
 		{
-			return {end, parse_code::partial};
+			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
-		state.tsp_phase = scan_timestamp_context_phase::after_subseconds_timezone_marker;
+		state.tsp_phase = scan_timestamp_context_phase::after_nanoseconds_timezone_marker;
 		return scn_ctx_define_iso8601_impl<comma>(state, itr, end, t);
 	}
 	case scan_timestamp_context_phase::ok:
-		return {begin, parse_code::ok};
+		return {begin, ::fast_io::freestanding::parse_errc::ok};
 	}
 	::fast_io::unreachable();
 #undef FAST_IO_SCAN_ISO8601_CONTEXT_TOKEN_PHASE
@@ -1818,68 +1618,38 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 
 } // namespace details
 
-template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
+template <::std::integral char_type>
 inline constexpr parse_result<char_type const *>
-scan_contiguous_define(io_reserve_type_t<char_type, fast_io::parameter<basic_timestamp<off_to_epoch> &>>,
+scan_contiguous_define(io_reserve_type_t<char_type, fast_io::parameter<posix_statx_timestamp64 &>>,
 					   char_type const *begin, char_type const *end,
-					   fast_io::parameter<basic_timestamp<off_to_epoch> &> t) noexcept
+					   fast_io::parameter<posix_statx_timestamp64 &> t) noexcept
 {
-	if constexpr (off_to_epoch == 0)
-	{
-		return details::scn_cnt_define_unix_timestamp_impl<false>(begin, end, t.reference);
-	}
-	else
-	{
-		unix_timestamp retval;
-		auto result{details::scn_cnt_define_unix_timestamp_impl<false>(begin, end, retval)};
-		t.reference = static_cast<basic_timestamp<off_to_epoch>>(retval);
-		return result;
-	}
+	return details::scn_cnt_define_unix_timestamp_impl<false>(begin, end, t.reference);
 }
 
-template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
+template <::std::integral char_type>
 inline constexpr io_type_t<timestamp_scan_state_t<char_type>>
-scan_context_type(io_reserve_type_t<char_type, fast_io::parameter<basic_timestamp<off_to_epoch> &>>) noexcept
+scan_context_type(io_reserve_type_t<char_type, fast_io::parameter<posix_statx_timestamp64 &>>) noexcept
 {
 	return {};
 }
 
-template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
+template <::std::integral char_type>
 inline constexpr parse_result<char_type const *>
-scan_context_define(io_reserve_type_t<char_type, parameter<basic_timestamp<off_to_epoch> &>>,
+scan_context_define(io_reserve_type_t<char_type, parameter<posix_statx_timestamp64 &>>,
 					timestamp_scan_state_t<char_type> &state, char_type const *begin, char_type const *end,
-					parameter<basic_timestamp<off_to_epoch> &> t) noexcept
+					parameter<posix_statx_timestamp64 &> t) noexcept
 {
-	if constexpr (off_to_epoch == 0)
-	{
-		return details::scn_ctx_define_unix_timestamp_impl<false>(state, begin, end, t.reference);
-	}
-	auto result{details::scn_ctx_define_unix_timestamp_impl<false>(
-		state, begin, end, *reinterpret_cast<unix_timestamp *>(__builtin_addressof(t.reference)))};
-	if (result.code == parse_code::ok)
-	{
-		t.reference.seconds -= off_to_epoch;
-	}
-	return result;
+	return details::scn_ctx_define_unix_timestamp_impl<false>(state, begin, end, t.reference);
 }
 
-template <::std::integral char_type, ::std::int_least64_t off_to_epoch>
-inline constexpr parse_code
-scan_context_eof_define(io_reserve_type_t<char_type, parameter<basic_timestamp<off_to_epoch> &>>,
+template <::std::integral char_type>
+inline constexpr ::fast_io::freestanding::parse_errc
+scan_context_eof_define(io_reserve_type_t<char_type, parameter<posix_statx_timestamp64 &>>,
 						timestamp_scan_state_t<char_type> &state,
-						fast_io::parameter<basic_timestamp<off_to_epoch> &> t) noexcept
+						fast_io::parameter<posix_statx_timestamp64 &> t) noexcept
 {
-	if constexpr (off_to_epoch == 0)
-	{
-		return details::scn_ctx_eof_define_unix_timestamp_impl(state, t.reference);
-	}
-	auto result{details::scn_ctx_eof_define_unix_timestamp_impl(
-		state, *reinterpret_cast<unix_timestamp *>(__builtin_addressof(t.reference)))};
-	if (result == parse_code::ok && state.tsp_phase != scan_timestamp_context_phase::ok)
-	{
-		t.reference.seconds -= off_to_epoch;
-	}
-	return result;
+	return details::scn_ctx_eof_define_unix_timestamp_impl(state, t.reference);
 }
 
 template <::std::integral char_type>
@@ -1907,36 +1677,34 @@ scan_context_define(io_reserve_type_t<char_type, parameter<iso8601_timestamp &>>
 }
 
 template <::std::integral char_type>
-inline constexpr parse_code
+inline constexpr ::fast_io::freestanding::parse_errc
 scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_timestamp &>>,
 						timestamp_scan_state_t<char_type> &state, fast_io::parameter<iso8601_timestamp &>) noexcept
 {
 	if (state.tsp_phase == scan_timestamp_context_phase::ok)
 	{
-		return parse_code::ok;
+		return ::fast_io::freestanding::parse_errc::ok;
 	}
 	else
 	{
-		return parse_code::end_of_file;
+		return ::fast_io::freestanding::parse_errc::end_of_file;
 	}
 }
 
 namespace manipulators
 {
-template <::std::int_least64_t off_to_epoch>
-inline constexpr auto fixed(basic_timestamp<off_to_epoch> t, ::std::size_t n) noexcept
+inline constexpr auto fixed(posix_statx_timestamp64 t, ::std::size_t n) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_precision_t<
 		::fast_io::details::dcmfloat_mani_flags_cache<false, false, ::fast_io::manipulators::floating_format::fixed>,
-		::fast_io::unix_timestamp>{{t.seconds, t.subseconds}, n};
+		::fast_io::posix_statx_timestamp64>{t, n};
 }
 
-template <::std::int_least64_t off_to_epoch>
-inline constexpr auto comma_fixed(basic_timestamp<off_to_epoch> t, ::std::size_t n) noexcept
+inline constexpr auto comma_fixed(posix_statx_timestamp64 t, ::std::size_t n) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_precision_t<
 		::fast_io::details::dcmfloat_mani_flags_cache<false, true, ::fast_io::manipulators::floating_format::fixed>,
-		::fast_io::unix_timestamp>{{t.seconds, t.subseconds}, n};
+		::fast_io::posix_statx_timestamp64>{t, n};
 }
 } // namespace manipulators
 
@@ -1967,14 +1735,22 @@ inline constexpr ::std::size_t print_reserve_size_fixed_precision_unix_timestamp
 }
 
 template <bool comma, bool showpos, ::std::integral char_type>
-inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_impl(char_type *iter, ::std::int_least64_t seconds, ::std::uint_least64_t subseconds, ::std::size_t precision) noexcept
+inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_impl(char_type *iter, ::std::int_least64_t seconds, ::std::uint_least32_t nanoseconds, ::std::size_t precision) noexcept
 {
-	constexpr ::std::size_t fullprecision{::std::numeric_limits<::std::uint_least64_t>::digits10};
+	constexpr ::std::size_t fullprecision{::std::numeric_limits<::std::uint_least32_t>::digits10};
 	constexpr ::std::uint_least64_t zero{};
+	constexpr ::std::uint_least64_t nspsec{::fast_io::details::statx_timestamp64_nanoseconds_per_second};
 	::std::uint_least64_t u64seconds{static_cast<::std::uint_least64_t>(seconds)};
+	::std::uint_least32_t nsec{nanoseconds};
 	if (seconds < 0)
 	{
 		u64seconds = zero - u64seconds;
+		if (nsec)
+		{
+			// floor-based to sign-magnitude form
+			--u64seconds;
+			nsec = static_cast<::std::uint_least32_t>(nspsec - nsec);
+		}
 		*iter = ::fast_io::char_literal_v<u8'-', char_type>;
 		++iter;
 	}
@@ -1986,29 +1762,29 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 	::std::size_t subsecondslen{fullprecision};
 	if (precision == 0)
 	{
-		constexpr auto vhalf{::fast_io::uint_least64_subseconds_per_second >> 1};
-		if ((vhalf < subseconds) || (((u64seconds & 1u) == 1) && (vhalf == subseconds)))
+		constexpr auto vhalf{nspsec >> 1};
+		if ((vhalf < nsec) || (((u64seconds & 1u) == 1) && (vhalf == nsec)))
 		{
 			++u64seconds;
 		}
 	}
 	else if (precision < subsecondslen)
 	{
-		::std::uint_least64_t v{::fast_io::details::d10_reverse_table<::std::uint_least64_t>[static_cast<::std::size_t>(precision - 1u)]};
-		::std::uint_least64_t vhalf{v >> 1u};
-		::std::uint_least64_t quotient{subseconds / v};
-		::std::uint_least64_t remainder{subseconds % v};
+		::std::uint_least32_t v{::fast_io::details::d10_reverse_table<::std::uint_least32_t>[static_cast<::std::size_t>(precision - 1u)]};
+		::std::uint_least32_t vhalf{v >> 1u};
+		::std::uint_least32_t quotient{nsec / v};
+		::std::uint_least32_t remainder{nsec % v};
 
 		if ((vhalf < remainder) || (((quotient & 1u) == 1) && (vhalf == remainder)))
 		{
 			++quotient;
-			if (quotient * v == ::fast_io::uint_least64_subseconds_per_second)
+			if (static_cast<::std::uint_least64_t>(quotient) * v == nspsec)
 			{
 				++u64seconds;
 				quotient = 0u;
 			}
 		}
-		subseconds = quotient;
+		nsec = quotient;
 		subsecondslen = precision;
 	}
 	iter = print_reserve_define(::fast_io::io_reserve_type<char_type, ::std::uint_least64_t>, iter, u64seconds);
@@ -2018,7 +1794,7 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 	}
 	*iter = ::fast_io::char_literal_v<(comma ? u8',' : u8'.'), char_type>;
 	++iter;
-	::fast_io::details::print_reserve_integral_main_impl<10, false>(iter += subsecondslen, subseconds, subsecondslen);
+	::fast_io::details::print_reserve_integral_main_impl<10, false>(iter += subsecondslen, nsec, subsecondslen);
 	return ::fast_io::details::prsv_fill_zero_impl(iter, precision - subsecondslen);
 }
 
@@ -2026,8 +1802,8 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 
 template <::fast_io::manipulators::scalar_flags flags, ::std::integral char_type>
 inline constexpr ::std::size_t print_reserve_size(
-	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::unix_timestamp>>,
-	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::unix_timestamp> const &e) noexcept
+	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_statx_timestamp64>>,
+	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_statx_timestamp64> const &e) noexcept
 {
 	static_assert(flags.base == 10 && flags.floating == ::fast_io::manipulators::floating_format::fixed && !flags.full);
 	return ::fast_io::details::print_reserve_size_fixed_precision_unix_timestamp_impl<char_type>(e.precision);
@@ -2035,12 +1811,12 @@ inline constexpr ::std::size_t print_reserve_size(
 
 template <::fast_io::manipulators::scalar_flags flags, ::std::integral char_type>
 inline constexpr char_type *print_reserve_define(
-	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::unix_timestamp>>,
+	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_statx_timestamp64>>,
 	char_type *iter,
-	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::unix_timestamp> const &e) noexcept
+	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_statx_timestamp64> const &e) noexcept
 {
 	static_assert(flags.base == 10 && flags.floating == ::fast_io::manipulators::floating_format::fixed && !flags.full);
-	return ::fast_io::details::print_reserve_define_fixed_precision_unix_timestamp_impl<flags.comma, flags.showpos>(iter, e.reference.seconds, e.reference.subseconds, e.precision);
+	return ::fast_io::details::print_reserve_define_fixed_precision_unix_timestamp_impl<flags.comma, flags.showpos>(iter, e.reference.tv_sec, e.reference.tv_nsec, e.precision);
 }
 
 } // namespace fast_io

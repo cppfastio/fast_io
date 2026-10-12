@@ -1,5 +1,15 @@
 ﻿// Please keep it in reverse order with the macros in push_macros.h
 
+#pragma pop_macro("FAST_IO_IF_NOT_CONSTEVAL")
+#pragma pop_macro("FAST_IO_IF_CONSTEVAL")
+#pragma pop_macro("FAST_IO_HAS_WINE_UNIX")
+#pragma pop_macro("FAST_IO_NO_UNIQUE_ADDRESS")
+#pragma pop_macro("FAST_IO_INDETERMINATE")
+#pragma pop_macro("FAST_IO_HERBCEPTIONS_CATCH_ALL")
+#pragma pop_macro("FAST_IO_HERBCEPTIONS_TRY")
+#pragma pop_macro("FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT")
+#pragma pop_macro("FAST_IO_HERBCEPTIONS_THROWS_IF")
+#pragma pop_macro("FAST_IO_HERBCEPTIONS_THROWS")
 #pragma pop_macro("FAST_IO_CPP_EXCEPTIONS")
 #pragma pop_macro("FAST_IO_CPP_RTTI")
 #pragma pop_macro("FAST_IO_HAS_BUILTIN")

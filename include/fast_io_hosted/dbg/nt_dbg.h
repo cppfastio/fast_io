@@ -110,9 +110,9 @@ template <bool iswide>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline void nt_dbg_write_impl([[maybe_unused]] nt_dbg_carrier carr, char const *first, char const *last) noexcept
+inline void nt_dbg_write_impl([[maybe_unused]] nt_dbg_carrier carr, char const *first, ::std::size_t count) noexcept
 {
-	::std::size_t arg_n_len{static_cast<::std::size_t>(last - first)};
+	::std::size_t arg_n_len{count};
 	/// @todo In the Windows NT debugging implementation, string lengths are silently truncated and UINT_LEAST16_MAX does not issue any error indications or warnings to the caller, which may result in incomplete debugging output.
 	if (UINT_LEAST16_MAX < arg_n_len)
 	{
@@ -136,7 +136,7 @@ template <bool iswide, ::std::size_t n>
 #endif
 inline void nt_dbg_scatter_constant_write_impl(nt_dbg_carrier carr, io_scatter_t const *scatters) noexcept
 {
-	if constexpr (n == 0) 
+	if constexpr (n == 0)
 	{
 		return;
 	}
@@ -151,31 +151,29 @@ inline void nt_dbg_scatter_constant_write_impl(nt_dbg_carrier carr, io_scatter_t
 template <::std::integral ch_type>
 inline constexpr basic_nt_dbg<ch_type> io_stream_ref_define(basic_nt_dbg<ch_type> other) noexcept
 {
-    return other;
+	return other;
 }
 
 template <::std::integral ch_type>
 inline constexpr basic_nt_dbg<ch_type> io_bytes_stream_ref_define(basic_nt_dbg<ch_type> other) noexcept
 {
-    return other;
+	return other;
 }
 
 template <::std::integral ch_type>
-inline constexpr void write_all_bytes_overflow_define(basic_nt_dbg<ch_type> d, ::std::byte const* first, ::std::byte const* last) noexcept
+inline constexpr void write_all_bytes_overflow_define(basic_nt_dbg<ch_type> d, ::std::byte const *first, ::std::size_t count) noexcept
 {
-    constexpr bool is_wide{sizeof(ch_type) == 2};
-    ::fast_io::details::nt_dbg_write_impl<is_wide>(details::nt_dbg_carrier{d.component_id, d.level},
-                                                   reinterpret_cast<char const*>(first),
-                                                   reinterpret_cast<char const*>(last));
+	constexpr bool is_wide{sizeof(ch_type) == 2};
+	::fast_io::details::nt_dbg_write_impl<is_wide>(details::nt_dbg_carrier{d.component_id, d.level},
+												   reinterpret_cast<char const *>(first), count);
 }
 
 template <::std::integral ch_type>
-inline constexpr void pwrite_all_bytes_overflow_define(basic_nt_dbg<ch_type> d, ::std::byte const* first, ::std::byte const* last) noexcept
+inline constexpr void pwrite_all_bytes_overflow_define(basic_nt_dbg<ch_type> d, ::std::byte const *first, ::std::size_t count) noexcept
 {
-    constexpr bool is_wide{sizeof(ch_type) == 2};
-    ::fast_io::details::nt_dbg_write_impl<is_wide>(details::nt_dbg_carrier{d.component_id, d.level},
-                                                   reinterpret_cast<char const*>(first),
-                                                   reinterpret_cast<char const*>(last));
+	constexpr bool is_wide{sizeof(ch_type) == 2};
+	::fast_io::details::nt_dbg_write_impl<is_wide>(details::nt_dbg_carrier{d.component_id, d.level},
+												   reinterpret_cast<char const *>(first), count);
 }
 
 #if 0

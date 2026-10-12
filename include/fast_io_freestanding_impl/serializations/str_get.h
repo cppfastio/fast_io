@@ -55,7 +55,7 @@ scan_context_define_str_get_all_buffer_common_impl(char_type const *first, char_
 	auto firstthen{first + to_copy};
 	non_overlapped_copy_n(first, to_copy, curr);
 	obuffer_set_curr(output, curr + to_copy);
-	return {firstthen, (not_enough ? (parse_code::partial) : (parse_code::ok))};
+	return {firstthen, (not_enough ? (::fast_io::freestanding::parse_errc::partial) : (::fast_io::freestanding::parse_errc::ok))};
 }
 
 template <::std::integral char_type, typename T>
@@ -80,7 +80,7 @@ scan_context_define_str_get_all_general_strlike_impl(char_type const *first, cha
 													 ::fast_io::details::basic_concat_buffer<char_type> &ctx)
 {
 	auto ret{scan_context_define_str_get_all_buffer_common_impl(first, last, io_strlike_ref(ctx), n)};
-	if (ret.code == parse_code::ok)
+	if (ret.code == ::fast_io::freestanding::parse_errc::ok)
 	{
 		*output.ptr = strlike_construct_define(io_strlike_type<char_type, T>, ctx.buffer_begin, ctx.buffer_curr);
 		;
@@ -120,12 +120,12 @@ inline constexpr parse_result<char_type const *> scan_context_define(
 }
 
 template <::std::integral char_type, typename ctxtype, typename T>
-inline constexpr parse_code scan_context_eof_define(
+inline constexpr ::fast_io::freestanding::parse_errc scan_context_eof_define(
 	io_reserve_type_t<char_type,
 					  ::fast_io::manipulators::basic_str_get_all<io_strlike_reference_wrapper<char_type, T>>>,
 	ctxtype &, ::fast_io::manipulators::basic_str_get_all<io_strlike_reference_wrapper<char_type, T>>)
 {
-	return parse_code::end_of_file;
+	return ::fast_io::freestanding::parse_errc::end_of_file;
 }
 
 } // namespace fast_io

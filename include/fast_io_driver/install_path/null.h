@@ -10,6 +10,7 @@ namespace fast_io::details
 #endif
 [[noreturn]]
 inline void get_module_install_path()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	throw_posix_error(ENOTSUP);
 }

@@ -18,7 +18,7 @@ output_stream_ref_define(dummy_buffer_output_stream<char_type>) noexcept
 
 template <::std::integral char_type>
 inline constexpr void write_all_overflow_define(dummy_buffer_output_stream<char_type>, char_type const *,
-												char_type const *) noexcept
+												::std::size_t) noexcept
 {
 }
 
@@ -88,7 +88,7 @@ inline constexpr bool ibuffer_underflow(dummy_buffer_input_stream<char_type>) no
 }
 
 template <::std::integral char_type>
-inline constexpr void read_all_overflow_define(dummy_buffer_input_stream<char_type>, char_type *, char_type *) noexcept
+inline constexpr void read_all_underflow_define(dummy_buffer_input_stream<char_type>, char_type *, ::std::size_t) noexcept
 {
 }
 

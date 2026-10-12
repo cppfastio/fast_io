@@ -161,7 +161,7 @@ general_code_cvt(src_char_type const *src_first, src_char_type const *src_last, 
 					else
 					{
 						constexpr dest_char_type val{byte_swap(static_cast<dest_char_type>(0xFFFD))};
-						*dst = val; 
+						*dst = val;
 					}
 					++dst;
 				}
@@ -413,7 +413,7 @@ inline constexpr dest_char_type *general_code_cvt(state_type &__restrict state, 
 					else
 					{
 						constexpr dest_char_type val{byte_swap(static_cast<dest_char_type>(0xFFFD))};
-						*dst = val; 
+						*dst = val;
 					}
 					++dst;
 				}
@@ -540,7 +540,7 @@ inline constexpr dest_char_type *general_code_cvt_full(src_char_type const *src_
 				else
 				{
 					constexpr dest_char_type val{byte_swap(static_cast<dest_char_type>(0xFFFD))};
-					*new_dst = val; 
+					*new_dst = val;
 				}
 				++new_dst;
 			}
@@ -609,13 +609,6 @@ inline constexpr auto code_cvt(basic_io_scatter_t<char_type> t) noexcept
 }
 
 template <encoding_scheme src_scheme = encoding_scheme::execution_charset,
-		  encoding_scheme dst_scheme = encoding_scheme::execution_charset, ::std::integral char_type, ::std::size_t N>
-inline constexpr auto code_cvt(small_scatter_t<char_type, N> t) noexcept
-{
-	return code_cvt_t<src_scheme, dst_scheme, char_type>{{t.base, t.len}};
-}
-
-template <encoding_scheme src_scheme = encoding_scheme::execution_charset,
 		  encoding_scheme dst_scheme = encoding_scheme::execution_charset, ::std::integral char_type>
 inline constexpr auto code_cvt_os_c_str(char_type const *cstr) noexcept
 {
@@ -646,7 +639,8 @@ inline constexpr char_type *
 print_reserve_define(io_reserve_type_t<char_type, code_cvt_t<src_scheme, dst_scheme, src_char_type>>, char_type *iter,
 					 code_cvt_t<src_scheme, dst_scheme, src_char_type> v) noexcept
 {
-	return details::codecvt::general_code_cvt_full(v.reference.base, v.reference.base + v.reference.len, iter);
+	return details::codecvt::general_code_cvt_full<src_scheme, dst_scheme>(v.reference.base,
+																		 v.reference.base + v.reference.len, iter);
 }
 
 } // namespace manipulators

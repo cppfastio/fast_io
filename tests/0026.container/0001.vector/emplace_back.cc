@@ -16,7 +16,7 @@ struct President
 		print("I am being constructed.\n");
 	}
 
-	President(President &&other)
+	President(President &&other) noexcept
 		: name(std::move(other.name)), country(std::move(other.country)), year(other.year)
 	{
 		print("I am being moved.\n");

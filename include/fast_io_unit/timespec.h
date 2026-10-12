@@ -96,11 +96,10 @@ inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, st
 	return details::timespec_print_impl<char_type>(it, spc);
 }
 
-inline constexpr unix_timestamp timespec_to_unix_timestamp(struct timespec tsc) noexcept
+inline constexpr posix_statx_timestamp64 timespec_to_unix_timestamp(struct timespec tsc) noexcept
 {
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
 	return {static_cast<::std::int_least64_t>(tsc.tv_sec),
-			static_cast<::std::uint_least64_t>(tsc.tv_nsec) * mul_factor};
+			static_cast<::std::uint_least32_t>(tsc.tv_nsec)};
 }
 
 #endif

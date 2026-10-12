@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if !defined(__cplusplus)
 #error "You must be using a C++ compiler"
@@ -15,12 +15,11 @@
 #include <bit>
 #include <compare>
 #include <algorithm>
+#include <ranges>
+#include <utility>
 #include "impl/misc/push_macros.h"
 #include "impl/misc/push_warnings.h"
-#include "../fast_io_core_impl/freestanding/impl.h"
-#include "../fast_io_core_impl/terminate.h"
-#include "../fast_io_core_impl/intrinsics/msvc/impl.h"
-#include "../fast_io_core_impl/allocation/impl.h"
+#include "../fast_io_core.h"
 
 #include "impl/freestanding.h"
 #include "impl/common.h"

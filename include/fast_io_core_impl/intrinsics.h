@@ -15,9 +15,9 @@ template <typename T1, typename T2>
 #endif
 inline
 #if (__cpp_if_consteval >= 202106L || __cpp_lib_is_constant_evaluated >= 201811L) && __cpp_lib_bit_cast >= 201806L
-	constexpr
+constexpr
 #endif
-	void typed_memcpy(T1 *dest, T2 const *src, ::std::size_t bytes) noexcept
+void typed_memcpy(T1 *dest, T2 const *src, ::std::size_t bytes) noexcept
 {
 #if __cpp_lib_bit_cast >= 201806L
 	if (__builtin_is_constant_evaluated())
@@ -214,7 +214,7 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 			return add_carry_naive(carry, a, b, out);
 #endif
 #elif (FAST_IO_HAS_BUILTIN(__builtin_addcb) && FAST_IO_HAS_BUILTIN(__builtin_addcs) && FAST_IO_HAS_BUILTIN(__builtin_addc) && \
-	 FAST_IO_HAS_BUILTIN(__builtin_addcl) && FAST_IO_HAS_BUILTIN(__builtin_addcll))
+	   FAST_IO_HAS_BUILTIN(__builtin_addcl) && FAST_IO_HAS_BUILTIN(__builtin_addcll))
 			if constexpr (sizeof(T) == sizeof(long long unsigned))
 			{
 				long long unsigned carryout;
@@ -250,7 +250,7 @@ inline constexpr bool add_carry(bool carry, T a, T b, T &out) noexcept
 				return add_carry_naive(carry, a, b, out);
 			}
 #elif (FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u32) || FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarry_u32) || \
-	 FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u64))
+	   FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u64))
 			if constexpr (sizeof(T) == 8)
 			{
 #if FAST_IO_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
@@ -400,7 +400,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 			return sub_borrow_naive(borrow, a, b, out);
 #endif
 #elif (FAST_IO_HAS_BUILTIN(__builtin_subcb) && FAST_IO_HAS_BUILTIN(__builtin_subcs) && FAST_IO_HAS_BUILTIN(__builtin_subc) && \
-	 FAST_IO_HAS_BUILTIN(__builtin_subcl) && FAST_IO_HAS_BUILTIN(__builtin_subcll))
+	   FAST_IO_HAS_BUILTIN(__builtin_subcl) && FAST_IO_HAS_BUILTIN(__builtin_subcll))
 			if constexpr (sizeof(T) == sizeof(long long unsigned))
 			{
 				long long unsigned borrowout;
@@ -436,7 +436,7 @@ inline constexpr bool sub_borrow(bool borrow, T a, T b, T &out) noexcept
 				return sub_borrow_naive(borrow, a, b, out);
 			}
 #elif (FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u32) || FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u64) || \
-	 FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u64) || FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u32))
+	   FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u64) || FAST_IO_HAS_BUILTIN(__builtin_ia32_subborrow_u32))
 			if constexpr (sizeof(T) == 8)
 			{
 #if FAST_IO_HAS_BUILTIN(__builtin_ia32_sbb_u64)
@@ -618,19 +618,11 @@ inline
 		}
 	}
 #elif defined(_MSC_VER) && defined(_M_X64) && !defined(_M_ARM64EC)
-#if __cpp_if_consteval >= 202106L && 0
-	if !consteval
+	FAST_IO_IF_NOT_CONSTEVAL
 	{
 		return umul_least_64_emulated(a, b, high);
 	}
 	else
-#elif __cpp_lib_is_constant_evaluated >= 201811L
-	if (__builtin_is_constant_evaluated())
-	{
-		return umul_least_64_emulated(a, b, high);
-	}
-	else
-#endif
 	{
 		return _umul128(a, b, __builtin_addressof(high));
 	}

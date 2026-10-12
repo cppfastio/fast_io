@@ -6,7 +6,7 @@ using namespace fast_io::io;
 int main()
 {
 	int test_i{};
-	::fast_io::string test_s("hellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohello");
+	::fast_io::string test_s("hellohellohellohellohellohellohellohellohellohellohellohellohellohellohellohello\n");
 	::fast_io::string re;
 	auto t0{fast_io::posix_clock_gettime(fast_io::posix_clock_id::realtime)};
 	for (std::size_t i{}; i != 1000000; ++i)

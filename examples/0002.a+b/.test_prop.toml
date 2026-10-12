@@ -9,3 +9,6 @@ interactive = true
 
 ["base36_a+b_iomnp.cc"]
 interactive = true
+
+["apb_herb.cc"]
+ignore = true

@@ -22,6 +22,7 @@ inline constexpr void append_win32_quoted_arg_common(
 	bool is_first,
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str,
 	Iter first, Iter last)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (is_first)
 	{
@@ -113,6 +114,7 @@ inline constexpr void append_win32_quoted_arg_common(
 
 template <::std::integral replace_char_type, typename T>
 inline constexpr void construct_win32_process_args_decay_singal(bool is_first, ::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<replace_char_type>, T>};
 
@@ -140,6 +142,7 @@ inline constexpr void construct_win32_process_args_decay_singal(bool is_first, :
 template <bool is_first, ::std::integral replace_char_type, typename T, typename... Args>
 inline constexpr void construct_win32_process_args_decay(
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	construct_win32_process_args_decay_singal(is_first, str, t);
 
@@ -152,6 +155,7 @@ inline constexpr void construct_win32_process_args_decay(
 template <::std::integral replace_char_type, typename T>
 inline constexpr void construct_win32_process_envs_decay_singal(
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<replace_char_type>, T>};
 
@@ -174,6 +178,7 @@ inline constexpr void construct_win32_process_envs_decay_singal(
 template <::std::integral replace_char_type, typename T, typename... Args>
 inline constexpr void construct_win32_process_envs_decay(
 	::fast_io::containers::basic_string<replace_char_type, ::fast_io::native_global_allocator> &str, T t, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	construct_win32_process_envs_decay_singal(str, t);
 
@@ -217,6 +222,7 @@ struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	template <typename T, typename... Args>
 		requires(!::std::same_as<::std::remove_cvref_t<T>, default_args_t>)
 	inline constexpr basic_win32_process_args(T &&t, Args &&...as)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		details::construct_win32_process_args_decay<is_first>(args,
 															  ::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),
@@ -225,7 +231,7 @@ struct basic_win32_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 	inline constexpr char_type_may_alias_const_ptr get() const noexcept
 	{
-		if (args.empty())
+		if (args.is_empty())
 		{
 			return nullptr;
 		}
@@ -278,6 +284,7 @@ struct basic_win32_process_envs FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	template <typename T, typename... Args>
 		requires(!::std::same_as<::std::remove_cvref_t<T>, default_args_t>)
 	inline constexpr basic_win32_process_envs(T &&t, Args &&...as)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		details::construct_win32_process_envs_decay(envs,
 													::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),
@@ -286,7 +293,7 @@ struct basic_win32_process_envs FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 
 	inline constexpr char_type_may_alias_const_ptr get() const noexcept
 	{
-		if (envs.empty())
+		if (envs.is_empty())
 		{
 			return nullptr;
 		}
@@ -395,7 +402,7 @@ struct cstr_guard FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 		return *this;
 	}
 
-	inline constexpr ~cstr_guard()
+	inline constexpr ~cstr_guard() noexcept
 	{
 		Alloc::deallocate(cstr);
 	}
@@ -424,6 +431,7 @@ namespace details
 template <::std::size_t N, ::std::integral replace_char_type, typename T>
 inline constexpr void construct_posix_process_argenvs_decay_singal(
 	::fast_io::containers::vector<cstr_guard<replace_char_type>, ::fast_io::native_global_allocator> &str, T t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<replace_char_type>, T>};
 
@@ -452,6 +460,7 @@ inline constexpr void construct_posix_process_argenvs_decay_singal(
 template <::std::size_t N = 0, ::std::integral replace_char_type, typename T, typename... Args>
 inline constexpr void construct_posix_process_argenvs_decay(
 	::fast_io::containers::vector<cstr_guard<replace_char_type>, ::fast_io::native_global_allocator> &str, T t, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	construct_posix_process_argenvs_decay_singal<N>(str, t);
 
@@ -516,6 +525,7 @@ struct posix_process_args FAST_IO_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE
 	template <typename T, typename... Args>
 		requires(!::std::same_as<::std::remove_cvref_t<T>, default_args_t>)
 	inline constexpr posix_process_args(T &&t, Args &&...as)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		details::construct_posix_process_argenvs_decay(arg_envs,
 													   ::fast_io::io_print_forward<replace_char_type>(::fast_io::io_print_alias(t)),

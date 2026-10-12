@@ -10,6 +10,7 @@ inline int fcntl_file_lock(int fd, int cmd, struct flock const *lockp) noexcept
 }
 
 inline void posix_file_lock_lock_common_impl(int fd, struct flock const &lockp)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_fcntl)
 	system_call_throw_error(system_call<__NR_fcntl, int>(fd, F_SETLKW, __builtin_addressof(lockp)));
@@ -43,6 +44,7 @@ inline constexpr short flock_type_to_native(file_lock_mode t) noexcept
 
 template <::std::integral int_type>
 inline void posix_file_lock_lock_impl(int fd, basic_flock_request<int_type> const &__restrict t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	using flock_off_type = decltype(flock::l_start);
 	if constexpr (sizeof(flock_off_type) < sizeof(int_type))
@@ -128,6 +130,7 @@ struct posix_file_lock
 	int fd{-1};
 	template <::std::integral int_type>
 	inline void lock(basic_flock_request<int_type> const &__restrict t)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		::fast_io::details::posix_file_lock_lock_impl(this->fd, t);
 	}

@@ -22,7 +22,7 @@ int main()
 	if (!(sum == 31)) ::fast_io::fast_terminate();
 
 	// Prints the first fruit in the vector fruits, checking if there is any.
-	if (!fruits.empty())
+	if (!fruits.is_empty())
 	{
 		println("First fruit: ", *fruits.begin());
 		if (!(*fruits.begin() == "orange")) ::fast_io::fast_terminate();

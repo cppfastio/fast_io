@@ -5,6 +5,7 @@ namespace fast_io::tls
 /*
 template<output_stream output>
 inline constexpr void print_define(output& outp,version tls)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 		switch(tls)
 		{

@@ -314,15 +314,28 @@ struct float_alias_type_traits<float>
 template <>
 struct float_alias_type_traits<long double>
 {
+	// 80-bit and binary128 long double convert natively through
+	// iec559_traits<long double>; only an unsupported representation
+	// (e.g. IBM double-double) falls back to a wider or narrower type
+	static constexpr ::std::size_t ldbl_mbits{
+		static_cast<::std::size_t>(::std::numeric_limits<long double>::digits - 1)};
+#if defined(__SIZEOF_INT128__)
+	static constexpr bool ldbl_supported{ldbl_mbits == 52u || ldbl_mbits == 63u || ldbl_mbits == 112u};
+#else
+	static constexpr bool ldbl_supported{ldbl_mbits == 52u};
+#endif
+	using alias_type =
+		::std::conditional_t<ldbl_supported, long double,
 #if defined(__SIZEOF_INT128__) && (defined(__STDCPP_FLOAT128_T__) || defined(__FLOAT128__))
 #ifdef __STDCPP_FLOAT128_T__
-	using alias_type = _Float128;
+							 _Float128
 #else
-	using alias_type = __float128;
+							 __float128
 #endif
 #else
-	using alias_type = typename float_alias_type_traits<double>::alias_type;
+							 typename float_alias_type_traits<double>::alias_type
 #endif
+							 >;
 };
 
 #if (defined(__SIZEOF_FLOAT16__) || defined(__FLOAT16__)) && defined(__STDCPP_FLOAT16_T__)
@@ -991,7 +1004,7 @@ template <::std::integral char_type, ::std::size_t base>
 inline constexpr auto base_prefix_array{generate_base_prefix_array<char_type, base>()};
 
 template <::std::size_t base, bool uppercase_showbase, ::std::integral char_type>
-inline constexpr char_type *print_reserve_show_base_impl(char_type *iter)
+inline constexpr char_type *print_reserve_show_base_impl(char_type *iter) noexcept
 {
 	static_assert(2 <= base && base <= 36);
 	if constexpr (base == 2)
@@ -1156,7 +1169,7 @@ inline constexpr char_type *print_reserve_show_base_impl(char_type *iter)
 }
 
 template <::std::size_t base, bool uppercase, bool ryu_mode = false, ::std::integral char_type, typename T>
-inline constexpr void print_reserve_integral_main_impl(char_type *iter, T t, ::std::size_t len)
+inline constexpr void print_reserve_integral_main_impl(char_type *iter, T t, ::std::size_t len) noexcept
 {
 	if constexpr (base <= 10 && uppercase)
 	{
@@ -1267,8 +1280,57 @@ inline constexpr void print_reserve_integral_main_impl(char_type *iter, T t, ::s
 	}
 }
 
+namespace jeaiii
+{
+
+template <::std::integral char_type, ::fast_io::details::my_unsigned_integral U>
+inline constexpr char_type *jeaiii_main(char_type *iter, U n) noexcept
+{
+	if constexpr (sizeof(U) <= sizeof(::std::uint_least8_t))
+	{
+		return jeaiii_main_u8(iter, static_cast<::std::uint_least8_t>(n));
+	}
+	else if constexpr (sizeof(U) <= sizeof(::std::uint_least16_t))
+	{
+		return jeaiii_main_u16(iter, static_cast<::std::uint_least16_t>(n));
+	}
+	else if constexpr (sizeof(U) <= sizeof(::std::uint_least32_t))
+	{
+		return jeaiii_main_u32(iter, static_cast<::std::uint_least32_t>(n));
+	}
+	else if constexpr (sizeof(U) <= sizeof(::std::uint_least64_t))
+	{
+		return jeaiii_main_u64(iter, static_cast<::std::uint_least64_t>(n));
+	}
+	else
+	{
+		::std::size_t const len{::fast_io::details::chars_len<10, false>(n)};
+		::fast_io::details::print_reserve_integral_main_impl<10, false>(iter + len, n, len);
+		return iter + len;
+	}
+}
+
+template <::std::integral char_type, ::fast_io::details::my_unsigned_integral U>
+inline constexpr void jeaiii_main_len(char_type *iter, U n, ::std::uint_least32_t len) noexcept
+{
+	if constexpr (sizeof(U) <= sizeof(::std::uint_least32_t))
+	{
+		jeaiii_len_u32(iter, static_cast<::std::uint_least32_t>(n), len);
+	}
+	else if constexpr (sizeof(U) <= sizeof(::std::uint_least64_t))
+	{
+		jeaiii_main_len_u64(iter, static_cast<::std::uint_least64_t>(n), len);
+	}
+	else
+	{
+		::fast_io::details::print_reserve_integral_main_impl<10, false>(iter + len, n, len);
+	}
+}
+
+} // namespace jeaiii
+
 template <bool full, ::std::size_t base, bool uppercase, ::std::integral char_type, my_unsigned_integral T>
-inline constexpr char_type *print_reserve_integral_withfull_main_impl(char_type *first, T u)
+inline constexpr char_type *print_reserve_integral_withfull_main_impl(char_type *first, T u) noexcept
 {
 	if constexpr (base <= 10 && uppercase)
 	{
@@ -1291,7 +1353,7 @@ inline constexpr char_type *print_reserve_integral_withfull_main_impl(char_type 
 		}
 		else
 		{
-			if constexpr (base == 10 && (::std::numeric_limits<::std::uint_least32_t>::digits == 32u))
+			if constexpr (base == 10)
 			{
 				if constexpr (false)
 				{
@@ -1320,7 +1382,7 @@ inline constexpr char_type *print_reserve_integral_withfull_main_impl(char_type 
 }
 
 template <::std::size_t base, bool uppercase, ::std::integral char_type, my_unsigned_integral T>
-inline constexpr void print_reserve_integral_withfull_precise_main_impl(char_type *last, T u, ::std::size_t n)
+inline constexpr void print_reserve_integral_withfull_precise_main_impl(char_type *last, T u, ::std::size_t n) noexcept
 {
 
 	if constexpr (sizeof(u) <= sizeof(unsigned) && sizeof(unsigned) <= sizeof(::std::size_t))
@@ -1335,7 +1397,7 @@ inline constexpr void print_reserve_integral_withfull_precise_main_impl(char_typ
 
 template <::std::size_t base, bool showbase = false, bool uppercase_showbase = false, bool showpos = false,
 		  bool uppercase = false, bool full = false, typename int_type, ::std::integral char_type>
-inline constexpr char_type *print_reserve_integral_define(char_type *first, int_type t)
+inline constexpr char_type *print_reserve_integral_define(char_type *first, int_type t) noexcept
 {
 	if constexpr (base <= 10 && uppercase)
 	{
@@ -1409,7 +1471,7 @@ inline constexpr char_type *print_reserve_integral_define(char_type *first, int_
 
 template <::std::size_t base, bool showbase = false, bool uppercase_showbase = false, bool showpos = false,
 		  bool uppercase = false, typename int_type, ::std::integral char_type>
-inline constexpr void print_reserve_integral_define_precise(char_type *start, ::std::size_t n, int_type t)
+inline constexpr void print_reserve_integral_define_precise(char_type *start, ::std::size_t n, int_type t) noexcept
 {
 	if constexpr (base <= 10 && uppercase)
 	{
@@ -1477,7 +1539,7 @@ inline constexpr void print_reserve_integral_define_precise(char_type *start, ::
 			{
 				first = print_reserve_show_base_impl<base, uppercase_showbase>(first);
 			}
-			if constexpr (base == 10 && (::std::numeric_limits<::std::uint_least32_t>::digits == 32u))
+			if constexpr (base == 10)
 			{
 				return ::fast_io::details::jeaiii::jeaiii_main_len(first, u, static_cast<::std::uint_least32_t>(n));
 			}
@@ -1523,7 +1585,7 @@ template <::std::size_t base>
 inline constexpr ::std::size_t print_showbase_length{compute_print_showbase_length(base)};
 
 template <::std::size_t base = 10, bool showbase = false, bool showpos = false, my_integral T>
-inline constexpr ::std::size_t print_reserve_scalar_size_impl()
+inline constexpr ::std::size_t print_reserve_scalar_size_impl() noexcept
 {
 	::std::size_t total_sum{};
 	if constexpr (showpos)
@@ -1557,7 +1619,7 @@ inline constexpr ::std::size_t print_integer_reserved_size_cache{
 	print_reserve_scalar_size_impl<base, showbase, showpos, T>()};
 
 template <::std::size_t base, bool showbase, bool showpos, bool full, my_integral T>
-inline constexpr ::std::size_t print_reserve_scalar_cal_precise_cache_size_impl()
+inline constexpr ::std::size_t print_reserve_scalar_cal_precise_cache_size_impl() noexcept
 {
 	::std::size_t total_sum{};
 	if constexpr (showpos)
@@ -1610,7 +1672,7 @@ inline constexpr ::std::size_t print_integer_reserved_precise_size_cache{
 	print_reserve_scalar_cal_precise_cache_size_impl<base, showbase, showpos, full, T>()};
 
 template <::std::size_t base, bool showbase, bool showpos, bool full, my_integral T>
-inline constexpr ::std::size_t print_integer_reserved_precise_size(T t)
+inline constexpr ::std::size_t print_integer_reserved_precise_size(T t) noexcept
 {
 	if constexpr (::std::same_as<::std::remove_cvref_t<T>, bool>)
 	{
@@ -1689,7 +1751,7 @@ inline constexpr auto nullptr_print_optimization_call_cache{
 	nullptr_print_optimization_call_impl<char_type, base, showbase, uppercase_showbase, showpos, uppercase, full>()};
 
 template <bool uppercase, ::std::integral char_type>
-inline constexpr char_type *print_reserve_boolalpha_impl(char_type *iter, bool b)
+inline constexpr char_type *print_reserve_boolalpha_impl(char_type *iter, bool b) noexcept
 {
 	if (b)
 	{
@@ -1810,7 +1872,7 @@ inline constexpr char_type *print_reserve_boolalpha_impl(char_type *iter, bool b
 }
 
 template <bool uppercase, ::std::integral char_type>
-inline constexpr char_type *print_reserve_nullptr_alphabet_impl(char_type *iter)
+inline constexpr char_type *print_reserve_nullptr_alphabet_impl(char_type *iter) noexcept
 {
 	if constexpr (::std::same_as<char_type, char>)
 	{
@@ -1872,7 +1934,7 @@ inline constexpr char_type *print_reserve_nullptr_alphabet_impl(char_type *iter)
 template <::std::size_t base, bool showbase = false, bool uppercase_showbase = false, bool showpos = false,
 		  bool uppercase = false, bool full = false, ::std::integral char_type>
 inline constexpr char_type *print_reserve_method_impl(char_type *iter,
-													  ::fast_io::manipulators::member_function_pointer_holder_t mfph)
+													  ::fast_io::manipulators::member_function_pointer_holder_t mfph) noexcept
 {
 	if constexpr (base <= 10 && uppercase)
 	{

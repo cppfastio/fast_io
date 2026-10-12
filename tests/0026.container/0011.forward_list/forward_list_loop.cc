@@ -23,7 +23,7 @@ int main()
 	println("lst2:\n", ::fast_io::mnp::rgvw(lst2, "\n"),
 			"\nlst after operations:\n", ::fast_io::mnp::rgvw(lst, "\n"),
 			// unfinished
-			"\nlst is empty? ", lst.empty(), "\n"
+			"\nlst is empty? ", lst.is_empty(), "\n"
 											 "lst2 is empty? ",
 			lst2.is_empty(), "\n"
 							 "lst<=>lst2:",

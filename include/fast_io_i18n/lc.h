@@ -1,376 +1,182 @@
-﻿#pragma once
+#pragma once
+
+
+// lc — the runtime locale context every lc_* print hook is keyed on.
+// Master's hooks take `basic_lc_all<char_type> const*`; here the key is
+// lc_ctx: the lc_locale file pointer (needed to resolve the wire
+// format's RVAs) plus the selected section image plus the hot
+// LC_NUMERIC fields decoded once per imbue.
+//
+// Field access in ported code is mechanical:
+//   master:  all->numeric.thousands_sep          (basic_io_scatter_t)
+//   here:    ctx->sc(ctx->all->numeric.thousands_sep)
+//            ^ sc resolves the wire lc_scatter to a real scatter
+//   master:  all->time.era.base                  (pointer)
+//   here:    ctx->pt(ctx->all->time.era.ref)     (lc_rva -> pointer)
 
 namespace fast_io
 {
 
-using i18n_scatter_size_type = std::uint_least32_t;
+inline constexpr ::std::size_t lc_sep_capacity{16};
 
-template <typename T>
-struct basic_scatter
+template <::std::integral char_type>
+struct lc_ctx
 {
-	using size_type = i18n_scatter_size_type;
-	[[nodiscard]] inline static size_type buffer_size(std::vector<T> const &which) noexcept
+	::fast_io::l10n::lc_locale const *loc{};
+	// the section image — wire-layout identical for every char_type,
+	// so it is read through the char instantiation
+	::fast_io::l10n::basic_lc_all<char> const *all{};
+	// hot LC_NUMERIC fields decoded once per imbue: thousands_sep as
+	// char_type units and grouping as u8 group sizes (both capped — a
+	// longer field disables grouping rather than allocating)
+	char_type sep[lc_sep_capacity]{};
+	::std::size_t sep_len{};
+	char8_t grouping[lc_sep_capacity]{};
+	::std::size_t grouping_len{};
+
+	// resolve a wire scatter member to a real scatter of char_type
+	// units — the member's declared T is the charset tag (char for
+	// every string field); the actual units are this section's
+	// char_type. rva==0 gives {nullptr,0}
+	template <typename T>
+	inline constexpr ::fast_io::basic_io_scatter_t<char_type> sc(
+		::fast_io::l10n::lc_scatter<T> s) const FAST_IO_HERBCEPTIONS_THROWS
 	{
-		return static_cast<size_type>(which.size());
+		auto const r{::fast_io::l10n::lc_get_scatter(loc, s)};
+		return {reinterpret_cast<char_type const *>(r.base), r.len};
 	}
-	template <std::ranges::range rg>
-	[[nodiscard]] inline static basic_scatter append_range(std::vector<T> &which, rg &&r) noexcept
+	// resolve a wire rva member to a pointer; rva==0 gives nullptr
+	template <typename T>
+	inline constexpr T const *pt(::fast_io::l10n::lc_rva<T> r) const
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		auto rva{buffer_size(which)};
-		which.append_range(r);
-		return {rva, buffer_size(which) - rva};
+		return ::fast_io::l10n::lc_get_rva(loc, r);
 	}
-	[[nodiscard]] inline std::span<T> get_from(std::vector<T> const &which) const noexcept
+	// a strref-table element of a dynamic string list (alt_digits and
+	// friends): member is {tbl_rva,count}, tbl = lc_scatter[count]
+	template <typename T>
+	inline constexpr ::fast_io::basic_io_scatter_t<char_type> sc_elem(
+		::fast_io::l10n::lc_scatter<::fast_io::l10n::lc_scatter<T>> s,
+		::std::size_t i) const FAST_IO_HERBCEPTIONS_THROWS
 	{
-		return {which.data() + rva, length};
-	}
-	size_type rva;
-	size_type length;
-};
-
-template <typename char_type>
-struct basic_lc_identification
-{
-	basic_scatter<char_type> title{};
-	basic_scatter<char_type> source{};
-	basic_scatter<char_type> address{};
-	basic_scatter<char_type> contact{};
-	basic_scatter<char_type> email{};
-	basic_scatter<char_type> tel{};
-	basic_scatter<char_type> fax{};
-	basic_scatter<char_type> language{};
-	basic_scatter<char_type> territory{};
-	basic_scatter<char_type> audience{};
-	basic_scatter<char_type> application{};
-	basic_scatter<char_type> abbreviation{};
-	basic_scatter<char_type> revision{};
-	basic_scatter<char_type> date{};
-};
-
-using lc_identification = basic_lc_identification<char>;
-using wlc_identification = basic_lc_identification<wchar_t>;
-using u8lc_identification = basic_lc_identification<char8_t>;
-using u16lc_identification = basic_lc_identification<char16_t>;
-using u32lc_identification = basic_lc_identification<char32_t>;
-
-template <typename char_type>
-struct basic_lc_monetary
-{
-	basic_scatter<char_type> int_curr_symbol{};
-	basic_scatter<char_type> currency_symbol{};
-	basic_scatter<char_type> mon_decimal_point{};
-	basic_scatter<char_type> mon_thousands_sep{};
-	basic_scatter<std::size_t> mon_grouping{};
-	basic_scatter<char_type> positive_sign{};
-	basic_scatter<char_type> negative_sign{};
-	std::size_t int_frac_digits{};
-	std::size_t frac_digits{};
-	std::size_t p_cs_precedes{};
-	std::size_t p_sep_by_space{};
-	std::size_t n_cs_precedes{};
-	std::size_t n_sep_by_space{};
-	std::size_t int_p_cs_precedes{};
-	std::size_t int_p_sep_by_space{};
-	std::size_t int_n_cs_precedes{};
-	std::size_t int_n_sep_by_space{};
-	std::size_t p_sign_posn{};
-	std::size_t n_sign_posn{};
-	std::size_t int_p_sign_posn{};
-	std::size_t int_n_sign_posn{};
-};
-
-using lc_monetary = basic_lc_monetary<char>;
-using wlc_monetary = basic_lc_monetary<wchar_t>;
-using u8lc_monetary = basic_lc_monetary<char8_t>;
-using u16lc_monetary = basic_lc_monetary<char16_t>;
-using u32lc_monetary = basic_lc_monetary<char32_t>;
-
-template <typename char_type>
-struct basic_lc_numeric
-{
-	basic_scatter<char_type> decimal_point{};
-	basic_scatter<char_type> thousands_sep{};
-	basic_scatter<std::size_t> grouping{};
-};
-
-using lc_numeric = basic_lc_numeric<char>;
-using wlc_numeric = basic_lc_numeric<wchar_t>;
-using u8lc_numeric = basic_lc_numeric<char8_t>;
-using u16lc_numeric = basic_lc_numeric<char16_t>;
-using u32lc_numeric = basic_lc_numeric<char32_t>;
-
-template <typename char_type>
-struct basic_lc_time_era
-{
-	bool direction{}; //+ is true, - is false
-	std::int_least64_t offset{};
-	std::int_least64_t start_date_year{};
-	std::uint_least8_t start_date_month{};
-	std::uint_least8_t start_date_day{};
-	std::int_least8_t end_date_special{}; //-1 is -*, 0 means end_date exist, 1 is +*
-	std::int_least64_t end_date_year{};
-	std::uint_least8_t end_date_month{};
-	std::uint_least8_t end_date_day{};
-	basic_scatter<char_type> era_name;
-	basic_scatter<char_type> era_format;
-};
-
-template <typename char_type>
-struct basic_lc_time
-{
-	basic_scatter<char_type> abday[7]{};
-	basic_scatter<char_type> day[7]{};
-	basic_scatter<char_type> abmon[12]{};
-	basic_scatter<char_type> ab_alt_mon[12]{};
-	basic_scatter<char_type> mon[12]{};
-	basic_scatter<char_type> d_t_fmt{};
-	basic_scatter<char_type> d_fmt{};
-	basic_scatter<char_type> t_fmt{};
-	basic_scatter<char_type> t_fmt_ampm{};
-	basic_scatter<char_type> date_fmt{};
-	basic_scatter<char_type> am_pm[2]{};
-	basic_scatter<basic_lc_time_era<char_type>> era{};
-	basic_scatter<char_type> era_d_fmt{};
-	basic_scatter<char_type> era_d_t_fmt{};
-	basic_scatter<char_type> era_t_fmt{};
-	basic_scatter<basic_scatter<char_type>> alt_digits{};
-	struct
-	{
-		std::size_t ndays{7};
-		std::int_least64_t first_day{19971201};
-		std::size_t first_week{4};
-	} week{};
-	std::size_t first_weekday{};
-	std::size_t first_workday{};
-	std::size_t cal_direction{};
-	basic_scatter<basic_scatter<char_type>> timezone{};
-};
-
-using lc_time = basic_lc_time<char>;
-using wlc_time = basic_lc_time<wchar_t>;
-using u8lc_time = basic_lc_time<char8_t>;
-using u16lc_time = basic_lc_time<char16_t>;
-using u32lc_time = basic_lc_time<char32_t>;
-
-template <typename char_type>
-struct basic_lc_messages
-{
-	basic_scatter<char_type> yesexpr{};
-	basic_scatter<char_type> noexpr{};
-	basic_scatter<char_type> yesstr{};
-	basic_scatter<char_type> nostr{};
-};
-
-using lc_messages = basic_lc_messages<char>;
-using wlc_messages = basic_lc_messages<wchar_t>;
-using u8lc_messages = basic_lc_messages<char8_t>;
-using u16lc_messages = basic_lc_messages<char16_t>;
-using u32lc_messages = basic_lc_messages<char32_t>;
-
-template <typename char_type>
-struct basic_lc_paper
-{
-	std::uint_least64_t width{};
-	std::uint_least64_t height{};
-};
-
-using lc_paper = basic_lc_paper<char>;
-using wlc_paper = basic_lc_paper<wchar_t>;
-using u8lc_paper = basic_lc_paper<char8_t>;
-using u16lc_paper = basic_lc_paper<char16_t>;
-using u32lc_paper = basic_lc_paper<char32_t>;
-
-template <typename char_type>
-struct basic_lc_telephone
-{
-	basic_scatter<char_type> tel_int_fmt{};
-	basic_scatter<char_type> tel_dom_fmt{};
-	basic_scatter<char_type> int_select{};
-	basic_scatter<char_type> int_prefix{};
-};
-
-using lc_telephone = basic_lc_telephone<char>;
-using wlc_telephone = basic_lc_telephone<wchar_t>;
-using u8lc_telephone = basic_lc_telephone<char8_t>;
-using u16lc_telephone = basic_lc_telephone<char16_t>;
-using u32lc_telephone = basic_lc_telephone<char32_t>;
-
-template <typename char_type>
-struct basic_lc_name
-{
-	basic_scatter<char_type> name_fmt{};
-	basic_scatter<char_type> name_gen{};
-	basic_scatter<char_type> name_miss{};
-	basic_scatter<char_type> name_mr{};
-	basic_scatter<char_type> name_mrs{};
-	basic_scatter<char_type> name_ms{};
-};
-
-using lc_name = basic_lc_name<char>;
-using wlc_name = basic_lc_name<wchar_t>;
-using u8lc_name = basic_lc_name<char8_t>;
-using u16lc_name = basic_lc_name<char16_t>;
-using u32lc_name = basic_lc_name<char32_t>;
-
-template <typename char_type>
-struct basic_lc_address
-{
-	basic_scatter<char_type> postal_fmt{};
-	basic_scatter<char_type> country_name{};
-	basic_scatter<char_type> country_post{};
-	basic_scatter<char_type> country_ab2{};
-	basic_scatter<char_type> country_ab3{};
-	basic_scatter<char_type> country_num{};
-	basic_scatter<char_type> country_car{};
-	basic_scatter<char_type> country_isbn{};
-	basic_scatter<char_type> lang_name{};
-	basic_scatter<char_type> lang_ab{};
-	basic_scatter<char_type> lang_term{};
-	basic_scatter<char_type> lang_lib{};
-};
-
-using lc_address = basic_lc_address<char>;
-using wlc_address = basic_lc_address<wchar_t>;
-using u8lc_address = basic_lc_address<char8_t>;
-using u16lc_address = basic_lc_address<char16_t>;
-using u32lc_address = basic_lc_address<char32_t>;
-
-template <typename char_type>
-struct basic_lc_measurement
-{
-	std::uint_least64_t measurement{};
-};
-
-using lc_measurement = basic_lc_measurement<char>;
-using wlc_measurement = basic_lc_measurement<wchar_t>;
-using u8lc_measurement = basic_lc_measurement<char8_t>;
-using u16lc_measurement = basic_lc_measurement<char16_t>;
-using u32lc_measurement = basic_lc_measurement<char32_t>;
-
-template <typename char_type>
-struct basic_lc_keyboard
-{
-	basic_scatter<basic_scatter<char_type>> keyboards{};
-};
-
-using lc_keyboard = basic_lc_keyboard<char>;
-using wlc_keyboard = basic_lc_keyboard<wchar_t>;
-using u8lc_keyboard = basic_lc_keyboard<char8_t>;
-using u16lc_keyboard = basic_lc_keyboard<char16_t>;
-using u32lc_keyboard = basic_lc_keyboard<char32_t>;
-
-template <typename char_type>
-struct basic_lc_all
-{
-	basic_lc_identification<char_type> identification{};
-	basic_lc_monetary<char_type> monetary{};
-	basic_lc_numeric<char_type> numeric{};
-	basic_lc_time<char_type> time{};
-	basic_lc_messages<char_type> messages{};
-	basic_lc_paper<char_type> paper{};
-	basic_lc_telephone<char_type> telephone{};
-	basic_lc_name<char_type> name{};
-	basic_lc_address<char_type> address{};
-	basic_lc_measurement<char_type> measurement{};
-	basic_lc_keyboard<char_type> keyboard{};
-};
-
-using lc_all = basic_lc_all<char>;
-using wlc_all = basic_lc_all<wchar_t>;
-using u8lc_all = basic_lc_all<char8_t>;
-using u16lc_all = basic_lc_all<char16_t>;
-using u32lc_all = basic_lc_all<char32_t>;
-
-template <typename char_type>
-struct basic_lc_data_storage
-{
-	std::vector<char_type> chars{};
-	std::vector<std::size_t> integers{};
-	std::vector<basic_lc_time_era<char_type>> eras{};
-	std::vector<basic_scatter<char_type>> strings{};
-	template <typename T, typename Self>
-	[[nodiscard]] inline constexpr decltype(auto) get_storage(this Self &&self) noexcept
-	{
-		if constexpr (std::same_as<T, char_type>)
+		// the table itself is bounded first — off + len*sizeof covers
+		// the whole element array, so tbl[i] is always inside the image
+		auto const tbl{::fast_io::l10n::lc_get_scatter(loc, s)};
+		if (tbl.base == nullptr || i >= tbl.len)
 		{
-			return (self.chars);
+			return {};
 		}
-		else if constexpr (std::same_as<T, std::size_t>)
-		{
-			return (self.integers);
-		}
-		else if constexpr (std::same_as<T, basic_lc_time_era<char_type>>)
-		{
-			return (self.eras);
-		}
-		else if constexpr (std::same_as<T, basic_scatter<char_type>>)
-		{
-			return (self.strings);
-		}
-		else
-		{
-			return;
-		}
+		auto const e{::fast_io::l10n::lc_get_scatter(loc, tbl.base[i])};
+		return {reinterpret_cast<char_type const *>(e.base), e.len};
 	}
 };
 
-using lc_data_storage = basic_lc_data_storage<char>;
-using wlc_data_storage = basic_lc_data_storage<wchar_t>;
-using u8lc_data_storage = basic_lc_data_storage<char8_t>;
-using u16lc_data_storage = basic_lc_data_storage<char16_t>;
-using u32lc_data_storage = basic_lc_data_storage<char32_t>;
-
-template <typename char_type>
-struct basic_lc_object
+template <::std::integral char_type>
+inline lc_ctx<char_type>
+lc_load_ctx(::fast_io::l10n::lc_locale const *v)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	basic_lc_data_storage<char_type> data_storage{};
-	basic_lc_all<char_type> all{};
-};
-
-using lc_object = basic_lc_object<char>;
-using wlc_object = basic_lc_object<wchar_t>;
-using u8lc_object = basic_lc_object<char8_t>;
-using u16lc_object = basic_lc_object<char16_t>;
-using u32lc_object = basic_lc_object<char32_t>;
-
-struct lc_locale
-{
-	lc_object const *lc;
-	wlc_object const *wlc;
-	u8lc_object const *u8lc;
-	u16lc_object const *u16lc;
-	u32lc_object const *u32lc;
-};
-
-template <std::integral char_type>
-	requires(std::same_as<char_type, char> || std::same_as<char_type, wchar_t> ||
-			 std::same_as<char_type, char8_t> || std::same_as<char_type, char16_t> || std::same_as<char_type, char32_t>)
-inline constexpr basic_lc_object<char_type> const *get_lc(lc_locale const &loc) noexcept
-{
-	if constexpr (std::same_as<char_type, char>)
+	namespace lc = ::fast_io::l10n;
+	lc_ctx<char_type> ctx{};
+	auto const *all{lc::lc_get_all<char_type>(v)};
+	if (all == nullptr)
 	{
-		return loc.lc;
+		return ctx;
 	}
-	else if constexpr (std::same_as<char_type, wchar_t>)
+	ctx.loc = v;
+	ctx.all = reinterpret_cast<lc::basic_lc_all<char> const *>(all);
+	// payload units already are char_type — no codecvt anywhere
+	if (auto const sep{lc::lc_get_scatter(v, all->numeric.thousands_sep)};
+		sep.base != nullptr && sep.len != 0)
 	{
-		return loc.wlc;
+		if (sep.len > lc_sep_capacity)
+		{
+			::fast_io::herbceptions::throws_errc(::std::errc::invalid_argument);
+		}
+		::fast_io::details::my_memcpy(ctx.sep, sep.base, sep.len * sizeof(char_type));
+		ctx.sep_len = sep.len;
 	}
-	else if constexpr (std::same_as<char_type, char8_t>)
+	if (auto const g{lc::lc_get_scatter(v, all->numeric.grouping)};
+		g.base != nullptr && g.len != 0)
 	{
-		return loc.u8lc;
+		if (g.len > lc_sep_capacity)
+		{
+			::fast_io::herbceptions::throws_errc(::std::errc::invalid_argument);
+		}
+		::fast_io::details::my_memcpy(ctx.grouping, g.base, g.len);
+		ctx.grouping_len = g.len;
 	}
-	else if constexpr (std::same_as<char_type, char16_t>)
-	{
-		return loc.u16lc;
-	}
-	else if constexpr (std::same_as<char_type, char32_t>)
-	{
-		return loc.u32lc;
-	}
-	else
-	{
-		return {};
-	}
+	return ctx;
 }
 
+
+namespace details
+{
+
+// glibc grouping semantics: entry gi is the group size for group gi
+// counting from the right; past the end the last value repeats; a 0
+// repeats the previous value; 0xFF (CHAR_MAX) or 0-with-no-previous
+// stops grouping entirely
+template <::std::integral char_type>
+inline ::std::uint_least8_t lc_group_size(lc_ctx<char_type> const *ctx,
+										  ::std::size_t gi,
+										  ::std::uint_least8_t prev) noexcept
+{
+	if (gi < ctx->grouping_len) [[likely]]
+	{
+		auto g{static_cast<::std::uint_least8_t>(ctx->grouping[gi])};
+		if (g == 0xFFu) [[unlikely]]
+		{
+			return 0;
+		}
+		if (g != 0)
+		{
+			return g;
+		}
+		return prev;
+	}
+	return prev;
+}
+
+
+// the count and write sinks every lc_* emitter shares — count and
+// write passes run the same code through these, so they can never
+// disagree
+template <::std::integral char_type>
+struct lc_count_sink
+{
+	::std::size_t n{};
+	inline constexpr void put(char_type) noexcept
+	{
+		++n;
+	}
+	inline constexpr void put_units(char_type const *, ::std::size_t len) noexcept
+	{
+		n += len;
+	}
+};
+
+template <::std::integral char_type>
+struct lc_write_sink
+{
+	char_type *it{}, *dend{};
+	inline constexpr void put(char_type ch) noexcept
+	{
+		if (it != dend) [[likely]]
+		{
+			*it = ch;
+			++it;
+		}
+	}
+	inline constexpr void put_units(char_type const *p, ::std::size_t len) noexcept
+	{
+		auto const n{::std::min(len, static_cast<::std::size_t>(dend - it))};
+		::fast_io::details::my_memcpy(it, p, n * sizeof(char_type));
+		it += n;
+	}
+};
+
+} // namespace details
+
 } // namespace fast_io
+

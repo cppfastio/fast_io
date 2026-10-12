@@ -15,6 +15,7 @@ struct win32_file_loader_return_value_t
 inline win32_file_loader_return_value_t win32_load_address_common_options_impl(void *hfilemappingobj,
 																			   ::std::size_t file_size,
 																			   ::std::uint_least32_t dwDesiredAccess)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (hfilemappingobj == nullptr)
 	{
@@ -30,12 +31,14 @@ inline win32_file_loader_return_value_t win32_load_address_common_options_impl(v
 }
 
 inline win32_file_loader_return_value_t win32_load_address_common_impl(void *hfilemappingobj, ::std::size_t file_size)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return win32_load_address_common_options_impl(hfilemappingobj, file_size, 1);
 }
 
 template <win32_family family>
 inline win32_file_loader_return_value_t win32_load_address_impl(void *handle)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t file_size{win32_load_file_get_file_size(handle)};
 	if (file_size == 0)
@@ -56,6 +59,7 @@ inline win32_file_loader_return_value_t win32_load_address_impl(void *handle)
 
 template <win32_family family, typename... Args>
 inline auto win32_load_file_impl(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::basic_win32_family_file<family, char> wf(::fast_io::freestanding::forward<Args>(args)...);
 	return win32_load_address_impl<family>(wf.handle);
@@ -63,6 +67,7 @@ inline auto win32_load_file_impl(Args &&...args)
 
 template <win32_family family>
 inline win32_file_loader_return_value_t win32_load_address_options_impl(win32_mmap_options const &options, void *handle)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t file_size{win32_load_file_get_file_size(handle)};
 	if (file_size == 0)
@@ -99,6 +104,7 @@ inline win32_file_loader_return_value_t win32_load_address_options_impl(win32_mm
 
 template <win32_family family, typename... Args>
 inline auto win32_load_file_options_impl(win32_mmap_options const &options, Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::basic_win32_family_file<family, char> wf(::fast_io::freestanding::forward<Args>(args)...);
 	return win32_load_address_options_impl<family>(options, wf.handle);
@@ -134,6 +140,7 @@ public:
 	pointer address_end{};
 	inline constexpr win32_family_file_loader() noexcept = default;
 	inline explicit win32_family_file_loader(nt_at_entry ent)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_address_impl<family>(ent.handle)};
 		address_begin = ret.address_begin;
@@ -141,6 +148,7 @@ public:
 	}
 	inline explicit win32_family_file_loader(nt_fs_dirent fsdirent, open_mode om = open_mode::in,
 											 perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(fsdirent, om, pm)};
 		address_begin = ret.address_begin;
@@ -148,6 +156,7 @@ public:
 	}
 	inline explicit win32_family_file_loader(win32_9xa_fs_dirent fsdirent, open_mode om = open_mode::in,
 											 perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(fsdirent, om, pm)};
 		address_begin = ret.address_begin;
@@ -156,6 +165,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(T const &filename, open_mode om = open_mode::in,
 											 perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -164,6 +174,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(nt_at_entry ent, T const &filename, open_mode om = open_mode::in,
 											 perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(ent, filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -172,12 +183,14 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(win32_9xa_at_entry ent, T const &filename, open_mode om = open_mode::in,
 											 perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_impl<family>(ent, filename, om, pm)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}
 	inline explicit win32_family_file_loader(win32_mmap_options const &options, nt_at_entry ent)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_address_options_impl<family>(options, ent.handle)};
 		address_begin = ret.address_begin;
@@ -185,6 +198,7 @@ public:
 	}
 	inline explicit win32_family_file_loader(win32_mmap_options const &options, nt_fs_dirent fsdirent,
 											 open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_options_impl<family>(options, fsdirent, om, pm)};
 		address_begin = ret.address_begin;
@@ -193,6 +207,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(win32_mmap_options const &options, T const &filename,
 											 open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_options_impl<family>(options, filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -201,6 +216,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit win32_family_file_loader(win32_mmap_options const &options, nt_at_entry ent, T const &filename,
 											 open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::details::win32_load_file_options_impl<family>(options, ent, filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -233,10 +249,6 @@ public:
 	inline constexpr const_pointer data() const noexcept
 	{
 		return address_begin;
-	}
-	inline constexpr bool empty() const noexcept
-	{
-		return address_begin == address_end;
 	}
 	inline constexpr bool is_empty() const noexcept
 	{

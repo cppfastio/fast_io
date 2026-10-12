@@ -4,6 +4,7 @@
 #include <fast_io_device.h>
 #include <fast_io_driver/timer.h>
 #include <fast_io_i18n.h>
+#include <fast_io_unit/floating/lc_impl.h>
 using namespace fast_io::io;
 
 int main()
@@ -17,7 +18,7 @@ int main()
 	{
 		vec.emplace_back(dis(eng));
 	}
-	fast_io::native_l10n l10n("");
+	auto const *l10n{::fast_io::l10n::load_l10n(u8"")};
 	{
 		fast_io::timer t(u8"decimal_l10n");
 		fast_io::u8obuf_file file(u8"decimal_l10n.txt");

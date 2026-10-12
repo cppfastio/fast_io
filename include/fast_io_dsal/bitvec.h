@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if !defined(__cplusplus)
 #error "You must be using a C++ compiler"
@@ -17,11 +17,7 @@
 #include <algorithm>
 #include "impl/misc/push_macros.h"
 #include "impl/misc/push_warnings.h"
-#include "../fast_io_core_impl/freestanding/impl.h"
-#include "../fast_io_core_impl/terminate.h"
-#include "../fast_io_core_impl/intrinsics/msvc/impl.h"
-#include "../fast_io_core_impl/allocation/impl.h"
-#include "../fast_io_core_impl/asan_support.h"
+#include "../fast_io_core.h"
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #include <cstring>

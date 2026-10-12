@@ -2,6 +2,25 @@
 
 namespace fast_io
 {
+
+namespace details
+{
+template <typename T, typename... Args>
+inline constexpr bool io_lockable_reopen_may_throw{[]() consteval -> bool {
+	if constexpr (requires(T &h) { h.reopen(::std::declval<Args>()...); })
+	{
+		return !noexcept(::std::declval<T &>().reopen(::std::declval<Args>()...));
+	}
+	else
+	{
+		return !(::std::is_nothrow_constructible_v<T, Args...> &&
+				 ::std::is_nothrow_move_assignable_v<T>);
+	}
+}()};
+
+
+} // namespace details
+
 template <typename T, typename Mutex>
 	requires requires(Mutex &&m) {
 		m.lock();
@@ -32,6 +51,7 @@ struct basic_general_io_lockable_nonmovable
 	template <typename... Args>
 		requires ::std::constructible_from<T, Args...>
 	inline explicit constexpr basic_general_io_lockable_nonmovable(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!::std::is_nothrow_constructible_v<T, Args...>)
 		: handle(::std::forward<Args>(args)...)
 	{
 	}
@@ -39,6 +59,7 @@ struct basic_general_io_lockable_nonmovable
 	template <typename... Args>
 		requires(::std::constructible_from<T, Args...>)
 	inline constexpr void reopen(Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::details::io_lockable_reopen_may_throw<T, Args...>)
 	{
 		::fast_io::io_lock_guard guard(mutex);
 		if constexpr (requires() {
@@ -93,7 +114,7 @@ struct heap_typed_allocate_guard
 		typed_allocator_type::deallocate_n(this->ptr, 1);
 		this->ptr = nullptr;
 	}
-	inline constexpr ~heap_typed_allocate_guard()
+	inline constexpr ~heap_typed_allocate_guard() noexcept
 	{
 		clear();
 	}
@@ -209,7 +230,7 @@ public:
 		return *this;
 	}
 
-	inline constexpr ~basic_general_mutex_movable()
+	inline constexpr ~basic_general_mutex_movable() noexcept
 	{
 		this->destroy();
 	}
@@ -271,8 +292,25 @@ concept has_mutex_ref_define = requires(T t) {
 
 } // namespace operations::defines
 
+namespace details
+{
+template <typename Mutex>
+inline constexpr bool io_lockable_mutex_ref_may_throw{[]() consteval -> bool {
+	if constexpr (::fast_io::operations::defines::has_mutex_ref_define<Mutex>)
+	{
+		return !noexcept(mutex_ref_define(::std::declval<Mutex &>()));
+	}
+	else
+	{
+		return false;
+	}
+}()};
+
+} // namespace details
+
 template <typename T, typename Mutex>
 inline constexpr decltype(auto) io_stream_mutex_ref_define(::fast_io::basic_general_io_lockable_ref<T, Mutex> mtx)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::details::io_lockable_mutex_ref_may_throw<Mutex>)
 {
 	if constexpr (::fast_io::operations::defines::has_mutex_ref_define<Mutex>)
 	{
@@ -287,6 +325,7 @@ inline constexpr decltype(auto) io_stream_mutex_ref_define(::fast_io::basic_gene
 template <typename T, typename Mutex>
 	requires ::fast_io::operations::defines::has_output_stream_ref_define<T>
 inline constexpr decltype(auto) output_stream_unlocked_ref_define(::fast_io::basic_general_io_lockable_ref<T, Mutex> mtx)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(output_stream_ref_define(mtx.ptr->handle)))
 {
 	return output_stream_ref_define(mtx.ptr->handle);
 }
@@ -294,6 +333,7 @@ inline constexpr decltype(auto) output_stream_unlocked_ref_define(::fast_io::bas
 template <typename T, typename Mutex>
 	requires ::fast_io::operations::defines::has_input_stream_ref_define<T>
 inline constexpr decltype(auto) input_stream_unlocked_ref_define(::fast_io::basic_general_io_lockable_ref<T, Mutex> mtx)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(input_stream_ref_define(mtx.ptr->handle)))
 {
 	return input_stream_ref_define(mtx.ptr->handle);
 }
@@ -301,6 +341,7 @@ inline constexpr decltype(auto) input_stream_unlocked_ref_define(::fast_io::basi
 template <typename T, typename Mutex>
 	requires ::fast_io::operations::defines::has_io_stream_ref_define<T>
 inline constexpr decltype(auto) io_stream_unlocked_ref_define(::fast_io::basic_general_io_lockable_ref<T, Mutex> mtx)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(io_stream_ref_define(mtx.ptr->handle)))
 {
 	return io_stream_ref_define(mtx.ptr->handle);
 }

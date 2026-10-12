@@ -45,6 +45,39 @@ inline constexpr char8_t *compute_itanium_char_type_identification(char8_t *it) 
 	return it;
 }
 
+template <::std::integral char_type>
+inline constexpr char8_t *compute_msvc_char_type_identification(char8_t *it) noexcept
+{
+	if constexpr (::std::same_as<char_type, char>)
+	{
+		*it = u'D';
+		++it;
+	}
+	else
+	{
+		*it = u8'_';
+		++it;
+		if constexpr (::std::same_as<char_type, wchar_t>)
+		{
+			*it = u8'W';
+		}
+		else if constexpr (::std::same_as<char_type, char8_t>)
+		{
+			*it = u8'Q';
+		}
+		else if constexpr (::std::same_as<char_type, char16_t>)
+		{
+			*it = u8'S';
+		}
+		else
+		{
+			*it = u8'U';
+		}
+		++it;
+	}
+	return it;
+}
+
 template <::std::size_t n>
 struct symbol_name_holder
 {
@@ -69,11 +102,7 @@ inline constexpr bool symbol_cmp_equal_commom(char8_t const *sym, char const *st
 {
 	if (N == len)
 	{
-#if __cpp_if_consteval >= 202106L
-		if !consteval
-#else
-		if(!__builtin_is_constant_evaluated())
-#endif
+		FAST_IO_IF_NOT_CONSTEVAL
 		{
 			for (::std::size_t i{}; i != len; ++i)
 			{
@@ -111,4 +140,7 @@ inline constexpr bool symbol_cmp_equal(::fast_io::freestanding::array<char8_t, N
 template <::std::integral char_type>
 inline constexpr ::std::size_t itanium_char_type_symbol_size{
 	(::std::same_as<char_type, char> || ::std::same_as<char_type, wchar_t>) ? 1 : 2};
+
+template <::std::integral char_type>
+inline constexpr ::std::size_t msvc_char_type_symbol_size{::std::same_as<char_type, char> ? 1 : 2};
 } // namespace fast_io::details

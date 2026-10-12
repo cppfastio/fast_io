@@ -93,6 +93,10 @@ struct basic_os_c_str_with_known_size
 	{
 		return n;
 	}
+	inline constexpr bool is_empty() const noexcept
+	{
+		return n == 0;
+	}
 	inline constexpr char_type const *data() const noexcept
 	{
 		return ptr;
@@ -125,6 +129,10 @@ struct basic_os_str_known_size_without_null_terminated
 	inline constexpr ::std::size_t size() const noexcept
 	{
 		return n;
+	}
+	inline constexpr bool is_empty() const noexcept
+	{
+		return n == 0;
 	}
 	inline constexpr char_type const *data() const noexcept
 	{

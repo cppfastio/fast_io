@@ -59,6 +59,7 @@ inline void llvm_raw_ostream_set_obuffer_curr_ptr(::llvm::raw_ostream *os, char 
 }
 
 inline void llvm_raw_ostream_overflow(::llvm::raw_ostream *os, char ch)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	os->flush();
 	constexpr ::std::size_t one{1u};

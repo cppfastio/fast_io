@@ -16,8 +16,7 @@ inline constexpr auto k256scalar{create_k256scalar()};
 
 #if __has_cpp_attribute(__gnu__::__flatten__)
 [[__gnu__::__flatten__]]
-#endif
-#if __has_cpp_attribute(msvc::forceinline)
+#elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
 inline constexpr void sha256_round(::std::uint_least32_t T1, ::std::uint_least32_t a, ::std::uint_least32_t b,

@@ -13,7 +13,7 @@ struct sized_range_view_t
 	::std::size_t size;
 };
 template <::std::integral char_type, ::std::input_iterator I>
-sized_range_view_t(basic_io_scatter_t<char_type>, I, ::std::size_t) -> sized_range_view_t<char_type, I>;
+sized_range_view_t(basic_io_scatter_t<char_type>, I, ::std::size_t) noexcept -> sized_range_view_t<char_type, I>;
 
 template <::std::integral ch_type, ::std::input_iterator It>
 struct range_view_t
@@ -25,11 +25,12 @@ struct range_view_t
 	iterator end;
 };
 template <::std::integral char_type, ::std::input_iterator I>
-range_view_t(basic_io_scatter_t<char_type>, I, I) -> range_view_t<char_type, I>;
+range_view_t(basic_io_scatter_t<char_type>, I, I) noexcept -> range_view_t<char_type, I>;
 
 template <::std::integral char_type, ::std::input_iterator It>
 inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, sized_range_view_t<char_type, It>>,
 												  sized_range_view_t<char_type, It> t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (t.size == 0)
 	{
@@ -56,6 +57,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, s
 template <::std::integral char_type, ::std::input_iterator It>
 inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, sized_range_view_t<char_type, It>>,
 												 char_type *__restrict ptr, sized_range_view_t<char_type, It> t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (t.size == 0)
 	{
@@ -79,12 +81,13 @@ inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, si
 namespace operations
 {
 template <bool line, typename output, typename... Args>
-inline constexpr void print_freestanding(output &&outstm, Args &&...args);
+inline constexpr void print_freestanding(output &&outstm, Args &&...args) FAST_IO_HERBCEPTIONS_THROWS;
 }
 
 template <::std::integral char_type, ::std::input_iterator It, typename output>
-inline constexpr void print_define(io_reserve_type_t<char_type, range_view_t<char_type, It>>, output out,
-								   range_view_t<char_type, It> t)
+inline constexpr void print_define(::fast_io::io_reserve_type_t<char_type, range_view_t<char_type, It>>, output out,
+								   ::fast_io::range_view_t<char_type, It> t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (t.begin == t.end)
 	{
@@ -102,6 +105,8 @@ namespace manipulators
 {
 template <::std::ranges::range rg, ::std::integral char_type>
 inline constexpr auto rgvw(rg &&r, char_type const (&sep)[2])
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::ranges::begin(r)) ||
+								   !noexcept(::std::ranges::end(r)))
 {
 	using ::fast_io::range_view_t;
 	using ::fast_io::sized_range_view_t;
@@ -148,6 +153,9 @@ inline constexpr auto rgvw(rg &&r, char_type const (&sep)[2])
 
 template <::std::ranges::range rg, ::fast_io::constructible_to_os_c_str T>
 inline constexpr auto rgvw(rg &&r, T &&sep)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::ranges::begin(r)) ||
+								   !noexcept(::std::ranges::end(r)) ||
+								   !noexcept(print_alias_define(io_alias, sep)))
 {
 	using ::fast_io::range_view_t;
 	using ::fast_io::sized_range_view_t;

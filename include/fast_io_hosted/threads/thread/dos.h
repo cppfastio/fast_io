@@ -67,25 +67,22 @@ inline
 	}
 }
 
-template <::std::int_least64_t off_to_epoch>
 inline
 #if __cpp_constexpr >= 202207L
 	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_for(::fast_io::basic_timestamp<off_to_epoch> const &sleep_duration) noexcept
+	void sleep_for(::fast_io::posix_statx_timestamp64 const &sleep_duration) noexcept
 {
-	if (sleep_duration.seconds < 0)
+	if (sleep_duration.tv_sec < 0)
 	{
 		return;
 	}
 
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1000000u};
-
 	auto const us64{
-		static_cast<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(sleep_duration.seconds) * 1000000u +
-										   sleep_duration.subseconds / mul_factor)};
+		static_cast<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(sleep_duration.tv_sec) * 1000000u +
+										   sleep_duration.tv_nsec / 1000u)};
 	if (us64 == 0)
 	{
 		return;
@@ -101,28 +98,26 @@ inline
 	}
 }
 
-template <::std::int_least64_t off_to_epoch>
 inline
 #if __cpp_constexpr >= 202207L
 	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_until(::fast_io::basic_timestamp<off_to_epoch> const &expect_time) noexcept
+	void sleep_until(::fast_io::posix_statx_timestamp64 const &expect_time) noexcept
 {
-	if (expect_time.seconds < 0)
+	if (expect_time.tv_sec < 0)
 	{
 		return;
 	}
 
-	auto const unix_expect{static_cast<::fast_io::unix_timestamp>(expect_time)};
 	auto const now{::fast_io::posix_clock_gettime(::fast_io::posix_clock_id::realtime)};
-	if (!(now < unix_expect))
+	if (!(now < expect_time))
 	{
 		return;
 	}
 
-	auto const delta{unix_expect - now};
+	auto const delta{expect_time - now};
 	::fast_io::dos::this_thread::sleep_for(delta);
 }
 

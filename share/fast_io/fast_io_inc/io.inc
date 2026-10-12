@@ -10,6 +10,7 @@ using ::fast_io::io::perrln;
 using ::fast_io::io::panic;
 using ::fast_io::io::panicln;
 using ::fast_io::io::scan;
+using ::fast_io::io::scan_some;
 
 #ifndef FAST_IO_DISABLE_DEBUG_PRINT
 using ::fast_io::io::debug_print;
@@ -18,5 +19,11 @@ using ::fast_io::io::debug_perr;
 using ::fast_io::io::debug_perrln;
 #endif
 } // namespace io
+
+namespace iomnp
+{
+using namespace ::fast_io::io;
+using namespace ::fast_io::mnp;
+} // namespace iomnp
 
 } // namespace fast_io

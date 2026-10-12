@@ -100,6 +100,7 @@ public:
 	template <typename Func, typename... Args>
 		requires(::std::invocable<Func, Args...>)
 	inline constexpr pthread_thread(Func &&func, Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		using start_routine_tuple_type = ::fast_io::containers::tuple<::std::decay_t<Func>, ::std::decay_t<Args>...>;
 		using alloc = ::fast_io::native_typed_global_allocator<start_routine_tuple_type>;
@@ -161,6 +162,7 @@ public:
 	}
 
 	inline constexpr void join()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (!this->joinable()) [[unlikely]]
 		{
@@ -175,6 +177,7 @@ public:
 	}
 
 	inline constexpr void detach()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (!this->joinable()) [[unlikely]]
 		{
@@ -294,24 +297,22 @@ inline
 	}
 }
 
-template <::std::int_least64_t off_to_epoch>
 inline
 #if __cpp_constexpr >= 202207L
 	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_for(::fast_io::basic_timestamp<off_to_epoch> const &sleep_duration) noexcept
+	void sleep_for(::fast_io::posix_statx_timestamp64 const &sleep_duration) noexcept
 {
-	if (sleep_duration.seconds < 0)
+	if (sleep_duration.tv_sec < 0)
 	{
 		return;
 	}
 
 	::timespec req{};
-	req.tv_sec = static_cast<::time_t>(sleep_duration.seconds);
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1000000000u};
-	req.tv_nsec = static_cast<long>(sleep_duration.subseconds / mul_factor);
+	req.tv_sec = static_cast<::time_t>(sleep_duration.tv_sec);
+	req.tv_nsec = static_cast<long>(sleep_duration.tv_nsec);
 
 	if (req.tv_sec == 0 && req.tv_nsec <= 0)
 	{
@@ -321,26 +322,23 @@ inline
 	::fast_io::noexcept_call(::nanosleep, __builtin_addressof(req), nullptr);
 }
 
-template <::std::int_least64_t off_to_epoch>
 inline
 #if __cpp_constexpr >= 202207L
 	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_until(::fast_io::basic_timestamp<off_to_epoch> const &expect_time) noexcept
+	void sleep_until(::fast_io::posix_statx_timestamp64 const &expect_time) noexcept
 {
-	if (expect_time.seconds < 0)
+	if (expect_time.tv_sec < 0)
 	{
 		return;
 	}
 
 	::timespec ts{};
 
-	auto const unix_ts{static_cast<::fast_io::unix_timestamp>(expect_time)};
-	ts.tv_sec = static_cast<::time_t>(unix_ts.seconds);
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1000000000u};
-	ts.tv_nsec = static_cast<long>(unix_ts.subseconds / mul_factor);
+	ts.tv_sec = static_cast<::time_t>(expect_time.tv_sec);
+	ts.tv_nsec = static_cast<long>(expect_time.tv_nsec);
 
 #if defined(CLOCK_REALTIME) && defined(TIMER_ABSTIME)
 	::fast_io::noexcept_call(::clock_nanosleep, CLOCK_REALTIME, TIMER_ABSTIME, __builtin_addressof(ts), nullptr);

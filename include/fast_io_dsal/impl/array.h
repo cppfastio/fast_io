@@ -3,10 +3,13 @@
 namespace fast_io::containers
 {
 
-template <typename T, ::std::size_t N>
+template <typename T, ::std::size_t N, ::fast_io::allocator_adapter_flags flags = ::fast_io::allocator_adapter_flags::none>
 class array
 {
 	static_assert((N <= ::std::numeric_limits<::std::size_t>::max() / sizeof(T)), "N is too big");
+
+	static inline constexpr bool throwing_violations{
+		flags == ::fast_io::allocator_adapter_flags::throws_on_violations};
 
 public:
 	using value_type = T;
@@ -30,10 +33,6 @@ public:
 	value_type element[N];
 
 	static inline constexpr bool is_empty() noexcept
-	{
-		return false;
-	}
-	static inline constexpr bool empty() noexcept
 	{
 		return false;
 	}
@@ -125,14 +124,22 @@ public:
 		return element;
 	}
 
-	inline constexpr void fill(const_reference u) noexcept
+	inline constexpr void fill(const_reference u)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!::std::is_nothrow_copy_assignable_v<value_type>)
 	{
-		::std::fill_n(element, N, u);
+		for (auto &e : element)
+		{
+			e = u;
+		}
 	}
 
-	inline constexpr void swap(array &other) noexcept(::std::is_nothrow_swappable_v<value_type>)
+	inline constexpr void swap(array &other)
+		FAST_IO_HERBCEPTIONS_THROWS_IF(!::std::is_nothrow_swappable_v<value_type>)
 	{
-		::std::swap_ranges(element, element + N, other.element);
+		for (size_type i{}; i != N; ++i)
+		{
+			::fast_io::freestanding::iter_swap(element + i, other.element + i);
+		}
 	}
 
 #if __has_cpp_attribute(__gnu__::__always_inline__)
@@ -140,11 +147,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr reference operator[](size_type idx) noexcept
+	inline constexpr reference operator[](size_type idx) FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (N <= idx) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return element[idx];
 	}
@@ -153,11 +160,11 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr const_reference operator[](size_type idx) const noexcept
+	inline constexpr const_reference operator[](size_type idx) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
 		if (N <= idx) [[unlikely]]
 		{
-			::fast_io::fast_terminate();
+			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 		}
 		return element[idx];
 	}
@@ -259,9 +266,12 @@ public:
 	}
 };
 
-template <typename T>
-class array<T, 0>
+template <typename T, ::fast_io::allocator_adapter_flags flags>
+class array<T, 0, flags>
 {
+	static inline constexpr bool throwing_violations{
+		flags == ::fast_io::allocator_adapter_flags::throws_on_violations};
+
 public:
 	using value_type = T;
 	using size_type = ::std::size_t;
@@ -276,10 +286,6 @@ public:
 	using const_reverse_iterator = ::std::reverse_iterator<const_iterator>;
 
 	static inline constexpr bool is_empty() noexcept
-	{
-		return true;
-	}
-	static inline constexpr bool empty() noexcept
 	{
 		return true;
 	}
@@ -374,18 +380,18 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr reference operator[](size_type) noexcept
+	inline constexpr reference operator[](size_type) FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
-		::fast_io::fast_terminate();
+		::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr const_reference operator[](size_type) const noexcept
+	inline constexpr const_reference operator[](size_type) const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
-		::fast_io::fast_terminate();
+		::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
@@ -411,18 +417,18 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr reference back() noexcept
+	inline constexpr reference back() FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
-		::fast_io::fast_terminate();
+		::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr const_reference back() const noexcept
+	inline constexpr const_reference back() const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
-		::fast_io::fast_terminate();
+		::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
@@ -448,18 +454,18 @@ public:
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr reference front() noexcept
+	inline constexpr reference front() FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
-		::fast_io::fast_terminate();
+		::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
 #elif __has_cpp_attribute(msvc::forceinline)
 	[[msvc::forceinline]]
 #endif
-	inline constexpr const_reference front() const noexcept
+	inline constexpr const_reference front() const FAST_IO_HERBCEPTIONS_THROWS_IF(throwing_violations)
 	{
-		::fast_io::fast_terminate();
+		::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
 	}
 #if __has_cpp_attribute(__gnu__::__always_inline__)
 	[[__gnu__::__always_inline__]]
@@ -481,15 +487,17 @@ public:
 	}
 };
 
-template <typename T, ::std::size_t N>
-inline constexpr void swap(::fast_io::containers::array<T, N> &a, ::fast_io::containers::array<T, N> &b) noexcept(noexcept(a.swap(b)))
+template <typename T, ::std::size_t N, ::fast_io::allocator_adapter_flags flags>
+inline constexpr void swap(::fast_io::containers::array<T, N, flags> &a, ::fast_io::containers::array<T, N, flags> &b)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::std::declval<::fast_io::containers::array<T, N, flags> &>().swap(::std::declval<::fast_io::containers::array<T, N, flags> &>()))
 {
 	a.swap(b);
 }
 
-template <typename T, ::std::size_t N1, ::std::size_t N2>
-	requires ::std::equality_comparable<T>
-inline constexpr bool operator==(::fast_io::containers::array<T, N1> const &a, ::fast_io::containers::array<T, N2> const &b)
+template <typename T, ::std::size_t N1, ::std::size_t N2, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+	requires(::std::equality_comparable<T>)
+inline constexpr bool operator==(::fast_io::containers::array<T, N1, f1> const &a, ::fast_io::containers::array<T, N2, f2> const &b)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::declval<T const &>() == ::std::declval<T const &>()))
 {
 	if constexpr (N1 == N2)
 	{
@@ -499,7 +507,7 @@ inline constexpr bool operator==(::fast_io::containers::array<T, N1> const &a, :
 		}
 		else
 		{
-			return ::std::equal(a.data(), a.data() + N1, b.data());
+			return ::fast_io::freestanding::equal(a.data(), a.data() + N1, b.data(), b.data() + N2);
 		}
 	}
 	else
@@ -510,9 +518,10 @@ inline constexpr bool operator==(::fast_io::containers::array<T, N1> const &a, :
 
 #if __cpp_impl_three_way_comparison >= 201907L
 
-template <typename T, ::std::size_t N1, ::std::size_t N2>
-	requires ::std::three_way_comparable<T>
-inline constexpr auto operator<=>(::fast_io::containers::array<T, N1> const &a, ::fast_io::containers::array<T, N2> const &b)
+template <typename T, ::std::size_t N1, ::std::size_t N2, ::fast_io::allocator_adapter_flags f1, ::fast_io::allocator_adapter_flags f2>
+	requires(::std::three_way_comparable<T>)
+inline constexpr auto operator<=>(::fast_io::containers::array<T, N1, f1> const &a, ::fast_io::containers::array<T, N2, f2> const &b)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!noexcept(::std::compare_three_way{}(::std::declval<T const &>(), ::std::declval<T const &>())))
 {
 	return ::fast_io::freestanding::lexicographical_compare_three_way(a.data(), a.data() + N1, b.data(), b.data() + N2, ::std::compare_three_way{});
 }

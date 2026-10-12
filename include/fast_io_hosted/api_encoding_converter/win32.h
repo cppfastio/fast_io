@@ -8,7 +8,7 @@ namespace details
 template <typename allocator_type, ::std::integral char_type, typename Func>
 	requires(sizeof(char_type) != sizeof(char16_t))
 inline auto nt_api_common_code_cvt_impl(char_type const *filename_c_str, ::std::size_t filename_c_str_len,
-										Func callback)
+										Func callback) FAST_IO_HERBCEPTIONS_THROWS
 {
 	basic_nt_api_encoding_converter<allocator_type> converter(filename_c_str, filename_c_str_len);
 	if constexpr (::fast_io::details::api_common_has_size_overload<char16_t, Func>)
@@ -25,7 +25,7 @@ inline auto nt_api_common_code_cvt_impl(char_type const *filename_c_str, ::std::
 
 template <typename allocator_type = typename nt_api_encoding_converter::allocator_type, typename T, typename Func>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline auto nt_api_common(T const &t, Func callback)
+inline auto nt_api_common(T const &t, Func callback) FAST_IO_HERBCEPTIONS_THROWS
 {
 	using char16_const_may_alias_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -116,14 +116,14 @@ inline auto nt_api_common(T const &t, Func callback)
 
 template <typename allocator_type = typename win32_api_encoding_converter::allocator_type, typename T, typename Func>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline auto win32_api_common_9xa(T const &t, Func callback)
+inline auto win32_api_common_9xa(T const &t, Func callback) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return posix_api_common<allocator_type>(t, callback);
 }
 
 template <typename allocator_type = typename win32_api_encoding_converter::allocator_type, typename T, typename Func>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline auto win32_api_common(T const &t, Func callback)
+inline auto win32_api_common(T const &t, Func callback) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (::fast_io::win32_family::native == win32_family::ansi_9x)
 	{
@@ -138,7 +138,7 @@ inline auto win32_api_common(T const &t, Func callback)
 template <win32_family family, typename allocator_type = typename win32_api_encoding_converter::allocator_type,
 		  typename T, typename Func>
 	requires(::fast_io::constructible_to_os_c_str<T>)
-inline auto win32_family_api_common(T const &t, Func callback)
+inline auto win32_family_api_common(T const &t, Func callback) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (family == win32_family::ansi_9x)
 	{

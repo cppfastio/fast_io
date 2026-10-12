@@ -120,7 +120,7 @@ void _start(struct stivale2_struct *stivale2_struct) noexcept
 	fast_io::limine::u8kernel_console console{__builtin_bit_cast(function_ptr, term.term_write)};
 
 	auto &epoch{stivale2_get<stivale2_struct_tag_epoch>(stivale2_struct, STIVALE2_STRUCT_TAG_EPOCH_ID)};
-	fast_io::unix_timestamp tsp{static_cast<std::int_least64_t>(epoch.epoch)};
+	fast_io::posix_statx_timestamp64 tsp{static_cast<std::int_least64_t>(epoch.epoch)};
 	println(console, u8"Hello fast_io Kernel: stivale2_struct address:", stivale2_struct,
 			u8"\n"
 			u8"Unix Timestamp:",

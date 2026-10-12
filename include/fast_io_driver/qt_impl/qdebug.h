@@ -49,9 +49,9 @@ inline ::fast_io::u32qt_qdebug u32qtdbg(QDebug qdbg)
 namespace details
 {
 
-inline void qtdbg_write_impl(QDebug &qdb, char const *first, char const *last)
+inline void qtdbg_write_impl(QDebug &qdb, char const *first, ::std::size_t count)
 {
-	qdb << QByteArrayView(first, last);
+	qdb << QByteArrayView(first, count);
 }
 
 inline void qtdbg_scatter_write_impl(QDebug &qdb, io_scatter_t const *scatters, ::std::size_t n)
@@ -66,10 +66,9 @@ inline void qtdbg_scatter_write_impl(QDebug &qdb, io_scatter_t const *scatters, 
 } // namespace details
 
 template <::std::integral char_type>
-inline void write(basic_qt_qdebug<char_type> qdbg, char_type const *first, char_type const *last)
+inline void write(basic_qt_qdebug<char_type> qdbg, char_type const *first, ::std::size_t count)
 {
-	::fast_io::details::qtdbg_write_impl(qdbg.pqdbg, reinterpret_cast<char const *>(first),
-										 reinterpret_cast<char const *>(last));
+	::fast_io::details::qtdbg_write_impl(qdbg.pqdbg, reinterpret_cast<char const *>(first), count * sizeof(char_type));
 }
 
 template <::std::integral char_type>

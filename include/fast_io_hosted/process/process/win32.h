@@ -40,7 +40,7 @@ inline void win32_wait_and_close_user_process_or_thread(void *handle) noexcept(!
 	{
 		return;
 	}
-	
+
 	auto status{win32_wait_user_process_or_thread(handle)};
 	auto const last_error{::fast_io::win32::GetLastError()};
 
@@ -67,6 +67,7 @@ close_win32_user_process_information_and_wait(win32_user_process_information hnt
 }
 
 inline void win32_duplicate_object_std(void *parent_process, void *&standard_io_handle, void *process_handle)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (standard_io_handle == nullptr) [[unlikely]]
 	{
@@ -88,6 +89,7 @@ template <win32_family family>
 inline win32_user_process_information win32_winnt_process_create_from_handle_impl(void *__restrict fhandle, win32_process_char_type<family> const *args,
 																				  win32_process_char_type<family> const *envs,
 																				  win32_process_io const &__restrict processio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool is_nt{family == win32_family::wide_nt};
 	if constexpr (is_nt)
@@ -475,6 +477,7 @@ inline win32_user_process_information win32_9xa_win9x_process_create_from_filepa
 																						char const *envs,
 																						win32_process_io const &__restrict processio,
 																						process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// there are no psapi.dll on windows 9x
 	::fast_io::win32::startupinfoa si{};
@@ -603,6 +606,7 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 	process_mode mode{};
 
 	inline win32_user_process_information operator()(family_char_type const *filename, ::std::size_t filename_c_str_len)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (directory_handle == nullptr) // absoluated path
 		{
@@ -627,7 +631,7 @@ struct win32_9xa_win9x_create_process_at_fs_dirent
 
 			// check path handle
 			::fast_io::win32::details::check_win32_9xa_dir_is_valid(*directory_handle);
-			auto str{::fast_io::win32::details::concat_tlc_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(reinterpret_cast<char8_t_const_may_alias_ptr>(filename), filename_c_str_len))};
+			auto str{::fast_io::win32::details::concat_win32_9xa_dir_handle_path_str(directory_handle->path, u8"\\", ::fast_io::mnp::os_c_str_with_known_size(reinterpret_cast<char8_t_const_may_alias_ptr>(filename), filename_c_str_len))};
 
 			return win32_9xa_win9x_process_create_from_filepath_impl(reinterpret_cast<char const *>(str.c_str()), args_p->get(), envs_p->get(), *processio_p, mode);
 		}
@@ -638,6 +642,7 @@ template <win32_family family, bool is_first, typename path_type>
 inline win32_user_process_information win32_winnt_create_process_overloads(nt_at_entry entry, path_type const &filename,
 																		   basic_win32_process_args<family, is_first> const &args, basic_win32_process_envs<family> const &envs,
 																		   win32_process_io const &processio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	bool const follow{(mode & process_mode::follow) == process_mode::follow};
 	open_mode curr_open_mode{open_mode::in | open_mode::excl};
@@ -655,6 +660,7 @@ template <typename path_type>
 inline win32_user_process_information win32_9xa_win9x_create_process_overloads(win32_9xa_at_entry entry, path_type const &filename,
 																			   win32_process_args_9xa const &args, win32_process_envs_9xa const &envs,
 																			   win32_process_io const &processio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// win9x no symlink
 
@@ -671,6 +677,7 @@ template <win32_family family, bool is_first, typename path_type>
 inline win32_user_process_information win32_winnt_create_process_overloads(path_type const &filename, basic_win32_process_args<family, is_first> const &args,
 																		   basic_win32_process_envs<family> const &envs,
 																		   win32_process_io const &processio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	bool const follow{(mode & process_mode::follow) == process_mode::follow};
 	open_mode curr_open_mode{open_mode::in | open_mode::excl};
@@ -687,6 +694,7 @@ template <typename path_type>
 inline win32_user_process_information win32_9xa_win9x_create_process_overloads(path_type const &filename, win32_process_args_9xa const &args,
 																			   win32_process_envs_9xa const &envs,
 																			   win32_process_io const &processio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// win9x no symlink
 
@@ -703,6 +711,7 @@ template <win32_family family, bool is_first>
 inline win32_user_process_information win32_winnt_create_process_overloads(::fast_io::nt_fs_dirent const &ent, basic_win32_process_args<family, is_first> const &args,
 																		   basic_win32_process_envs<family> const &envs,
 																		   win32_process_io const &processio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	bool const follow{(mode & process_mode::follow) == process_mode::follow};
 	open_mode curr_open_mode{open_mode::in | open_mode::excl};
@@ -717,6 +726,7 @@ inline win32_user_process_information win32_winnt_create_process_overloads(::fas
 
 inline win32_user_process_information win32_9xa_win9x_create_process_overloads(::fast_io::win32_9xa_fs_dirent const &ent, win32_process_args_9xa const &args,
 																			   win32_process_envs_9xa const &envs, win32_process_io const &processio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// win9x no symlink
 
@@ -775,7 +785,8 @@ inline constexpr int wait_status_to_int(win32_wait_status waits) noexcept
 }
 
 template <win32_family family, bool throw_eh = true>
-inline win32_wait_status wait(win32_family_process_observer<family> ppob) noexcept(!throw_eh)
+inline win32_wait_status wait(win32_family_process_observer<family> ppob)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(throw_eh)
 {
 	if (ppob.hnt_user_process_info.hprocess == nullptr) [[unlikely]]
 	{
@@ -807,7 +818,14 @@ inline win32_wait_status wait(win32_family_process_observer<family> ppob) noexce
 	::std::uint_least32_t exit_code{};
 	if (!::fast_io::win32::GetExitCodeProcess(ppob.hnt_user_process_info.hprocess, __builtin_addressof(exit_code)))
 	{
-		throw_win32_error();
+		if constexpr (throw_eh)
+		{
+			throw_win32_error();
+		}
+		else
+		{
+			return {static_cast<::std::uint_least32_t>(-1)};
+		}
 	}
 
 
@@ -816,6 +834,7 @@ inline win32_wait_status wait(win32_family_process_observer<family> ppob) noexce
 
 template <win32_family family>
 inline void kill(win32_family_process_observer<family> ppob, win32_wait_status exit_code)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!::fast_io::win32::TerminateProcess(ppob.hnt_user_process_info.hprocess, exit_code.wait_loc)) [[unlikely]]
 	{
@@ -829,7 +848,8 @@ struct win32_process_id
 };
 
 template <win32_family family>
-inline win32_process_id get_process_id(win32_family_process_observer<family> ppob) noexcept
+inline win32_process_id get_process_id(win32_family_process_observer<family> ppob)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto pid{::fast_io::win32::GetProcessId(ppob.native_handle().hprocess)};
 	if (pid == 0) [[unlikely]]
@@ -855,6 +875,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, basic_win32_process_args<family, false> const &args = {},
 										 basic_win32_process_envs<family> const &envs = {}, win32_process_io const &processio = {}, process_mode mode = {})
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 			  win32::details::win32_winnt_create_process_overloads<family>(nate, filename, args, envs, processio, mode)}
 	{
@@ -863,6 +884,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit win32_family_process(win32_9xa_at_entry nate, path_type const &filename, basic_win32_process_args<family, false> const &args = {},
 										 basic_win32_process_envs<family> const &envs = {}, win32_process_io const &processio = {}, process_mode mode = {})
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 			  win32::details::win32_9xa_win9x_create_process_overloads(nate, filename, args, envs, processio, mode)}
 	{
@@ -871,6 +893,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit win32_family_process(path_type const &filename, basic_win32_process_args<family, false> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = {})
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 #if defined(_WIN32_WINDOWS)
 			  win32::details::win32_9xa_win9x_create_process_overloads(filename, args, envs, processio, mode)
@@ -883,6 +906,7 @@ public:
 
 	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, basic_win32_process_args<family, false> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = {})
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 			  win32::details::win32_winnt_create_process_overloads<family>(ent, args, envs, processio, mode)}
 	{
@@ -890,6 +914,7 @@ public:
 
 	inline explicit win32_family_process(::fast_io::win32_9xa_fs_dirent ent, basic_win32_process_args<family, false> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = {})
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 			  win32::details::win32_9xa_win9x_create_process_overloads(ent, args, envs, processio, mode)}
 	{
@@ -898,6 +923,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit win32_family_process(nt_at_entry nate, path_type const &filename, ::fast_io::args_with_argv0_t, basic_win32_process_args<family, true> const &args = {},
 										 basic_win32_process_envs<family> const &envs = {}, win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 			  win32::details::win32_winnt_create_process_overloads<family>(nate, filename, args, envs, processio, mode)}
 	{
@@ -906,6 +932,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit win32_family_process(win32_9xa_at_entry nate, path_type const &filename, ::fast_io::args_with_argv0_t, basic_win32_process_args<family, true> const &args = {},
 										 basic_win32_process_envs<family> const &envs = {}, win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 			  win32::details::win32_9xa_win9x_create_process_overloads(nate, filename, args, envs, processio, mode)}
 	{
@@ -914,6 +941,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline explicit win32_family_process(path_type const &filename, ::fast_io::args_with_argv0_t, basic_win32_process_args<family, true> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 #if defined(_WIN32_WINDOWS)
 			  win32::details::win32_9xa_win9x_create_process_overloads(filename, args, envs, processio, mode)
@@ -926,6 +954,7 @@ public:
 
 	inline explicit win32_family_process(::fast_io::nt_fs_dirent ent, ::fast_io::args_with_argv0_t, basic_win32_process_args<family, true> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 			  win32::details::win32_winnt_create_process_overloads<family>(ent, args, envs, processio, mode)}
 	{
@@ -933,6 +962,7 @@ public:
 
 	inline explicit win32_family_process(::fast_io::win32_9xa_fs_dirent ent, ::fast_io::args_with_argv0_t, basic_win32_process_args<family, true> const &args = {}, basic_win32_process_envs<family> const &envs = {},
 										 win32_process_io const &processio = {}, process_mode mode = process_mode::argv0_no_path_append)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: win32_family_process_observer<family>{
 			  win32::details::win32_9xa_win9x_create_process_overloads(ent, args, envs, processio, mode)}
 	{

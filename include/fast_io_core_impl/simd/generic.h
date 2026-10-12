@@ -67,7 +67,7 @@ struct
 		return value[nm1];
 	}
 
-	inline static constexpr bool empty() noexcept
+	inline static constexpr bool is_empty() noexcept
 	{
 		return !N;
 	}
@@ -167,11 +167,7 @@ struct
 		}
 		else
 		{
-#if __cpp_if_consteval >= 202106L
-			if !consteval
-#else
-			if (!__builtin_is_constant_evaluated())
-#endif
+			FAST_IO_IF_NOT_CONSTEVAL
 			{
 #if (defined(__x86_64__) || defined(_M_AMD64) || defined(__i386__) || defined(_M_IX86))
 				if constexpr (sizeof(vec_type) == 16 && ::fast_io::details::cpu_flags::sse2_supported)

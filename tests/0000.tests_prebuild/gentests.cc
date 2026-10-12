@@ -88,7 +88,7 @@ inline void parse_prop_files(fast_io::native_file_loader &&file, file_property_t
 
 	fast_io::u8ibuffer_view u8fv{reinterpret_cast<char8_t *>(file.begin()), reinterpret_cast<char8_t *>(file.end())};
 	std::map<std::u8string, std::u8string> *curr_entry{};
-	for (std::u8string line; scan<true>(u8fv, fast_io::mnp::line_get<char8_t>(line));)
+	for (std::u8string line; scan_some(u8fv, fast_io::mnp::line_get<char8_t>(line));)
 	{
 		std::u8string_view linevw{line};
 		linevw = linevw.substr(std::ranges::find_if_not(linevw, fast_io::char_category::is_c_space<char8_t>) - linevw.begin());

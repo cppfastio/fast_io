@@ -13,10 +13,10 @@ int main()
 {
 	fast_io::vector<int> container{1, 2, 3};
 	print_info("Before clear: ", container);
-	if (!(!container.empty())) ::fast_io::fast_terminate();
+	if (!(!container.is_empty())) ::fast_io::fast_terminate();
 	if (!(container.size() == 3)) ::fast_io::fast_terminate();
 	container.clear();
 	print_info("After clear: ", container);
-	if (!(container.empty())) ::fast_io::fast_terminate();
+	if (!(container.is_empty())) ::fast_io::fast_terminate();
 	if (!(container.size() == 0)) ::fast_io::fast_terminate();
 }

@@ -88,6 +88,7 @@ inline constexpr nt_open_mode calculate_nt_delete_flag(nt_at_flags flags) noexce
 
 template <bool zw>
 inline void nt_unlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, nt_at_flags flags, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{calculate_nt_delete_flag(flags)})};
@@ -103,12 +104,13 @@ inline void nt_unlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 
 	if (status) [[unlikely]]
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 }
 
 template <bool zw>
 inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	nt_open_mode m_dir_mode{
 		.DesiredAccess = 0x00100000 | 0x0001, // SYNCHRONIZE | FILE_LIST_DIRECTORY
@@ -127,12 +129,13 @@ inline void nt_mkdirat_impl(void *dirhd, char16_t const *path_c_str, ::std::size
 
 	if (status)
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 }
 
 template <bool zw>
 inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, access_how mode, nt_at_flags flags, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	switch (mode)
 	{
@@ -145,7 +148,7 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	case ::fast_io::access_how::r_ok:
 		break;
 	default:
-		throw_nt_error(0xC0000003);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000003);
 	}
 
 	nt_open_mode md{
@@ -182,12 +185,12 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 
 		if (status) [[unlikely]]
 		{
-			throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 
 		if ((fbi.FileAttributes & 0x1) == 0x1) // READ_ONLY
 		{
-			throw_nt_error(0xC000001E); // no access
+			::fast_io::herbceptions::throws_nt_errc_with_value(0xC000001E); // no access
 		}
 		return;
 	}
@@ -200,6 +203,7 @@ inline void nt_faccessat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 
 template <bool zw>
 inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, perms pm, nt_at_flags flags, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x00000100 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
@@ -226,7 +230,7 @@ inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 
 	if (status) [[unlikely]]
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 
 	if ((pm & perms::owner_write) == perms::none)
@@ -251,13 +255,14 @@ inline void nt_fchmodat_impl(void *dirhd, char16_t const *path_c_str, ::std::siz
 
 	if (status) [[unlikely]]
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 }
 
 template <bool zw>
 [[noreturn]] inline void nt_fchownat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size,
 										  [[maybe_unused]] ::std::uintmax_t owner, [[maybe_unused]] ::std::uintmax_t group, nt_at_flags flags, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
@@ -277,11 +282,12 @@ template <bool zw>
 
 	// Windows does not use POSIX user group system. stub it and it is perfectly fine.
 	// But nt_fchownat, zw_fchownat will not be provided since they do not exist.
-	throw_nt_error(0xC0000002);
+	::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000002);
 }
 
 template <bool zw>
 inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, nt_at_flags flags, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080, // SYNCHRONIZE | FILE_READ_ATTRIBUTES
@@ -302,8 +308,9 @@ inline posix_file_status nt_fstatat_impl(void *dirhd, char16_t const *path_c_str
 }
 
 template <bool zw>
-inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, unix_timestamp_option creation_time,
-							  unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time, nt_at_flags flags, bool kernel)
+inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, statx_timestamp_option creation_time,
+							  statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time, nt_at_flags flags, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x00000100 | 0x0080, // SYNCHRONIZE | FILE_WRITE_ATTRIBUTES | FILE_READ_ATTRIBUTES
@@ -342,15 +349,11 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 		current_time = (static_cast<::std::uint_least64_t>(ftm.dwHighDateTime) << 32u) | ftm.dwLowDateTime;
 	}
 
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 10000000ULL};
-
 	switch (creation_time.flags)
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		auto const win32_time{static_cast<::fast_io::win32_timestamp>(creation_time.timestamp)};
-		fbi.CreationTime = static_cast<::std::uint_least64_t>(win32_time.seconds) * 10000000ULL +
-						   win32_time.subseconds / mul_factor;
+		fbi.CreationTime = ::fast_io::posix_statx_timestamp64_to_ftu64(creation_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:
@@ -360,16 +363,14 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 		fbi.CreationTime = 0;
 		break;
 	default:
-		throw_nt_error(0xC0000003);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000003);
 	}
 
 	switch (last_access_time.flags)
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		auto const win32_time{static_cast<::fast_io::win32_timestamp>(last_access_time.timestamp)};
-		fbi.LastAccessTime = static_cast<::std::uint_least64_t>(win32_time.seconds) * 10000000ULL +
-							 win32_time.subseconds / mul_factor;
+		fbi.LastAccessTime = ::fast_io::posix_statx_timestamp64_to_ftu64(last_access_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:
@@ -379,16 +380,14 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 		fbi.LastAccessTime = 0;
 		break;
 	default:
-		throw_nt_error(0xC0000003);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000003);
 	}
 
 	switch (last_modification_time.flags)
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		auto const win32_time{static_cast<::fast_io::win32_timestamp>(last_modification_time.timestamp)};
-		fbi.LastWriteTime = static_cast<::std::uint_least64_t>(win32_time.seconds) * 10000000ULL +
-							win32_time.subseconds / mul_factor;
+		fbi.LastWriteTime = ::fast_io::posix_statx_timestamp64_to_ftu64(last_modification_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:
@@ -398,7 +397,7 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 		fbi.LastWriteTime = 0;
 		break;
 	default:
-		throw_nt_error(0xC0000003);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000003);
 	}
 
 	// If this is set to 0 in a FILE_BASIC_INFO structure passed to func then none of the attributes are changed.
@@ -412,7 +411,7 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 
 	if (status) [[unlikely]]
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 }
 
@@ -460,6 +459,7 @@ template <bool zw>
 inline void nt_symlinkat_impl([[maybe_unused]] char16_t const *oldpath_c_str, [[maybe_unused]] ::std::size_t oldpath_size,
 							  [[maybe_unused]] void *newdirhd, [[maybe_unused]] char16_t const *newpath_c_str,
 							  [[maybe_unused]] ::std::size_t newpath_size, [[maybe_unused]] bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT > 0x0600
 
@@ -493,7 +493,7 @@ inline void nt_symlinkat_impl([[maybe_unused]] char16_t const *oldpath_c_str, [[
 			::std::size_t end{::fast_io::win32::nt::RtlGetFullPathName_U(oldpath_c_str, 32767 * sizeof(char16_t), buf, nullptr)};
 			if (end == 0) [[unlikely]]
 			{
-				throw_nt_error(0xC0000004);
+				::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000004);
 			}
 
 			is_root = true;
@@ -555,7 +555,7 @@ inline void nt_symlinkat_impl([[maybe_unused]] char16_t const *oldpath_c_str, [[
 	{
 		if (status != 0xC0000034) [[unlikely]]
 		{
-			throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 	}
 	else
@@ -575,7 +575,7 @@ inline void nt_symlinkat_impl([[maybe_unused]] char16_t const *oldpath_c_str, [[
 																	 ::fast_io::win32::nt::file_information_class::FileBasicInformation);
 		if (status) [[unlikely]]
 		{
-			throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 
 		check_file.close();
@@ -655,7 +655,7 @@ inline void nt_symlinkat_impl([[maybe_unused]] char16_t const *oldpath_c_str, [[
 		::fast_io::win32::nt::file_disposition_information DispInfo{1};
 		::fast_io::win32::nt::nt_set_information_file<zw>(new_file.native_handle(), __builtin_addressof(isb), __builtin_addressof(DispInfo),
 														  static_cast<::std::uint_least32_t>(sizeof(DispInfo)), ::fast_io::win32::nt::file_information_class::FileDispositionInformation);
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 #else
 #if defined(FAST_IO_USE_DJGPP_SYMLINK)
@@ -671,9 +671,9 @@ inline void nt_symlinkat_impl([[maybe_unused]] char16_t const *oldpath_c_str, [[
 													 ::fast_io::mnp::code_cvt(::fast_io::mnp::strvw(oldpath_c_str, oldpath_c_str + oldpath_size)),
 													 u8"\nThis is just a text to force symlink file to be 510 bytes long. Do not delete it nor spaces following it.");
 
-	::fast_io::operations::write_all(new_file, buffer, buffer + 510);
+	::fast_io::operations::write_all(new_file, buffer, 510);
 #else
-	throw_nt_error(0xC0000002);
+	::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000002);
 #endif
 #endif
 }
@@ -681,6 +681,7 @@ inline void nt_symlinkat_impl([[maybe_unused]] char16_t const *oldpath_c_str, [[
 template <bool zw>
 inline void nt_renameat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 							 void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr nt_open_mode md{
 		.DesiredAccess = 0x00100000 | 0x0080 | 0x00010000, // SYNCHRONIZE | FILE_READ_ATTRIBUTES | DELETE
@@ -694,7 +695,7 @@ inline void nt_renameat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::st
 
 	nt_call_determine_kernel_callback(
 		newdirhd, newpath_c_str, newpath_size, kernel,
-		[&](void *directory_hd, win32::nt::unicode_string const *ustr) {
+		[&](void *directory_hd, win32::nt::unicode_string const *ustr) FAST_IO_HERBCEPTIONS_THROWS {
 			char16_t const *pth_cstr{ustr->Buffer};
 			::std::uint_least32_t pth_size2{ustr->Length};
 			::fast_io::details::local_operator_new_array_ptr<char> buffer(sizeof(::fast_io::win32::nt::file_rename_information) + pth_size2 + sizeof(char16_t));
@@ -717,7 +718,7 @@ inline void nt_renameat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::st
 				static_cast<::std::uint_least32_t>(sizeof(::fast_io::win32::nt::file_rename_information) + pth_size2 + sizeof(char16_t)), file_information_class::FileRenameInformation)};
 			if (status) [[unlikely]]
 			{
-				throw_nt_error(status);
+				::fast_io::herbceptions::throws_nt_errc_with_value(status);
 			}
 		});
 }
@@ -740,6 +741,7 @@ inline constexpr nt_open_mode calculate_nt_link_flag(nt_at_flags flags) noexcept
 template <bool zw>
 inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std::size_t oldpath_size, void *newdirhd,
 						   char16_t const *newpath_c_str, ::std::size_t newpath_size, nt_at_flags flags, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	nt_open_mode const md{calculate_nt_link_flag(flags)};
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> basic_file{};
@@ -758,7 +760,7 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 
 	nt_call_determine_kernel_callback(
 		newdirhd, newpath_c_str, newpath_size, kernel,
-		[&](void *directory_hd, win32::nt::unicode_string const *ustr) {
+		[&](void *directory_hd, win32::nt::unicode_string const *ustr) FAST_IO_HERBCEPTIONS_THROWS {
 			char16_t const *pth_cstr{ustr->Buffer};
 			::std::uint_least32_t pth_size2{ustr->Length};
 			::fast_io::details::local_operator_new_array_ptr<char> buffer(sizeof(::fast_io::win32::nt::file_link_information) + pth_size2 + sizeof(char16_t));
@@ -784,13 +786,14 @@ inline void nt_linkat_impl(void *olddirhd, char16_t const *oldpath_c_str, ::std:
 
 			if (status) [[unlikely]]
 			{
-				throw_nt_error(status);
+				::fast_io::herbceptions::throws_nt_errc_with_value(status);
 			}
 		});
 }
 
 template <bool zw, ::std::integral char_type>
 inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *dirhd, char16_t const *path_c_str, ::std::size_t path_size, bool kernel)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT > 0x0600
 	constexpr ::fast_io::win32::nt::details::nt_open_mode md{
@@ -823,7 +826,7 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 
 	if (status)
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 
 	// ::std::size_t const bytesReturned{isb.Information};
@@ -851,7 +854,7 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 #endif
 	else
 	{
-		throw_nt_error(0xC0000275u /*STATUS_NOT_A_REPARSE_POINT*/);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000275u /*STATUS_NOT_A_REPARSE_POINT*/);
 	}
 
 	return {};
@@ -868,7 +871,7 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 	::fast_io::basic_nt_family_file<(zw ? nt_family::zw : nt_family::nt), char> file{
 		nt_call_determine_kernel_callback(dirhd, path_c_str, path_size, kernel, nt_create_callback<zw>{md})};
 
-	throw_nt_error(0xC0000275u /*STATUS_NOT_A_REPARSE_POINT*/);
+	::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000275u /*STATUS_NOT_A_REPARSE_POINT*/);
 
 	return {};
 #endif
@@ -877,6 +880,7 @@ inline ::fast_io::details::basic_ct_string<char_type> nt_readlinkat_impl(void *d
 template <bool zw, ::fast_io::details::posix_api_22 dsp, typename... Args>
 inline auto nt22_api_dispatcher(void *olddirhd, char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 								void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_22::renameat)
 	{
@@ -891,6 +895,7 @@ inline auto nt22_api_dispatcher(void *olddirhd, char16_t const *oldpath_c_str, :
 template <bool zw, ::fast_io::details::posix_api_12 dsp, typename... Args>
 inline auto nt12_api_dispatcher(char16_t const *oldpath_c_str, ::std::size_t oldpath_size,
 								void *newdirhd, char16_t const *newpath_c_str, ::std::size_t newpath_size, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_12::symlinkat)
 	{
@@ -900,6 +905,7 @@ inline auto nt12_api_dispatcher(char16_t const *oldpath_c_str, ::std::size_t old
 
 template <bool zw, ::fast_io::details::posix_api_1x dsp, typename... Args>
 inline auto nt1x_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::std::size_t path_size, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 
 	if constexpr (dsp == ::fast_io::details::posix_api_1x::faccessat)
@@ -934,6 +940,7 @@ inline auto nt1x_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::
 
 template <bool zw, ::std::integral char_type, ::fast_io::details::posix_api_ct dsp, typename... Args>
 inline auto ntct_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::std::size_t path_size, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_ct::readlinkat)
 	{
@@ -943,9 +950,10 @@ inline auto ntct_api_dispatcher(void *dir_handle, char16_t const *path_c_str, ::
 
 template <nt_family family, ::fast_io::details::posix_api_1x dsp, typename path_type, typename... Args>
 inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return nt_api_common(
-		path, [&](char16_t const *path_c_str, ::std::size_t path_size) {
+		path, [&](char16_t const *path_c_str, ::std::size_t path_size) FAST_IO_HERBCEPTIONS_THROWS {
 			return nt1x_api_dispatcher<family == nt_family::zw, dsp>(dir_handle, path_c_str, path_size, args...);
 		});
 }
@@ -953,12 +961,13 @@ inline auto nt_deal_with1x(void *dir_handle, path_type const &path, Args... args
 template <nt_family family, ::fast_io::details::posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type, typename... Args>
 inline auto nt_deal_with12(old_path_type const &oldpath, void *newdirfd, new_path_type const &newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return nt_api_common(
 		oldpath,
-		[&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
+		[&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) FAST_IO_HERBCEPTIONS_THROWS {
 			return nt_api_common(
-				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
+				newpath, [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) FAST_IO_HERBCEPTIONS_THROWS {
 					return nt12_api_dispatcher<family == nt_family::zw, dsp>(oldpath_c_str, oldpath_size, newdirfd, newpath_c_str, newpath_size, args...);
 				});
 		});
@@ -966,11 +975,12 @@ inline auto nt_deal_with12(old_path_type const &oldpath, void *newdirfd, new_pat
 
 template <nt_family family, ::fast_io::details::posix_api_22 dsp, typename oldpath_type, typename newpath_type, typename... Args>
 inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *newdirhd, newpath_type const &newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return nt_api_common(oldpath,
-						 [&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) {
+						 [&](char16_t const *oldpath_c_str, ::std::size_t oldpath_size) FAST_IO_HERBCEPTIONS_THROWS {
 							 return nt_api_common(newpath,
-												  [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) {
+												  [&](char16_t const *newpath_c_str, ::std::size_t newpath_size) FAST_IO_HERBCEPTIONS_THROWS {
 													  return nt22_api_dispatcher<family == nt_family::zw, dsp>(olddirhd, oldpath_c_str, oldpath_size, newdirhd,
 																											   newpath_c_str, newpath_size, args...);
 												  });
@@ -979,9 +989,10 @@ inline auto nt_deal_with22(void *olddirhd, oldpath_type const &oldpath, void *ne
 
 template <nt_family family, ::std::integral char_type, ::fast_io::details::posix_api_ct dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
 inline auto nt_deal_withct(void *dir_handle, path_type const &path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return nt_api_common(
-		path, [&](char16_t const *path_c_str, ::std::size_t path_size) {
+		path, [&](char16_t const *path_c_str, ::std::size_t path_size) FAST_IO_HERBCEPTIONS_THROWS {
 			return ntct_api_dispatcher<family == nt_family::zw, char_type, dsp>(dir_handle, path_c_str, path_size, args...);
 		});
 }
@@ -992,30 +1003,35 @@ inline auto nt_deal_withct(void *dir_handle, path_type const &path, Args... args
 template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_nt_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_faccessat(io_kernel_t, nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, true);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_faccessat(io_kernel_t, nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, true);
 }
@@ -1023,30 +1039,35 @@ inline void zw_faccessat(io_kernel_t, nt_at_entry ent, path_type const &path, ac
 template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_nt_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_fchmodat(io_kernel_t, nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, true);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_fchmodat(io_kernel_t, nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, true);
 }
@@ -1054,30 +1075,35 @@ inline void zw_fchmodat(io_kernel_t, nt_at_entry ent, path_type const &path, per
 template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_nt_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_fchownat(io_kernel_t, nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, true);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_fchownat(io_kernel_t, nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, true);
 }
@@ -1085,71 +1111,81 @@ inline void zw_fchownat(io_kernel_t, nt_at_entry ent, path_type const &path, ::s
 template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline posix_file_status nt_family_nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::fstatat>(ent.handle, path, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status nt_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status zw_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fstatat>(ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status nt_fstatat(io_kernel_t, nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags, true);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status zw_fstatat(io_kernel_t, nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::fstatat>(ent.handle, path, flags, true);
 }
 
 template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
-inline void nt_family_nt_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-								   unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void nt_family_nt_utimensat(nt_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+								   statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 								   nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void nt_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void nt_utimensat(nt_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+						 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void zw_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void zw_utimensat(nt_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+						 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void nt_utimensat(io_kernel_t, nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void nt_utimensat(io_kernel_t, nt_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+						 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, true);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void zw_utimensat(io_kernel_t, nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-						 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void zw_utimensat(io_kernel_t, nt_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+						 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 						 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, true);
 }
@@ -1157,30 +1193,35 @@ inline void zw_utimensat(io_kernel_t, nt_at_entry ent, path_type const &path, un
 template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::mkdirat>(ent.handle, path, pm, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::mkdirat>(ent.handle, path, pm, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_mkdirat(io_kernel_t, nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm, true);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_mkdirat(io_kernel_t, nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::mkdirat>(ent.handle, path, pm, true);
 }
@@ -1188,30 +1229,35 @@ inline void zw_mkdirat(io_kernel_t, nt_at_entry ent, path_type &&path, perms pm 
 template <nt_family family, bool kernel, ::fast_io::constructible_to_os_c_str path_type>
 	requires(family == nt_family::nt || family == nt_family::zw)
 inline void nt_family_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<family, details::posix_api_1x::unlinkat>(ent.handle, path, flags, kernel);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::unlinkat>(ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::unlinkat>(ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void nt_unlinkat(io_kernel_t, nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::unlinkat>(ent.handle, path, flags, true);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void zw_unlinkat(io_kernel_t, nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::zw, details::posix_api_1x::unlinkat>(ent.handle, path, flags, true);
 }
@@ -1350,44 +1396,51 @@ using native_at_flags = nt_at_flags;
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_faccessat(nt_at_entry ent, path_type const &path, access_how mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::faccessat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchmodat(nt_at_entry ent, path_type const &path, perms mode, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchmodat>(ent.handle, path, mode, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchownat(nt_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fchownat>(ent.handle, path, owner, group, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status native_fstatat(nt_at_entry ent, path_type const &path, nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::fstatat>(ent.handle, path, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_utimensat(nt_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-							 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void native_utimensat(nt_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+							 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 							 nt_at_flags flags = nt_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::utimensat>(ent.handle, path, creation_time, last_access_time, last_modification_time, flags, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_mkdirat(nt_at_entry ent, path_type &&path, perms pm = static_cast<perms>(436))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, details::posix_api_1x::mkdirat>(ent.handle, path, pm, false);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_unlinkat(nt_at_entry ent, path_type &&path, nt_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::details::nt_deal_with1x<nt_family::nt, ::fast_io::details::posix_api_1x::unlinkat>(
 		ent.handle, path, flags, false);

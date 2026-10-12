@@ -138,6 +138,7 @@ namespace details
  */
 
 inline void portable_fd_path([[maybe_unused]] int fd, char *buf, ::std::size_t bufsz)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (buf == nullptr || bufsz == 0u) [[unlikely]]
 	{
@@ -272,6 +273,7 @@ inline void portable_fd_path([[maybe_unused]] int fd, char *buf, ::std::size_t b
 }
 
 inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator> get_tls_str_fd_path(int fd)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr auto fdcwd_val{
 #if defined(AT_FDCWD)
@@ -302,6 +304,7 @@ inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_
 }
 
 inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator> get_tls_str_fd_path_filename(int fd, char const *filename)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr auto fdcwd_val{
 #if defined(AT_FDCWD)
@@ -336,6 +339,7 @@ inline ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_
 }
 
 inline pid_t posix_fork()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 
 #if defined(__linux__) && defined(__NR_fork)
@@ -352,6 +356,7 @@ inline pid_t posix_fork()
 }
 
 inline pid_t posix_setsid()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_setsid)
 	pid_t pid{system_call<__NR_setsid, pid_t>()};
@@ -377,6 +382,7 @@ inline pid_t posix_setsid_noexcept() noexcept
 }
 
 inline posix_wait_status posix_waitpid(pid_t pid)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	posix_wait_status status;
 #if defined(__linux__) && defined(__NR_wait4)
@@ -416,7 +422,7 @@ inline int posix_execveat(int dirfd, char const *cstr, char const *const *args, 
 		flags |= AT_SYMLINK_NOFOLLOW;
 	}
 	return -(system_call<__NR_execveat, int>(dirfd, cstr, args, envp, flags));
-	
+
 #elif defined(__APPLE__) || defined(__DARWIN_C_LEVEL)
 	// macOS / Darwin: no public execveat/fexecve
 	// Fallback: emulate execveat(dirfd, path, ...) using execve() and F_GETPATH.
@@ -564,13 +570,23 @@ struct io_redirector
 			// it's actually OK to go without closing pipe ends since fast_io pipes are all CLOEXEC
 			sys_close(d.pipe_fds[is_stdin ? 1 : 0]);
 		}
-		else if (d.dev_null)
-		{
-			rc = sys_dup2_nothrow(devnull(), target_fd);
-		}
 		else
 		{
-			rc = sys_dup2_nothrow(d.fd, target_fd);
+			int todupfd{-1};
+			if (d.dev_null)
+			{
+				FAST_IO_HERBCEPTIONS_TRY
+				{
+					todupfd = devnull();
+				}
+				FAST_IO_HERBCEPTIONS_CATCH_ALL
+				{}
+			}
+			else
+			{
+				todupfd = d.fd;
+			}
+			rc = sys_dup2_nothrow(todupfd, target_fd);
 		}
 		if (rc.error) [[unlikely]]
 		{
@@ -597,15 +613,16 @@ struct io_redirector
 #endif
 
 	inline int devnull()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (fd_devnull != -1)
 		{
 			return fd_devnull;
 		}
 #ifdef O_CLOEXEC
-		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
+		fd_devnull = my_posix_open(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
 #else
-		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
+		fd_devnull = my_posix_open(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
 		sys_fcntl(fd_devnull, F_SETFD, FD_CLOEXEC);
 #endif
 		return fd_devnull;
@@ -613,6 +630,7 @@ struct io_redirector
 };
 
 inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	posix_pipe error_pipe;
 	pid_t pid = posix_fork();
@@ -622,7 +640,7 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 		// subprocess
 		if ((mode & process_mode::new_session) == process_mode::new_session)
 		{
-			posix_setsid();
+			(void)posix_setsid();
 		}
 
 		error_pipe.in().close();
@@ -645,7 +663,7 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 		// execve only return on error, so t_errno always contains an error code
 		// send error code back to parent process
 		auto err_buffer = reinterpret_cast<char const *>(&t_errno);
-		::fast_io::operations::write_all(error_pipe.out(), err_buffer, err_buffer + sizeof(t_errno));
+		::fast_io::operations::write_all(error_pipe.out(), err_buffer, sizeof(t_errno));
 		// _Exit() won't destruct c++ objects, we must close it manually
 		error_pipe.out().close();
 		// special exit code 127 indicates error of exec
@@ -671,8 +689,7 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 	error_pipe.out().close();
 	int errno_from_subproc{};
 	auto err_buffer = reinterpret_cast<char *>(&errno_from_subproc);
-	auto err_buffer_end = err_buffer + sizeof(errno_from_subproc);
-	auto n = ::fast_io::operations::read_some(error_pipe.in(), err_buffer, err_buffer_end);
+	auto n = ::fast_io::operations::read_some(error_pipe.in(), err_buffer, sizeof(errno_from_subproc));
 	if (n == err_buffer)
 	{
 		return pid;
@@ -680,7 +697,7 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 	else
 	{
 		::fast_io::details::posix_waitpid_noexcept(pid);
-		if (n == err_buffer_end)
+		if (n == err_buffer + sizeof(errno_from_subproc))
 		{
 			throw_posix_error(errno_from_subproc);
 		}
@@ -694,12 +711,14 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 
 template <typename path_type>
 inline pid_t pipefork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
+	return ::fast_io::posix_api_common(csv, [&](char const *cstr) FAST_IO_HERBCEPTIONS_THROWS { return pipefork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
 }
 
 template <typename path_type>
 inline pid_t pipefork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(AT_FDCWD)
 	return pipefork_execveat_impl(AT_FDCWD, csv, args, envp, pio, mode);
@@ -729,11 +748,11 @@ struct fd_remapper
 			{
 				return;
 			}
-			sys_dup2(backup, original);
+			sys_dup2_nothrow(backup, original);
 			sys_close(backup);
 			if (setfd_needed)
 			{
-				sys_fcntl(newfd, F_SETFD, newfd_flag);
+				::fast_io::details::posix::fcntl(newfd, F_SETFD, newfd_flag);
 			}
 		}
 	};
@@ -755,6 +774,7 @@ struct fd_remapper
 
 	// fd in {0, 1, 2}
 	inline void map(int fd, posix_io_redirection const &io)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (!io)
 		{
@@ -763,36 +783,37 @@ struct fd_remapper
 		auto &m = fds[fd];
 		m.original = fd;
 		m.backup = sys_dup(m.original);
-		sys_fcntl(m.backup, F_SETFD, FD_CLOEXEC);
+		(void)sys_fcntl(m.backup, F_SETFD, FD_CLOEXEC);
 		bool const is_stdin{fd == 0};
 		if (io.pipe_fds) // fastio pipes are always with CLOEXEC
 		{
-			sys_dup2(io.pipe_fds[is_stdin ? 0 : 1], m.original);
+			(void)sys_dup2(io.pipe_fds[is_stdin ? 0 : 1], m.original);
 		}
 		else if (io.dev_null)
 		{
-			sys_dup2(devnull(), m.original);
+			(void)sys_dup2(devnull(), m.original);
 		}
 		else
 		{
 			m.newfd = io.fd;
 			m.newfd_flag = sys_fcntl(m.newfd, F_GETFD);
-			sys_fcntl(m.newfd, F_SETFD, m.newfd_flag | FD_CLOEXEC);
+			(void)sys_fcntl(m.newfd, F_SETFD, m.newfd_flag | FD_CLOEXEC);
 			m.setfd_needed = true;
-			sys_dup2(io.fd, m.original);
+			(void)sys_dup2(io.fd, m.original);
 		}
 	}
 
 	inline int devnull()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (fd_devnull != -1)
 		{
 			return fd_devnull;
 		}
 #ifdef O_CLOEXEC
-		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
+		fd_devnull = my_posix_open(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR | O_CLOEXEC, 0644);
 #else
-		fd_devnull = my_posix_open<true>(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
+		fd_devnull = my_posix_open(reinterpret_cast<char const *>(u8"/dev/null"), O_RDWR, 0644);
 		sys_fcntl(fd_devnull, F_SETFD, FD_CLOEXEC);
 #endif
 		return fd_devnull;
@@ -800,7 +821,8 @@ struct fd_remapper
 };
 
 // only used in vfork_execveat_common_impl()
-inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, unsigned volatile &t_errno, process_mode mode)
+inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char const *const *args, char const *const *envp, int volatile &t_errno, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// vfork can only be called through libc wrapper
 	pid = ::fast_io::posix::libc_vfork();
@@ -832,9 +854,10 @@ inline void vfork_and_execveat(pid_t &pid, int dirfd, char const *cstr, char con
 }
 
 inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	pid_t pid{};
-	unsigned volatile t_errno{}; // receive error from vfork subproc
+	int volatile t_errno{}; // receive error from vfork subproc
 	{
 		fd_remapper fm;
 		fm.map(0, pio.in);
@@ -845,7 +868,7 @@ inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const 
 
 	if (t_errno)
 	{
-		posix_waitpid(pid);
+		(void)posix_waitpid(pid);
 		throw_posix_error(t_errno);
 	}
 	return pid;
@@ -853,12 +876,14 @@ inline pid_t vfork_execveat_common_impl(int dirfd, char const *cstr, char const 
 
 template <typename path_type>
 inline pid_t vfork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::posix_api_common(csv, [&](char const *cstr) { return vfork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
+	return ::fast_io::posix_api_common(csv, [&](char const *cstr) FAST_IO_HERBCEPTIONS_THROWS { return vfork_execveat_common_impl(dirfd, cstr, args, envp, pio, mode); });
 }
 
 template <typename path_type>
 inline pid_t vfork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(AT_FDCWD)
 	return vfork_execveat_impl(AT_FDCWD, csv, args, envp, pio, mode);
@@ -869,6 +894,7 @@ inline pid_t vfork_execve_impl(path_type const &csv, char const *const *args, ch
 }
 
 inline pid_t fork_execveat_common_impl(int dirfd, char const *cstr, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if ((mode & process_mode::posix_vfork) == process_mode::posix_vfork)
 	{
@@ -882,6 +908,7 @@ inline pid_t fork_execveat_common_impl(int dirfd, char const *cstr, char const *
 
 template <typename path_type>
 inline pid_t fork_execveat_impl(int dirfd, path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if ((mode & process_mode::posix_vfork) == process_mode::posix_vfork)
 	{
@@ -895,6 +922,7 @@ inline pid_t fork_execveat_impl(int dirfd, path_type const &csv, char const *con
 
 template <typename path_type>
 inline pid_t fork_execve_impl(path_type const &csv, char const *const *args, char const *const *envp, posix_process_io const &pio, process_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if ((mode & process_mode::posix_vfork) == process_mode::posix_vfork)
 	{
@@ -949,6 +977,7 @@ inline constexpr void detach(posix_process_observer &ppob) noexcept
 }
 
 inline posix_wait_status wait(posix_process_observer &ppob)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	posix_wait_status status{details::posix_waitpid(ppob.pid)};
 	ppob.pid = -1;
@@ -956,6 +985,7 @@ inline posix_wait_status wait(posix_process_observer &ppob)
 }
 
 inline void kill(posix_process_observer ppob, posix_wait_status exit_code)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_kill)
 	system_call_throw_error(system_call<__NR_kill, int>(ppob.pid, exit_code.wait_loc));
@@ -991,9 +1021,11 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(posix_at_entry pate, path_type const &filename, posix_process_args const &args = {},
 						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_process_observer{
 			  ::fast_io::details::fork_execveat_impl(pate.fd, filename,
-													 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get_argv(),
+													 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv()
+																																	   : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get_argv(),
 													 envp.get_envs(), pio, mode)
 
 		  }
@@ -1003,6 +1035,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(path_type const &filename, posix_process_args const &args = {}, posix_process_envs const &envp = {},
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_process_observer{
 			  ::fast_io::details::fork_execve_impl(filename,
 												   (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{filename}.append(args).get_argv(),
@@ -1014,9 +1047,11 @@ public:
 
 	inline posix_process(::fast_io::posix_fs_dirent ent, posix_process_args const &args = {}, posix_process_envs const &envp = {},
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = {})
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_process_observer{
 			  ::fast_io::details::fork_execveat_common_impl(ent.fd, ent.filename,
-															(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get_argv(),
+															(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv()
+																																			  : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get_argv(),
 															envp.get_envs(), pio, mode)}
 	{
 	}
@@ -1024,9 +1059,11 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(posix_at_entry pate, path_type const &filename, ::fast_io::args_with_argv0_t, posix_process_args const &args = {},
 						 posix_process_envs const &envp = {}, posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = process_mode::argv0_no_path_append)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_process_observer{
 			  ::fast_io::details::fork_execveat_impl(pate.fd, filename,
-													 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get_argv(),
+													 (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv()
+																																	   : posix_process_args{details::get_tls_str_fd_path_filename(pate.fd, filename)}.append(args).get_argv(),
 													 envp.get_envs(), pio, mode)
 
 		  }
@@ -1036,6 +1073,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str path_type>
 	inline posix_process(path_type const &filename, ::fast_io::args_with_argv0_t, posix_process_args const &args = {}, posix_process_envs const &envp = {},
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = process_mode::argv0_no_path_append)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_process_observer{
 			  ::fast_io::details::fork_execve_impl(filename,
 												   (mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{filename}.append(args).get_argv(),
@@ -1047,9 +1085,11 @@ public:
 
 	inline posix_process(::fast_io::posix_fs_dirent ent, ::fast_io::args_with_argv0_t, posix_process_args const &args = {}, posix_process_envs const &envp = {},
 						 posix_process_io const &pio = {}, [[maybe_unused]] process_mode mode = process_mode::argv0_no_path_append)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_process_observer{
 			  ::fast_io::details::fork_execveat_common_impl(ent.fd, ent.filename,
-															(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv() : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get_argv(),
+															(mode & process_mode::argv0_no_path_append) == process_mode::argv0_no_path_append ? args.get_argv()
+																																			  : posix_process_args{details::get_tls_str_fd_path_filename(ent.fd, ent.filename)}.append(args).get_argv(),
 															envp.get_envs(), pio, mode)}
 	{
 	}

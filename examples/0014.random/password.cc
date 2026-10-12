@@ -17,9 +17,9 @@ int main(int argc, char **argv)
 	std::uniform_int_distribution<std::size_t> rlen(12, 20);
 	for (std::size_t i{}; i != n; ++i)
 	{
-		for (std::size_t j{}, s(rlen(eng)); j != s; ++j)
+		for (std::size_t j{}, s(::fast_io::random_generate(rlen, eng)); j != s; ++j)
 		{
-			char8_t ch(static_cast<char8_t>(ud(eng)));
+			char8_t ch(static_cast<char8_t>(::fast_io::random_generate(ud, eng)));
 			if (ch < 10u)
 			{
 				ch += u8'0';

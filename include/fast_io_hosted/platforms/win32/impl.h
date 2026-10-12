@@ -1,18 +1,17 @@
 ﻿#pragma once
 
-#include "win32_definitions.h"
-#include "apis.h"
-
-#if defined(_MSC_VER) && !defined(_WIN32_WINDOWS) && !defined(_KERNEL_MODE)
-#pragma comment(lib, "bcrypt.lib")
+#include "api/impl.h"
+#include "create.h"
+#include "io_observer.h"
+#include "readwrite.h"
+#include "seek.h"
+#if !defined(_KERNEL_MODE)
+#include "scatters.h"
 #endif
-
-#if defined(_MSC_VER) && !(!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x601) && !defined(_WIN32_WINDOWS) && !defined(_KERNEL_MODE)
-#pragma comment(lib, "psapi.lib")
-#endif
-
-#if defined(_MSC_VER) && !defined(__clang__)
-#include "msvc_linker.h"
-#endif
-
-#include "utils.h"
+#include "dir_9xa.h"
+#include "file.h"
+#include "status.h"
+#include "console.h"
+#include "pipe.h"
+#include "aliases.h"
+#include "stdhandle.h"

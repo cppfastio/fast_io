@@ -1,0 +1,13 @@
+[package]
+name = "dalek_bench"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+ed25519-dalek = "2"
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

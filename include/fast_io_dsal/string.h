@@ -71,6 +71,7 @@ using u32ostring_ref_fast_io_tlc = ::fast_io::containers::basic_ostring_ref_fast
 
 template <::std::integral char_type, typename... Args>
 constexpr inline ::fast_io::basic_string<char_type> basic_concat_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char_type, ::fast_io::basic_string<char_type>>(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char_type>, Args...>};
 	if constexpr (type_error)
@@ -86,6 +87,7 @@ constexpr inline ::fast_io::basic_string<char_type> basic_concat_fast_io(Args &&
 
 template <typename... Args>
 constexpr inline ::fast_io::string concat_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char, ::fast_io::string>(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>, Args...>};
 	if constexpr (type_error)
@@ -101,6 +103,7 @@ constexpr inline ::fast_io::string concat_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::wstring wconcat_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, wchar_t, ::fast_io::wstring>(::fast_io::io_print_forward<wchar_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>, Args...>};
 	if constexpr (type_error)
@@ -116,6 +119,7 @@ constexpr inline ::fast_io::wstring wconcat_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::u8string u8concat_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char8_t, ::fast_io::u8string>(::fast_io::io_print_forward<char8_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>, Args...>};
 	if constexpr (type_error)
@@ -131,6 +135,7 @@ constexpr inline ::fast_io::u8string u8concat_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::u16string u16concat_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char16_t, ::fast_io::u16string>(::fast_io::io_print_forward<char16_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
 	if constexpr (type_error)
@@ -146,6 +151,7 @@ constexpr inline ::fast_io::u16string u16concat_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::u32string u32concat_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char32_t, ::fast_io::u32string>(::fast_io::io_print_forward<char32_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
 	if constexpr (type_error)
@@ -161,6 +167,7 @@ constexpr inline ::fast_io::u32string u32concat_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::string concatln_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, char, ::fast_io::string>(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>, Args...>};
 	if constexpr (type_error)
@@ -176,6 +183,7 @@ constexpr inline ::fast_io::string concatln_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::wstring wconcatln_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, wchar_t, ::fast_io::wstring>(::fast_io::io_print_forward<wchar_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>, Args...>};
 	if constexpr (type_error)
@@ -191,6 +199,7 @@ constexpr inline ::fast_io::wstring wconcatln_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::u8string u8concatln_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, char8_t, ::fast_io::u8string>(::fast_io::io_print_forward<char8_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>, Args...>};
 	if constexpr (type_error)
@@ -206,6 +215,7 @@ constexpr inline ::fast_io::u8string u8concatln_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::u16string u16concatln_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, char16_t, ::fast_io::u16string>(::fast_io::io_print_forward<char16_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
 	if constexpr (type_error)
@@ -221,6 +231,7 @@ constexpr inline ::fast_io::u16string u16concatln_fast_io(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::u32string u32concatln_fast_io(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, char32_t, ::fast_io::u32string>(::fast_io::io_print_forward<char32_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
 	if constexpr (type_error)
@@ -239,6 +250,7 @@ namespace tlc
 
 template <::std::integral char_type, typename... Args>
 constexpr inline ::fast_io::tlc::basic_string<char_type> basic_concat_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char_type, ::fast_io::tlc::basic_string<char_type>>(::fast_io::io_print_forward<char_type>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char_type>, Args...>};
 	if constexpr (type_error)
@@ -254,6 +266,7 @@ constexpr inline ::fast_io::tlc::basic_string<char_type> basic_concat_fast_io_tl
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::string concat_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char, ::fast_io::tlc::string>(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>, Args...>};
 	if constexpr (type_error)
@@ -269,6 +282,7 @@ constexpr inline ::fast_io::tlc::string concat_fast_io_tlc(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::wstring wconcat_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, wchar_t, ::fast_io::tlc::wstring>(::fast_io::io_print_forward<wchar_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>, Args...>};
 	if constexpr (type_error)
@@ -284,6 +298,7 @@ constexpr inline ::fast_io::tlc::wstring wconcat_fast_io_tlc(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::u8string u8concat_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char8_t, ::fast_io::tlc::u8string>(::fast_io::io_print_forward<char8_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>, Args...>};
 	if constexpr (type_error)
@@ -299,6 +314,7 @@ constexpr inline ::fast_io::tlc::u8string u8concat_fast_io_tlc(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::u16string u16concat_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char16_t, ::fast_io::tlc::u16string>(::fast_io::io_print_forward<char16_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
 	if constexpr (type_error)
@@ -314,6 +330,7 @@ constexpr inline ::fast_io::tlc::u16string u16concat_fast_io_tlc(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::u32string u32concat_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<false, char32_t, ::fast_io::tlc::u32string>(::fast_io::io_print_forward<char32_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
 	if constexpr (type_error)
@@ -329,6 +346,7 @@ constexpr inline ::fast_io::tlc::u32string u32concat_fast_io_tlc(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::string concatln_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, char, ::fast_io::tlc::string>(::fast_io::io_print_forward<char>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>, Args...>};
 	if constexpr (type_error)
@@ -344,6 +362,7 @@ constexpr inline ::fast_io::tlc::string concatln_fast_io_tlc(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::wstring wconcatln_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, wchar_t, ::fast_io::tlc::wstring>(::fast_io::io_print_forward<wchar_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<wchar_t>, Args...>};
 	if constexpr (type_error)
@@ -359,6 +378,7 @@ constexpr inline ::fast_io::tlc::wstring wconcatln_fast_io_tlc(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::u8string u8concatln_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, char8_t, ::fast_io::tlc::u8string>(::fast_io::io_print_forward<char8_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char8_t>, Args...>};
 	if constexpr (type_error)
@@ -374,6 +394,7 @@ constexpr inline ::fast_io::tlc::u8string u8concatln_fast_io_tlc(Args &&...args)
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::u16string u16concatln_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, char16_t, ::fast_io::tlc::u16string>(::fast_io::io_print_forward<char16_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char16_t>, Args...>};
 	if constexpr (type_error)
@@ -389,6 +410,7 @@ constexpr inline ::fast_io::tlc::u16string u16concatln_fast_io_tlc(Args &&...arg
 
 template <typename... Args>
 constexpr inline ::fast_io::tlc::u32string u32concatln_fast_io_tlc(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::basic_general_concat<true, char32_t, ::fast_io::tlc::u32string>(::fast_io::io_print_forward<char32_t>(::fast_io::io_print_alias(args))...))
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char32_t>, Args...>};
 	if constexpr (type_error)

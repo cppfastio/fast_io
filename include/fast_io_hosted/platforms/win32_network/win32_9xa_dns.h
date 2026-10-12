@@ -172,6 +172,7 @@ inline constexpr ::fast_io::ip_address to_ip_address(win32_9xa_dns_iterator d) n
 namespace details
 {
 inline ::fast_io::win32::hostent *win32_9xa_gethostbyname_impl(char const *name)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::hostent *ret{::fast_io::win32::gethostbyname(name)};
 	if (ret == nullptr)
@@ -183,7 +184,7 @@ inline ::fast_io::win32::hostent *win32_9xa_gethostbyname_impl(char const *name)
 
 struct win32_9xa_dns_open_parameter
 {
-	inline auto operator()(char const *node_name_c_str)
+	inline auto operator()(char const *node_name_c_str) FAST_IO_HERBCEPTIONS_THROWS
 	{
 		return ::fast_io::details::win32_9xa_gethostbyname_impl(node_name_c_str);
 	}
@@ -191,7 +192,7 @@ struct win32_9xa_dns_open_parameter
 
 template <typename T>
 	requires ::fast_io::constructible_to_os_c_str<T>
-inline constexpr auto win32_9xa_dns_open_impl(T const &t)
+inline constexpr auto win32_9xa_dns_open_impl(T const &t) FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::posix_api_common(t, win32_9xa_dns_open_parameter{});
 }
@@ -216,7 +217,7 @@ public:
 
 	template <typename T>
 		requires ::fast_io::constructible_to_os_c_str<T>
-	inline explicit win32_9xa_dns_file(T const &t)
+	inline explicit win32_9xa_dns_file(T const &t) FAST_IO_HERBCEPTIONS_THROWS
 		: win32_9xa_dns_io_observer{::fast_io::details::win32_9xa_dns_open_impl(t)}
 	{
 	}

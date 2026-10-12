@@ -21,8 +21,10 @@ using ::fast_io::freestanding::is_zero_default_constructible;
 namespace tlc
 {
 using ::fast_io::tlc::vector;
-}
+using ::fast_io::tlc::zu_vector;
+} // namespace tlc
 
 using ::fast_io::vector;
+using ::fast_io::zu_vector;
 #endif
 } // namespace fast_io

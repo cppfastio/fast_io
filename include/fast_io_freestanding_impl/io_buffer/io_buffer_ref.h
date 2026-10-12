@@ -13,9 +13,41 @@ public:
 	using input_char_type = typename io_buffer_type::input_char_type;
 	using output_char_type = typename io_buffer_type::output_char_type;
 	using allocator_type = typename io_buffer_type::traits_type::allocator_type;
+	using input_allocator_type = allocator_type;
+	using output_allocator_type = allocator_type;
+	using io_allocator_type = allocator_type;
+	using allocator_handle_type = typename io_buffer_type::allocator_handle_type;
 	using native_handle_type = io_buffer_type *;
 	native_handle_type iobptr{};
 };
+
+template <typename handletype, typename iobuffertraits>
+	requires((iobuffertraits::mode & buffer_mode::in) == buffer_mode::in &&
+			 basic_io_buffer<handletype, iobuffertraits>::allocator_has_status)
+inline constexpr typename basic_io_buffer<handletype, iobuffertraits>::allocator_handle_type
+input_stream_allocator_handle_define(basic_io_buffer_ref<basic_io_buffer<handletype, iobuffertraits>> iobref) noexcept
+{
+	return iobref.iobptr->allocator_handle;
+}
+
+template <typename handletype, typename iobuffertraits>
+	requires((iobuffertraits::mode & buffer_mode::out) == buffer_mode::out &&
+			 basic_io_buffer<handletype, iobuffertraits>::allocator_has_status)
+inline constexpr typename basic_io_buffer<handletype, iobuffertraits>::allocator_handle_type
+output_stream_allocator_handle_define(basic_io_buffer_ref<basic_io_buffer<handletype, iobuffertraits>> iobref) noexcept
+{
+	return iobref.iobptr->allocator_handle;
+}
+
+template <typename handletype, typename iobuffertraits>
+	requires((iobuffertraits::mode & buffer_mode::in) == buffer_mode::in &&
+			 (iobuffertraits::mode & buffer_mode::out) == buffer_mode::out &&
+			 basic_io_buffer<handletype, iobuffertraits>::allocator_has_status)
+inline constexpr typename basic_io_buffer<handletype, iobuffertraits>::allocator_handle_type
+io_stream_allocator_handle_define(basic_io_buffer_ref<basic_io_buffer<handletype, iobuffertraits>> iobref) noexcept
+{
+	return iobref.iobptr->allocator_handle;
+}
 
 template <typename handletype, typename iobuffertraits>
 	requires((iobuffertraits::mode & buffer_mode::out) == buffer_mode::out &&

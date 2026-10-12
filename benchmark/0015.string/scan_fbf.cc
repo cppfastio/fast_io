@@ -12,7 +12,7 @@ int main()
 		fast_io::timer t(u8"input");
 		// use std::filebuf_file to provide a fair comparison to C++ stream facilities
 		fast_io::filebuf_file fbf(u8"ibuf_white_hole_engine.txt", fast_io::open_mode::in);
-		for (std::string str; scan<true>(fbf, str); ++spaces)
+		for (std::string str; scan_some(fbf, str); ++spaces)
 		{
 		}
 	}

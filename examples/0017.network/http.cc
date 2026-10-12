@@ -35,7 +35,7 @@ int main(int argc, char const **argv)
 		{
 			auto content_length{::fast_io::u8to<std::uint_least64_t>(value)};
 			fast_io::u8native_file nf(u8"index.html", fast_io::open_mode::out);
-			::fast_io::operations::transmit_bytes_some(nf, socket, content_length);
+			::fast_io::operations::transmit_all_bytes(nf, {}, socket, {}, content_length);
 			return 0;
 		}
 	}

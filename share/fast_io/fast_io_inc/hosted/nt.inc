@@ -1,8 +1,7 @@
 export namespace fast_io
 {
 
-    using ::fast_io::nt_domain_value;
-
+    
     namespace win32::nt
     {
         using ::fast_io::win32::nt::nt_get_current_peb;

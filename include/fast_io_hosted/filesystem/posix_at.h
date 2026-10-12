@@ -127,6 +127,7 @@ namespace details
 {
 
 inline void posix_renameat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_renameat)
 	system_call_throw_error(system_call<__NR_renameat, int>(olddirfd, oldpath, newdirfd, newpath));
@@ -139,6 +140,7 @@ inline void posix_renameat_impl(int olddirfd, char const *oldpath, int newdirfd,
 }
 
 inline void posix_linkat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath, int flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_linkat)
 	system_call_throw_error(system_call<__NR_linkat, int>(olddirfd, oldpath, newdirfd, newpath, flags));
@@ -152,6 +154,7 @@ inline void posix_linkat_impl(int olddirfd, char const *oldpath, int newdirfd, c
 
 template <posix_api_22 dsp, typename... Args>
 inline auto posix22_api_dispatcher(int olddirfd, char const *oldpath, int newdirfd, char const *newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == posix_api_22::renameat)
 	{
@@ -165,6 +168,7 @@ inline auto posix22_api_dispatcher(int olddirfd, char const *oldpath, int newdir
 }
 
 inline void posix_symlinkat_impl(char const *oldpath, int newdirfd, char const *newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_symlinkat)
 	system_call_throw_error(system_call<__NR_symlinkat, int>(oldpath, newdirfd, newpath));
@@ -178,6 +182,7 @@ inline void posix_symlinkat_impl(char const *oldpath, int newdirfd, char const *
 
 template <posix_api_12 dsp, typename... Args>
 inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const *newpath, Args...)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == posix_api_12::symlinkat)
 	{
@@ -186,6 +191,7 @@ inline auto posix12_api_dispatcher(char const *oldpath, int newdirfd, char const
 }
 
 inline void posix_faccessat_impl(int dirfd, char const *pathname, int mode, int flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_faccessat2)
 	system_call_throw_error(system_call<__NR_faccessat2, int>(dirfd, pathname, mode, flags));
@@ -211,11 +217,13 @@ inline void posix_faccessat_impl(int dirfd, char const *pathname, int mode, int 
 
 #if defined(__wasi__) && !defined(__wasilibc_unmodified_upstream)
 inline void posix_fchownat_impl(int, char const *, uintmax_t, uintmax_t, int)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	throw_posix_error(ENOTSUP);
 }
 #else
 inline void posix_fchownat_impl(int dirfd, char const *pathname, uintmax_t owner, uintmax_t group, int flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (sizeof(uintmax_t) > sizeof(uid_t))
 	{
@@ -246,11 +254,13 @@ inline void posix_fchownat_impl(int dirfd, char const *pathname, uintmax_t owner
 
 #if defined(__wasi__) && !defined(__wasilibc_unmodified_upstream)
 inline void posix_fchmodat_impl(int, char const *, mode_t, int)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	throw_posix_error(ENOTSUP);
 }
 #else
 inline void posix_fchmodat_impl(int dirfd, char const *pathname, mode_t mode, int flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 
 #if defined(__linux__) && defined(__NR_fchmodat2)
@@ -277,6 +287,7 @@ inline void posix_fchmodat_impl(int dirfd, char const *pathname, mode_t mode, in
 #endif
 
 inline posix_file_status posix_fstatat_impl(int dirfd, char const *pathname, int flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__)
 
@@ -315,6 +326,7 @@ inline posix_file_status posix_fstatat_impl(int dirfd, char const *pathname, int
 }
 
 inline void posix_mkdirat_impl(int dirfd, char const *pathname, mode_t mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_mkdirat)
 	system_call_throw_error(system_call<__NR_mkdirat, int>(dirfd, pathname, mode));
@@ -328,12 +340,14 @@ inline void posix_mkdirat_impl(int dirfd, char const *pathname, mode_t mode)
 #if 0
 #if (defined(__wasi__) && !defined(__wasilibc_unmodified_upstream)) || defined(__DARWIN_C_LEVEL)
 inline void posix_mknodat_impl(int, char const* , mode_t,::std::uintmax_t)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	throw_posix_error(ENOTSUP);
 }
 #else
 
 inline void posix_mknodat_impl(int dirfd, char const* pathname, mode_t mode,::std::uintmax_t dev)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr(sizeof(::std::uintmax_t)>sizeof(dev_t))
 	{
@@ -345,7 +359,7 @@ inline void posix_mknodat_impl(int dirfd, char const* pathname, mode_t mode,::st
 	system_call_throw_error(system_call<__NR_mknodat, int>(dirfd, pathname, mode, static_cast<dev_t>(dev)));
 #else
 	if (::fast_io::posix::libc_mknodat(dirfd, pathname, mode, static_cast<dev_t>(dev)) == -1) [[unlikely]]
-	{
+{
 		throw_posix_error();
 	}
 #endif
@@ -354,6 +368,7 @@ inline void posix_mknodat_impl(int dirfd, char const* pathname, mode_t mode,::st
 #endif
 #endif
 inline void posix_unlinkat_impl(int dirfd, char const *path, int flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_unlinkat)
 	system_call_throw_error(system_call<__NR_unlinkat, int>(dirfd, path, flags));
@@ -367,11 +382,10 @@ inline void posix_unlinkat_impl(int dirfd, char const *path, int flags)
 
 namespace details
 {
-inline constexpr struct timespec unix_timestamp_to_struct_timespec(unix_timestamp stmp) noexcept
+inline constexpr struct timespec unix_timestamp_to_struct_timespec(posix_statx_timestamp64 stmp) noexcept
 {
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
-	return {static_cast<::std::time_t>(stmp.seconds),
-			static_cast<long>(static_cast<long unsigned>(stmp.subseconds / mul_factor))};
+	return {static_cast<::std::time_t>(stmp.tv_sec),
+			static_cast<long>(stmp.tv_nsec)};
 }
 
 inline
@@ -379,7 +393,7 @@ inline
 	constexpr
 #endif
 	struct timespec
-	unix_timestamp_to_struct_timespec([[maybe_unused]] unix_timestamp_option opt) noexcept
+	unix_timestamp_to_struct_timespec([[maybe_unused]] statx_timestamp_option opt) noexcept
 {
 #if defined(UTIME_NOW) && defined(UTIME_OMIT)
 	switch (opt.flags)
@@ -407,11 +421,10 @@ struct kernel_timespec64
 	::std::int_least64_t tv_nsec;
 };
 
-inline constexpr kernel_timespec64 unix_timestamp_to_struct_timespec64(unix_timestamp stmp) noexcept
+inline constexpr kernel_timespec64 unix_timestamp_to_struct_timespec64(posix_statx_timestamp64 stmp) noexcept
 {
-	constexpr ::std::uint_least64_t mul_factor{uint_least64_subseconds_per_second / 1000000000u};
-	return {static_cast<::std::int_least64_t>(stmp.seconds),
-			static_cast<::std::int_least64_t>(stmp.subseconds / mul_factor)};
+	return {static_cast<::std::int_least64_t>(stmp.tv_sec),
+			static_cast<::std::int_least64_t>(stmp.tv_nsec)};
 }
 
 inline
@@ -419,7 +432,7 @@ inline
 	constexpr
 #endif
 	kernel_timespec64
-	unix_timestamp_to_struct_timespec64([[maybe_unused]] unix_timestamp_option opt) noexcept
+	unix_timestamp_to_struct_timespec64([[maybe_unused]] statx_timestamp_option opt) noexcept
 {
 #if defined(UTIME_NOW) && defined(UTIME_OMIT)
 	switch (opt.flags)
@@ -439,9 +452,10 @@ inline
 
 } // namespace details
 
-inline void posix_utimensat_impl(int dirfd, char const *path, unix_timestamp_option creation_time,
-								 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void posix_utimensat_impl(int dirfd, char const *path, statx_timestamp_option creation_time,
+								 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 								 int flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (creation_time.flags != utime_flags::omit)
 	{
@@ -476,6 +490,7 @@ inline void posix_utimensat_impl(int dirfd, char const *path, unix_timestamp_opt
 
 template <::std::integral char_type>
 inline ::fast_io::details::basic_ct_string<char_type> posix_readlinkat_impl([[maybe_unused]] int dirfd, [[maybe_unused]] char const *pathname)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(AT_SYMLINK_NOFOLLOW)
 	using posix_ssize_t = ::std::make_signed_t<::std::size_t>;
@@ -582,6 +597,7 @@ inline ::fast_io::details::basic_ct_string<char_type> posix_readlinkat_impl([[ma
 
 template <posix_api_1x dsp, typename... Args>
 inline auto posix1x_api_dispatcher(int dirfd, char const *path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == posix_api_1x::faccessat)
 	{
@@ -619,6 +635,7 @@ inline auto posix1x_api_dispatcher(int dirfd, char const *path, Args... args)
 
 template <::std::integral char_type, posix_api_ct dsp, typename... Args>
 inline auto posixct_api_dispatcher(int dirfd, char const *path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == posix_api_ct::readlinkat)
 	{
@@ -629,37 +646,41 @@ inline auto posixct_api_dispatcher(int dirfd, char const *path, Args... args)
 template <posix_api_22 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type, typename... Args>
 inline auto posix_deal_with22(int olddirfd, old_path_type const &oldpath, int newdirfd, new_path_type const &newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return fast_io::posix_api_common(
 		oldpath,
-		[&](char const *oldpath_c_str) {
+		[&](char const *oldpath_c_str) FAST_IO_HERBCEPTIONS_THROWS {
 			return fast_io::posix_api_common(
-				newpath, [&](char const *newpath_c_str) { return posix22_api_dispatcher<dsp>(olddirfd, oldpath_c_str, newdirfd, newpath_c_str, args...); });
+				newpath, [&](char const *newpath_c_str) FAST_IO_HERBCEPTIONS_THROWS { return posix22_api_dispatcher<dsp>(olddirfd, oldpath_c_str, newdirfd, newpath_c_str, args...); });
 		});
 }
 
 template <posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type>
 inline auto posix_deal_with12(old_path_type const &oldpath, int newdirfd, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return fast_io::posix_api_common(
 		oldpath,
-		[&](char const *oldpath_c_str) {
+		[&](char const *oldpath_c_str) FAST_IO_HERBCEPTIONS_THROWS {
 			return fast_io::posix_api_common(
-				newpath, [&](char const *newpath_c_str) { return posix12_api_dispatcher<dsp>(oldpath_c_str, newdirfd, newpath_c_str); });
+				newpath, [&](char const *newpath_c_str) FAST_IO_HERBCEPTIONS_THROWS { return posix12_api_dispatcher<dsp>(oldpath_c_str, newdirfd, newpath_c_str); });
 		});
 }
 
 template <posix_api_1x dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
 inline auto posix_deal_with1x(int dirfd, path_type const &path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return fast_io::posix_api_common(path, [&](char const *path_c_str) { return posix1x_api_dispatcher<dsp>(dirfd, path_c_str, args...); });
+	return fast_io::posix_api_common(path, [&](char const *path_c_str) FAST_IO_HERBCEPTIONS_THROWS { return posix1x_api_dispatcher<dsp>(dirfd, path_c_str, args...); });
 }
 
 template <::std::integral char_type, posix_api_ct dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
 inline auto posix_deal_withct(int dirfd, path_type const &path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return fast_io::posix_api_common(path, [&](char const *path_c_str) { return posixct_api_dispatcher<char_type, dsp>(dirfd, path_c_str, args...); });
+	return fast_io::posix_api_common(path, [&](char const *path_c_str) FAST_IO_HERBCEPTIONS_THROWS { return posixct_api_dispatcher<char_type, dsp>(dirfd, path_c_str, args...); });
 }
 
 } // namespace details
@@ -667,12 +688,14 @@ inline auto posix_deal_withct(int dirfd, path_type const &path, Args... args)
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void posix_renameat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						   new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(oldent.fd, oldpath, newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str new_path_type>
 inline void posix_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(
 		fs_dirent.fd, ::fast_io::manipulators::os_c_str(fs_dirent.filename), newent.fd, newpath);
@@ -680,6 +703,7 @@ inline void posix_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, new
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void posix_symlinkat(old_path_type const &oldpath, posix_at_entry newent, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with12<details::posix_api_12::symlinkat>(oldpath, newent.fd, newpath);
 }
@@ -687,12 +711,14 @@ inline void posix_symlinkat(old_path_type const &oldpath, posix_at_entry newent,
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_renameat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 							new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(oldent.fd, oldpath, newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with22<details::posix_api_22::renameat>(
 		fs_dirent.fd, ::fast_io::manipulators::os_c_str(fs_dirent.filename), newent.fd, newpath);
@@ -700,6 +726,7 @@ inline void native_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, ne
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_symlinkat(old_path_type const &oldpath, posix_at_entry newent, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with12<details::posix_api_12::symlinkat>(oldpath, newent.fd, newpath);
 }
@@ -707,6 +734,7 @@ inline void native_symlinkat(old_path_type const &oldpath, posix_at_entry newent
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void posix_faccessat(posix_at_entry ent, path_type const &path, access_how mode,
 							posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(mode),
 																 static_cast<int>(flags));
@@ -715,6 +743,7 @@ inline void posix_faccessat(posix_at_entry ent, path_type const &path, access_ho
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_faccessat(posix_at_entry ent, path_type const &path, access_how mode,
 							 posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(mode),
 																 static_cast<int>(flags));
@@ -723,6 +752,7 @@ inline void native_faccessat(posix_at_entry ent, path_type const &path, access_h
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void posix_fchmodat(posix_at_entry ent, path_type const &path, perms mode,
 						   posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::fchmodat>(ent.fd, path, static_cast<int>(mode),
 																static_cast<int>(flags));
@@ -731,6 +761,7 @@ inline void posix_fchmodat(posix_at_entry ent, path_type const &path, perms mode
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchmodat(posix_at_entry ent, path_type const &path, perms mode,
 							posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::fchmodat>(ent.fd, path, static_cast<int>(mode),
 																static_cast<int>(flags));
@@ -739,6 +770,7 @@ inline void native_fchmodat(posix_at_entry ent, path_type const &path, perms mod
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void posix_fchownat(posix_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group,
 						   posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::fchownat>(ent.fd, path, owner, group, static_cast<int>(flags));
 }
@@ -746,6 +778,7 @@ inline void posix_fchownat(posix_at_entry ent, path_type const &path, ::std::uin
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchownat(posix_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group,
 							posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::fchownat>(ent.fd, path, owner, group, static_cast<int>(flags));
 }
@@ -753,6 +786,7 @@ inline void native_fchownat(posix_at_entry ent, path_type const &path, ::std::ui
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status posix_fstatat(posix_at_entry ent, path_type const &path,
 									   posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_deal_with1x<details::posix_api_1x::fstatat>(ent.fd, path, static_cast<int>(flags));
 }
@@ -760,30 +794,35 @@ inline posix_file_status posix_fstatat(posix_at_entry ent, path_type const &path
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status native_fstatat(posix_at_entry ent, path_type const &path,
 										posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_deal_with1x<details::posix_api_1x::fstatat>(ent.fd, path, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void posix_mkdirat(posix_at_entry ent, path_type const &path, perms perm = static_cast<perms>(509))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mkdirat>(ent.fd, path, static_cast<mode_t>(perm));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_mkdirat(posix_at_entry ent, path_type const &path, perms perm = static_cast<perms>(509))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mkdirat>(ent.fd, path, static_cast<mode_t>(perm));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void posix_unlinkat(posix_at_entry ent, path_type const &path, posix_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::unlinkat>(ent.fd, path, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_unlinkat(posix_at_entry ent, path_type const &path, posix_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::unlinkat>(ent.fd, path, static_cast<int>(flags));
 }
@@ -791,6 +830,7 @@ inline void native_unlinkat(posix_at_entry ent, path_type const &path, posix_at_
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void posix_linkat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						 new_path_type const &newpath, posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if ((flags & posix_at_flags::symlink_nofollow) == posix_at_flags::symlink_nofollow)
 	{
@@ -810,6 +850,7 @@ inline void posix_linkat(posix_at_entry oldent, old_path_type const &oldpath, po
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_linkat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						  new_path_type const &newpath, posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if ((flags & posix_at_flags::symlink_nofollow) == posix_at_flags::symlink_nofollow)
 	{
@@ -827,18 +868,20 @@ inline void native_linkat(posix_at_entry oldent, old_path_type const &oldpath, p
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void posix_utimensat(posix_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-							unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void posix_utimensat(posix_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+							statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 							posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::utimensat>(ent.fd, path, creation_time, last_access_time,
 																 last_modification_time, static_cast<int>(flags));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_utimensat(posix_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-							 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void native_utimensat(posix_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+							 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 							 posix_at_flags flags = posix_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_deal_with1x<details::posix_api_1x::utimensat>(ent.fd, path, creation_time, last_access_time,
 																 last_modification_time, static_cast<int>(flags));
@@ -847,12 +890,14 @@ inline void native_utimensat(posix_at_entry ent, path_type const &path, unix_tim
 // ct
 template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
 inline ::fast_io::details::basic_ct_string<char_type> posix_readlinkat(posix_at_entry ent, path_type const &path)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_deal_withct<char_type, details::posix_api_ct::readlinkat>(ent.fd, path);
 }
 
 template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
 inline ::fast_io::details::basic_ct_string<char_type> native_readlinkat(posix_at_entry ent, path_type const &path)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_deal_withct<char_type, details::posix_api_ct::readlinkat>(ent.fd, path);
 }
@@ -860,12 +905,14 @@ inline ::fast_io::details::basic_ct_string<char_type> native_readlinkat(posix_at
 #if 0
 template<::fast_io::constructible_to_os_c_str path_type>
 inline void posix_mknodat(posix_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mknodat>(ent.fd,path,static_cast<mode_t>(perm),dev);
 }
 
 template<::fast_io::constructible_to_os_c_str path_type>
 inline void native_mknodat(posix_at_entry ent,path_type const& path,perms perm,::std::uintmax_t dev)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_deal_with1x<details::posix_api_1x::mknodat>(ent.fd,path,static_cast<mode_t>(perm),dev);
 }
@@ -919,6 +966,7 @@ inline constexpr ::std::size_t read_linkbuffer_size() noexcept
 }
 
 inline ::std::size_t posix_readlinkat_common_impl(int dirfd,char const* pathname,char* buffer)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr ::std::size_t buffer_size{read_linkbuffer_size()};
 	using my_ssize_t = ::std::make_signed_t<::std::size_t>;
@@ -936,6 +984,7 @@ inline ::std::size_t posix_readlinkat_common_impl(int dirfd,char const* pathname
 
 template<::std::integral path_char_type>
 inline ::std::size_t read_linkat_impl_phase2(char* dst,basic_posix_readlinkat_t<path_char_type> rlkat)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr(sizeof(path_char_type)==1)
 	{
@@ -952,6 +1001,7 @@ template<
 ::std::integral to_char_type,
 ::std::integral path_char_type>
 inline to_char_type* read_linkat_impl_phase1(to_char_type* dst,basic_posix_readlinkat_t<path_char_type> rlkat)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr(sizeof(path_char_type)==1)
 	{
@@ -988,6 +1038,7 @@ inline constexpr char_type* print_reserve_define(io_reserve_type_t<char_type,
 	basic_posix_readlinkat_t<char_type>>,
 	char_type* iter,
 	basic_posix_readlinkat_t<char_type> rlkat)
+ FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::read_linkat_impl_phase1(iter,rlkat);
 }

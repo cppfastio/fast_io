@@ -6,17 +6,19 @@ namespace fast_io
 namespace details
 {
 
+template <typename allocator>
 struct allocation_file_loader_closer_impl
 {
 	int fd{-1};
 	char *address_begin{};
-	inline explicit constexpr allocation_file_loader_closer_impl(int fdd, char *addressbegin)
-		: fd{fdd}, address_begin{addressbegin}
+	::std::size_t size{};
+	inline explicit constexpr allocation_file_loader_closer_impl(int fdd, char *addressbegin, ::std::size_t sz) noexcept
+		: fd{fdd}, address_begin{addressbegin}, size{sz}
 	{
 	}
 	inline allocation_file_loader_closer_impl(allocation_file_loader_closer_impl const &) = delete;
 	inline allocation_file_loader_closer_impl &operator=(allocation_file_loader_closer_impl const &) = delete;
-	inline ~allocation_file_loader_closer_impl()
+	inline ~allocation_file_loader_closer_impl() noexcept
 	{
 		if (fd != -1)
 		{
@@ -26,17 +28,22 @@ struct allocation_file_loader_closer_impl
 			::fast_io::noexcept_call(::close, fd);
 #endif
 		}
-#if FAST_IO_HAS_BUILTIN(__builtin_free)
-		__builtin_free(address_begin);
-#else
-		::std::free(address_begin);
-#endif
+		if (address_begin != nullptr)
+		{
+			::fast_io::typed_generic_allocator_adapter<allocator, char>::deallocate_n(address_begin, size);
+		}
 	}
 };
 
+template <typename allocator>
 inline void close_allocation_file_loader_impl(int fd, char *address_begin, char *address_end) noexcept
 {
-	allocation_file_loader_closer_impl closer(fd, address_begin);
+	::std::size_t sz{};
+	if (address_begin != nullptr)
+	{
+		sz = static_cast<::std::size_t>(address_end - address_begin);
+	}
+	allocation_file_loader_closer_impl<allocator> closer(fd, address_begin, sz);
 	if (fd == -1)
 	{
 		return;
@@ -95,50 +102,45 @@ struct allocation_file_loader_ret
 	int fd;
 };
 
+template <typename allocator>
 struct load_file_allocation_guard
 {
-	void *address{};
+	using typed_allocator = ::fast_io::typed_generic_allocator_adapter<allocator, char>;
+	char *address{};
+	::std::size_t size{};
 	inline explicit constexpr load_file_allocation_guard() noexcept = default;
-	inline explicit load_file_allocation_guard(::std::size_t file_size)
-		: address(
-#if FAST_IO_HAS_BUILTIN(__builtin_malloc)
-			  __builtin_malloc
-#else
-			  ::std::malloc
-#endif
-			  (file_size))
+	inline explicit load_file_allocation_guard(::std::size_t file_size) FAST_IO_HERBCEPTIONS_THROWS
+		: address(typed_allocator::allocate_try(file_size)),
+		  size(file_size)
 	{
-		if (address == nullptr)
-		{
-			throw_posix_error(ENOMEM);
-		}
 	}
 	inline load_file_allocation_guard(load_file_allocation_guard const &) = delete;
 	inline load_file_allocation_guard &operator=(load_file_allocation_guard const &) = delete;
-	inline ~load_file_allocation_guard()
+	inline ~load_file_allocation_guard() noexcept
 	{
-#if FAST_IO_HAS_BUILTIN(__builtin_free)
-		__builtin_free(address);
-#else
-		::std::free(address);
-#endif
+		if (address != nullptr)
+		{
+			typed_allocator::deallocate_n(address, size);
+		}
 	}
 };
 
+template <typename allocator>
 inline allocation_file_loader_ret allocation_load_address_impl(int fd)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t filesize{::fast_io::details::posix_loader_get_file_size(fd)};
-	load_file_allocation_guard guard{filesize};
+	load_file_allocation_guard<allocator> guard{filesize};
 	posix_io_observer piob{fd};
-	auto addr{reinterpret_cast<char *>(guard.address)};
+	auto addr{guard.address};
 	auto addr_ed{addr + filesize};
-	::fast_io::operations::decay::read_all_bytes_decay(piob, reinterpret_cast<::std::byte *>(addr),
-													   reinterpret_cast<::std::byte *>(addr_ed));
+	::fast_io::operations::decay::read_all_bytes_decay(piob, reinterpret_cast<::std::byte *>(addr), filesize);
 	guard.address = nullptr;
 	return {addr, addr_ed, addr_ed, -1};
 }
 
 inline void rewind_allocation_file_loader(int fd)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__) && !defined(__BIONIC__)
 	auto seekret = ::fast_io::noexcept_call(::_lseeki64, fd, 0, 0);
@@ -155,16 +157,18 @@ inline void rewind_allocation_file_loader(int fd)
 	}
 }
 
-template <typename... Args>
+template <typename allocator, typename... Args>
 inline allocation_file_loader_ret allocation_load_file_impl(bool writeback, Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::posix_file pf(::fast_io::freestanding::forward<Args>(args)...);
-	auto ret{allocation_load_address_impl(pf.fd)};
+	auto ret{allocation_load_address_impl<allocator>(pf.fd)};
 
 	if (writeback)
 	{
-		load_file_allocation_guard loader;
+		load_file_allocation_guard<allocator> loader;
 		loader.address = ret.address_begin;
+		loader.size = static_cast<::std::size_t>(ret.address_end - ret.address_begin);
 		rewind_allocation_file_loader(pf.fd);
 		loader.address = nullptr;
 		ret.fd = pf.release();
@@ -172,15 +176,18 @@ inline allocation_file_loader_ret allocation_load_file_impl(bool writeback, Args
 	return ret;
 }
 
+template <typename allocator>
 inline allocation_file_loader_ret allocation_load_file_fd_impl(bool writeback, int fd)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::posix_file pf(::fast_io::io_dup, ::fast_io::posix_io_observer{fd});
 	rewind_allocation_file_loader(pf.fd);
-	auto ret{allocation_load_address_impl(pf.fd)};
+	auto ret{allocation_load_address_impl<allocator>(pf.fd)};
 	if (writeback)
 	{
-		load_file_allocation_guard loader;
+		load_file_allocation_guard<allocator> loader;
 		loader.address = ret.address_begin;
+		loader.size = static_cast<::std::size_t>(ret.address_end - ret.address_begin);
 		rewind_allocation_file_loader(pf.fd);
 		loader.address = nullptr;
 		ret.fd = pf.release();
@@ -190,9 +197,11 @@ inline allocation_file_loader_ret allocation_load_file_fd_impl(bool writeback, i
 
 } // namespace details
 
-class allocation_file_loader
+template <typename allocator>
+class basic_allocation_file_loader
 {
 public:
+	using allocator_type = allocator;
 	using file_type = posix_file;
 	using value_type = char;
 	using pointer = char *;
@@ -210,96 +219,104 @@ public:
 	pointer address_end{};
 	pointer address_capacity{};
 	int fd{-1};
-	inline explicit constexpr allocation_file_loader() noexcept = default;
+	inline explicit constexpr basic_allocation_file_loader() noexcept = default;
 
-	inline explicit allocation_file_loader(posix_at_entry pate)
+	inline explicit basic_allocation_file_loader(posix_at_entry pate)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		auto ret{::fast_io::details::allocation_load_file_fd_impl(false, pate.fd)};
+		auto ret{::fast_io::details::allocation_load_file_fd_impl<allocator>(false, pate.fd)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 		address_capacity = ret.address_capacity;
 	}
-	inline explicit allocation_file_loader(native_fs_dirent fsdirent, open_mode om = open_mode::in,
-										   perms pm = static_cast<perms>(436))
+	inline explicit basic_allocation_file_loader(native_fs_dirent fsdirent, open_mode om = open_mode::in,
+												 perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		auto ret{::fast_io::details::allocation_load_file_impl(false, fsdirent, om, pm)};
-		address_begin = ret.address_begin;
-		address_end = ret.address_end;
-		address_capacity = ret.address_capacity;
-	}
-	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit allocation_file_loader(T const &filename, open_mode om = open_mode::in,
-										   perms pm = static_cast<perms>(436))
-	{
-		auto ret{::fast_io::details::allocation_load_file_impl(false, filename, om, pm)};
+		auto ret{::fast_io::details::allocation_load_file_impl<allocator>(false, fsdirent, om, pm)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 		address_capacity = ret.address_capacity;
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit allocation_file_loader(native_at_entry ent, T const &filename, open_mode om = open_mode::in,
-										   perms pm = static_cast<perms>(436))
+	inline explicit basic_allocation_file_loader(T const &filename, open_mode om = open_mode::in,
+												 perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		auto ret{::fast_io::details::allocation_load_file_impl(false, ent, filename, om, pm)};
+		auto ret{::fast_io::details::allocation_load_file_impl<allocator>(false, filename, om, pm)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 		address_capacity = ret.address_capacity;
 	}
-	inline explicit allocation_file_loader(allocation_mmap_options options, posix_at_entry pate)
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit basic_allocation_file_loader(native_at_entry ent, T const &filename, open_mode om = open_mode::in,
+												 perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		auto ret{::fast_io::details::allocation_load_file_fd_impl(options.write_back, pate.fd)};
+		auto ret{::fast_io::details::allocation_load_file_impl<allocator>(false, ent, filename, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+		address_capacity = ret.address_capacity;
+	}
+	inline explicit basic_allocation_file_loader(allocation_mmap_options options, posix_at_entry pate)
+		FAST_IO_HERBCEPTIONS_THROWS
+	{
+		auto ret{::fast_io::details::allocation_load_file_fd_impl<allocator>(options.write_back, pate.fd)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 		address_capacity = ret.address_capacity;
 		fd = ret.fd;
 	}
-	inline explicit allocation_file_loader(allocation_mmap_options options, native_fs_dirent fsdirent,
-										   open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+	inline explicit basic_allocation_file_loader(allocation_mmap_options options, native_fs_dirent fsdirent,
+												 open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		auto ret{::fast_io::details::allocation_load_file_impl(options.write_back, fsdirent, om, pm)};
-		address_begin = ret.address_begin;
-		address_end = ret.address_end;
-		address_capacity = ret.address_capacity;
-		fd = ret.fd;
-	}
-	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit allocation_file_loader(allocation_mmap_options options, T const &filename,
-										   open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
-	{
-		auto ret{::fast_io::details::allocation_load_file_impl(options.write_back, filename, om, pm)};
+		auto ret{::fast_io::details::allocation_load_file_impl<allocator>(options.write_back, fsdirent, om, pm)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 		address_capacity = ret.address_capacity;
 		fd = ret.fd;
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit allocation_file_loader(allocation_mmap_options options, native_at_entry ent, T const &filename,
-										   open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+	inline explicit basic_allocation_file_loader(allocation_mmap_options options, T const &filename,
+												 open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
-		auto ret{::fast_io::details::allocation_load_file_impl(options.write_back, ent, filename, om, pm)};
+		auto ret{::fast_io::details::allocation_load_file_impl<allocator>(options.write_back, filename, om, pm)};
+		address_begin = ret.address_begin;
+		address_end = ret.address_end;
+		address_capacity = ret.address_capacity;
+		fd = ret.fd;
+	}
+	template <::fast_io::constructible_to_os_c_str T>
+	inline explicit basic_allocation_file_loader(allocation_mmap_options options, native_at_entry ent, T const &filename,
+												 open_mode om = open_mode::in, perms pm = static_cast<perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
+	{
+		auto ret{::fast_io::details::allocation_load_file_impl<allocator>(options.write_back, ent, filename, om, pm)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 		address_capacity = ret.address_capacity;
 		fd = ret.fd;
 	}
 
-	inline allocation_file_loader(allocation_file_loader const &) = delete;
-	inline allocation_file_loader &operator=(allocation_file_loader const &) = delete;
-	inline constexpr allocation_file_loader(allocation_file_loader &&__restrict other) noexcept
+	inline basic_allocation_file_loader(basic_allocation_file_loader const &) = delete;
+	inline basic_allocation_file_loader &operator=(basic_allocation_file_loader const &) = delete;
+	inline constexpr basic_allocation_file_loader(basic_allocation_file_loader &&__restrict other) noexcept
 		: address_begin(other.address_begin), address_end(other.address_end), address_capacity(other.address_capacity),
 		  fd(other.fd)
 	{
 		other.address_capacity = other.address_end = other.address_begin = nullptr;
 		other.fd = -1;
 	}
-	inline allocation_file_loader &operator=(allocation_file_loader &&__restrict other) noexcept
+	inline basic_allocation_file_loader &operator=(basic_allocation_file_loader &&__restrict other) noexcept
 	{
 		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
 			return *this;
 		}
 
-		::fast_io::details::close_allocation_file_loader_impl(fd, address_begin, address_end);
+		::fast_io::details::close_allocation_file_loader_impl<allocator>(fd, address_begin, address_end);
 
 		// There is no need to check the 'this' pointer as there are no side effects
 		address_begin = other.address_begin;
@@ -316,10 +333,6 @@ public:
 	inline constexpr const_pointer data() const noexcept
 	{
 		return address_begin;
-	}
-	inline constexpr bool empty() const noexcept
-	{
-		return address_begin == address_end;
 	}
 	inline constexpr bool is_empty() const noexcept
 	{
@@ -495,9 +508,9 @@ public:
 	{
 		return address_begin[size];
 	}
-	inline void close()
+	inline void close() noexcept
 	{
-		::fast_io::details::close_allocation_file_loader_impl(fd, address_begin, address_end);
+		::fast_io::details::close_allocation_file_loader_impl<allocator>(fd, address_begin, address_end);
 		address_capacity = address_end = address_begin = nullptr;
 		fd = -1;
 	}
@@ -519,13 +532,26 @@ public:
 		fd = -1;
 		return temp;
 	}
-	inline ~allocation_file_loader()
+	inline ~basic_allocation_file_loader() noexcept
 	{
-		::fast_io::details::close_allocation_file_loader_impl(fd, address_begin, address_end);
+		::fast_io::details::close_allocation_file_loader_impl<allocator>(fd, address_begin, address_end);
 	}
 };
 
-inline constexpr basic_io_scatter_t<char> print_alias_define(io_alias_t, allocation_file_loader const &load) noexcept
+using allocation_file_loader = basic_allocation_file_loader<
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__WINE__)
+#if defined(_WIN32_WINDOWS)
+	::fast_io::generic_allocator_adapter<::fast_io::win32_heapalloc_allocator>
+#else
+	::fast_io::generic_allocator_adapter<::fast_io::nt_rtlallocateheap_allocator>
+#endif
+#else
+	::fast_io::native_thread_local_allocator
+#endif
+	>;
+
+template <typename allocator>
+inline constexpr basic_io_scatter_t<char> print_alias_define(io_alias_t, basic_allocation_file_loader<allocator> const &load) noexcept
 {
 	return {load.data(), load.size()};
 }

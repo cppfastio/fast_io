@@ -179,12 +179,14 @@ inline pyobject_file strlike_construct_define(io_strlike_type_t<char, pyobject_f
 
 template <typename... Args>
 inline pyobject_file concat_pyobject_file(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::basic_general_concat<false, char, pyobject_file>(::std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 inline pyobject_file concatln_pyobject_file(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::basic_general_concat<true, char, pyobject_file>(::std::forward<Args>(args)...);
 }

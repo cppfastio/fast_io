@@ -94,6 +94,7 @@ public:
 	template <typename Func, typename... Args>
 		requires(::std::invocable<Func, Args...>)
 	inline constexpr nt_thread(Func &&func, Args &&...args)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		using start_routine_tuple_type = ::fast_io::containers::tuple<::std::decay_t<Func>, ::std::decay_t<Args>...>;
 		using alloc = ::fast_io::native_typed_global_allocator<start_routine_tuple_type>;
@@ -131,7 +132,7 @@ public:
 			::std::destroy_at(reinterpret_cast<start_routine_tuple_type *>(start_routine_tuple));
 			alloc::deallocate_n(start_routine_tuple, 1u);
 
-			::fast_io::throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 
 		this->id_ = cid.UniqueThread;
@@ -178,6 +179,7 @@ public:
 	}
 
 	inline constexpr void join()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (!this->joinable()) [[unlikely]]
 		{
@@ -186,18 +188,19 @@ public:
 		auto status{::fast_io::win32::nt::nt_wait_for_single_object<zw>(this->handle_, false, nullptr)};
 		if (status) [[unlikely]]
 		{
-			::fast_io::throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 		status = ::fast_io::win32::nt::nt_close<zw>(this->handle_);
 		if (status) [[unlikely]]
 		{
-			::fast_io::throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 		this->handle_ = nullptr;
 		this->id_ = nullptr;
 	}
 
 	inline constexpr void detach()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (!this->joinable()) [[unlikely]]
 		{
@@ -206,7 +209,7 @@ public:
 		auto status{::fast_io::win32::nt::nt_close<zw>(this->handle_)};
 		if (status) [[unlikely]]
 		{
-			::fast_io::throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 		this->handle_ = nullptr;
 		this->id_ = nullptr;
@@ -243,20 +246,21 @@ public:
 
 		if (status) [[unlikely]]
 		{
-			::fast_io::throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 
 		return static_cast<::std::uint_least32_t>(reinterpret_cast<::std::size_t>(tbi.ClientId.UniqueThread));
 	}
 
 	inline static constexpr ::std::uint_least32_t hardware_concurrency()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		::fast_io::win32::nt::system_basic_information sb{};
 		auto status{::fast_io::win32::nt::nt_query_system_information<zw>(::fast_io::win32::nt::system_information_class::SystemBasicInformation,
 																		  __builtin_addressof(sb), static_cast<::std::uint_least32_t>(sizeof(sb)), nullptr)};
 		if (status) [[unlikely]]
 		{
-			::fast_io::throw_nt_error(status);
+			::fast_io::herbceptions::throws_nt_errc_with_value(status);
 		}
 		return static_cast<::std::uint_least32_t>(sb.NumberOfProcessors);
 	}
@@ -273,6 +277,7 @@ inline
 	constexpr
 #endif
 	::fast_io::win32::nt::nt_thread<zw>::id get_id()
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::nt::thread_basic_information tbi;
 	::std::uint_least32_t status{::fast_io::win32::nt::nt_query_information_thread<zw>(
@@ -283,7 +288,7 @@ inline
 		nullptr)};
 	if (status) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 	return tbi.ClientId.UniqueThread;
 }
@@ -308,6 +313,7 @@ inline
 	constexpr
 #endif
 	void sleep_for(::std::chrono::duration<Rep, Period> const &sleep_duration)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto const count{static_cast<::std::uint_least64_t>(
 		::std::chrono::duration_cast<::std::chrono::microseconds>(sleep_duration).count() * 10u +
@@ -315,45 +321,44 @@ inline
 
 	if (count > static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max()))
 	{
-		::fast_io::throw_nt_error(0xC000000D);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC000000D);
 	}
 
 	auto val{-static_cast<::std::int_least64_t>(count)};
 	::std::uint_least32_t status{::fast_io::win32::nt::nt_delay_execution<zw>(false, __builtin_addressof(val))};
 	if (status) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 }
 
-template <bool zw = false, ::std::int_least64_t off_to_epoch>
+template <bool zw = false>
 inline
 #if __cpp_constexpr >= 202207L
 	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_for(::fast_io::basic_timestamp<off_to_epoch> const &sleep_duration)
+	void sleep_for(::fast_io::posix_statx_timestamp64 const &sleep_duration)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (sleep_duration.seconds < 0) [[unlikely]]
+	if (sleep_duration.tv_sec < 0) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(0xC000000D);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC000000D);
 	}
 
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1000000000u};
-
-	auto const win_100ns_seconds{static_cast<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(sleep_duration.seconds) * 10'000'000u + sleep_duration.subseconds / mul_factor / 100u)};
+	auto const win_100ns_seconds{static_cast<::std::uint_least64_t>(static_cast<::std::uint_least64_t>(sleep_duration.tv_sec) * 10'000'000u + sleep_duration.tv_nsec / 100u)};
 
 	if (win_100ns_seconds > static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max())) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(0xC000000D);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC000000D);
 	}
 
 	auto val = -static_cast<::std::int_least64_t>(win_100ns_seconds);
 	::std::uint_least32_t status{::fast_io::win32::nt::nt_delay_execution<zw>(false, __builtin_addressof(val))};
 	if (status) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 }
 
@@ -365,6 +370,7 @@ inline
 	constexpr
 #endif
 	void sleep_until(::std::chrono::time_point<Clock, Duration> const &expect_time)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto const unix_ts = ::std::chrono::duration_cast<std::chrono::seconds>(
 							 expect_time.time_since_epoch())
@@ -377,53 +383,46 @@ inline
 	auto const unix_to_nt_secs{static_cast<::std::int_least64_t>(unix_ts) + 11644473600};
 	if (unix_to_nt_secs < 0) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(0xC000000D);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC000000D);
 	}
 
 	auto const count{static_cast<::std::uint_least64_t>(unix_to_nt_secs) * 10000000u + static_cast<::std::uint_least64_t>(unix_subsec_ts)};
 
 	if (count > static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max()))
 	{
-		::fast_io::throw_nt_error(0xC000000D);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC000000D);
 	}
 
 	auto nt_ts{static_cast<::std::int_least64_t>(count)};
 	::std::uint_least32_t status{::fast_io::win32::nt::nt_delay_execution<zw>(false, __builtin_addressof(nt_ts))};
 	if (status) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 }
 
-template <bool zw = false, ::std::int_least64_t off_to_epoch>
+template <bool zw = false>
 inline
 #if __cpp_constexpr >= 202207L
 	// https://en.cppreference.com/w/cpp/compiler_support/23.html#cpp_constexpr_202207L
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_until(::fast_io::basic_timestamp<off_to_epoch> const &expect_time)
+	void sleep_until(::fast_io::posix_statx_timestamp64 const &expect_time)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (expect_time.seconds < 0) [[unlikely]]
-	{
-		::fast_io::throw_nt_error(0xC000000D);
-	}
-
-	auto const win32_ts{static_cast<::fast_io::win32_timestamp>(expect_time)};
-
-	constexpr ::std::uint_least64_t mul_factor{::fast_io::uint_least64_subseconds_per_second / 1000000000u};
-	auto const win_100ns_seconds = static_cast<::std::uint_least64_t>(win32_ts.seconds) * 10'000'000u + win32_ts.subseconds / mul_factor / 100u;
+	auto const win_100ns_seconds{::fast_io::posix_statx_timestamp64_to_ftu64(expect_time)};
 
 	if (win_100ns_seconds > static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max())) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(0xC000000D);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC000000D);
 	}
 
 	auto val = static_cast<::std::int_least64_t>(win_100ns_seconds);
 	::std::uint_least32_t status{::fast_io::win32::nt::nt_delay_execution<zw>(false, __builtin_addressof(val))};
 	if (status) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 }
 

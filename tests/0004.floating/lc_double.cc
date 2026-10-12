@@ -7,7 +7,7 @@ using namespace fast_io::io;
 int main()
 {
 	using namespace fast_io::mnp;
-	fast_io::native_l10n l10n("");
+	auto const *l10n{::fast_io::l10n::load_l10n(u8"")};
 	println(imbue(l10n, fast_io::c_stdout()), std::numeric_limits<double>::infinity(), "\n",
 			std::numeric_limits<double>::min(), "\n",
 			std::numeric_limits<double>::max(), "\n",

@@ -12,12 +12,13 @@ namespace fast_io::details
 [[__gnu__::__const__]]
 #endif
 inline ::fast_io::install_path get_module_install_path()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto c_peb{::fast_io::win32::nt::nt_get_current_peb()};
 	auto const &NtImagePath{c_peb->ProcessParameters->ImagePathName};
 	if (!NtImagePath.Buffer) [[unlikely]]
 	{
-		::fast_io::throw_nt_error(0xC0000106);
+		::fast_io::herbceptions::throws_nt_errc_with_value(0xC0000106);
 	}
 
 	::fast_io::install_path ret;
@@ -27,7 +28,7 @@ inline ::fast_io::install_path get_module_install_path()
 	auto curr{strlike_curr(::fast_io::io_strlike_type<char8_t, ::fast_io::u8string>, ret.module_name)};
 	for (; curr != begin; --curr) // calculate nt, dos or (nt) device path
 	{
-		if (auto const c{*curr}; c == u8'\\' || c == u8':'  || c == u8'/')
+		if (auto const c{*curr}; c == u8'\\' || c == u8':' || c == u8'/')
 		{
 			++curr;
 			break;

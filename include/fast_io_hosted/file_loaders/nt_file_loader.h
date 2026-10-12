@@ -26,6 +26,7 @@ inline void nt_unload_address(void *address) noexcept
 template <::fast_io::nt_family family>
 inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_mmap_options const &options,
 																  void *handle)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	using secattr_ptr
 #if __has_cpp_attribute(__gnu__::__may_alias__)
@@ -53,7 +54,7 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_
 	status = ::fast_io::win32::nt::nt_create_section<(family == ::fast_io::nt_family::zw)>(__builtin_addressof(h_section), options.dwDesiredAccess, pobjattr, nullptr, options.flProtect, options.attributes, handle);
 	if (status)
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 	::fast_io::basic_nt_family_file<family, char> map_hd{h_section};
 	void *p_map_address{};
@@ -62,7 +63,7 @@ inline nt_file_loader_return_value_t nt_load_address_options_impl(::fast_io::nt_
 	status = ::fast_io::win32::nt::nt_map_view_of_section<(family == ::fast_io::nt_family::zw)>(h_section, current_process_handle, __builtin_addressof(p_map_address), 0u, 0u, nullptr, __builtin_addressof(view_size), static_cast<::fast_io::win32::nt::section_inherit>(options.viewShare), 0u, options.flProtect);
 	if (status)
 	{
-		throw_nt_error(status);
+		::fast_io::herbceptions::throws_nt_errc_with_value(status);
 	}
 	return {reinterpret_cast<char *>(p_map_address), reinterpret_cast<char *>(p_map_address) + fsz};
 }
@@ -79,6 +80,7 @@ inline constexpr auto create_nt_default_load_address_option() noexcept
 
 template <::fast_io::nt_family family>
 inline nt_file_loader_return_value_t nt_load_address_impl(void *handle)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr auto nt_file_loader_default_option{create_nt_default_load_address_option()};
 	return nt_load_address_options_impl<family>(nt_file_loader_default_option, handle);
@@ -86,6 +88,7 @@ inline nt_file_loader_return_value_t nt_load_address_impl(void *handle)
 
 template <::fast_io::nt_family family, typename... Args>
 inline auto nt_load_file_impl(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::basic_nt_family_file<family, char> nf(::fast_io::freestanding::forward<Args>(args)...);
 	return nt_load_address_impl<family>(nf.handle);
@@ -93,6 +96,7 @@ inline auto nt_load_file_impl(Args &&...args)
 
 template <::fast_io::nt_family family, typename... Args>
 inline auto nt_load_file_options_impl(nt_mmap_options const &options, Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::basic_nt_family_file<family, char> wf(::fast_io::freestanding::forward<Args>(args)...);
 	return nt_load_address_options_impl<family>(options, wf.handle);
@@ -122,6 +126,7 @@ public:
 
 	inline constexpr nt_family_file_loader() noexcept = default;
 	inline explicit nt_family_file_loader(::fast_io::nt_at_entry ent)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_address_impl<family>(ent.handle)};
 		address_begin = ret.address_begin;
@@ -130,6 +135,7 @@ public:
 	inline explicit nt_family_file_loader(::fast_io::nt_fs_dirent fsdirent,
 										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_impl<family>(fsdirent, om, pm)};
 		address_begin = ret.address_begin;
@@ -138,6 +144,7 @@ public:
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit nt_family_file_loader(T const &filename, ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_impl<family>(filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -147,15 +154,17 @@ public:
 	inline explicit nt_family_file_loader(::fast_io::nt_at_entry ent, T const &filename,
 										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_impl<family>(ent, filename, om, pm)};
 		address_begin = ret.address_begin;
 		address_end = ret.address_end;
 	}
 	template <::fast_io::constructible_to_os_c_str T>
-	inline explicit nt_family_file_loader(::fast_io::io_kernel_t, T const &t, 
-		                                  ::fast_io::open_mode om = ::fast_io::open_mode::in,
+	inline explicit nt_family_file_loader(::fast_io::io_kernel_t, T const &t,
+										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_impl<family>(::fast_io::io_kernel, t, om, pm)};
 		address_begin = ret.address_begin;
@@ -165,6 +174,7 @@ public:
 	inline explicit nt_family_file_loader(::fast_io::io_kernel_t, ::fast_io::nt_at_entry ent, T const &t,
 										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_impl<family>(::fast_io::io_kernel, ent, t, om, pm)};
 		address_begin = ret.address_begin;
@@ -172,6 +182,7 @@ public:
 	}
 
 	inline explicit nt_family_file_loader(nt_mmap_options const &options, ::fast_io::nt_at_entry ent)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_address_options_impl<family>(options, ent.handle)};
 		address_begin = ret.address_begin;
@@ -180,6 +191,7 @@ public:
 	inline explicit nt_family_file_loader(nt_mmap_options const &options, ::fast_io::nt_fs_dirent fsdirent,
 										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, fsdirent, om, pm)};
 		address_begin = ret.address_begin;
@@ -189,6 +201,7 @@ public:
 	inline explicit nt_family_file_loader(nt_mmap_options const &options, T const &filename,
 										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -198,6 +211,7 @@ public:
 	inline explicit nt_family_file_loader(nt_mmap_options const &options, ::fast_io::nt_at_entry ent, T const &filename,
 										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, ent, filename, om, pm)};
 		address_begin = ret.address_begin;
@@ -207,6 +221,7 @@ public:
 	inline explicit nt_family_file_loader(nt_mmap_options const &options, ::fast_io::io_kernel_t, T const &t,
 										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{
 			::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, ::fast_io::io_kernel, t, om, pm)};
@@ -215,9 +230,10 @@ public:
 	}
 	template <::fast_io::constructible_to_os_c_str T>
 	inline explicit nt_family_file_loader(nt_mmap_options const &options, ::fast_io::io_kernel_t,
-										  ::fast_io::nt_at_entry ent, T const &t, 
+										  ::fast_io::nt_at_entry ent, T const &t,
 										  ::fast_io::open_mode om = ::fast_io::open_mode::in,
 										  ::fast_io::perms pm = static_cast<::fast_io::perms>(436))
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		auto ret{::fast_io::win32::nt::details::nt_load_file_options_impl<family>(options, ::fast_io::io_kernel, ent, t,
 																				  om, pm)};
@@ -250,10 +266,6 @@ public:
 	inline constexpr const_pointer data() const noexcept
 	{
 		return address_begin;
-	}
-	inline constexpr bool empty() const noexcept
-	{
-		return address_begin == address_end;
 	}
 	inline constexpr bool is_empty() const noexcept
 	{

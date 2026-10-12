@@ -18,6 +18,7 @@ namespace fast_io::details
 [[__gnu__::__const__]]
 #endif
 inline ::fast_io::install_path get_module_install_path()
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr ::std::size_t path_max{::std::max<::std::size_t>(PATH_MAX, 4096u)};
 

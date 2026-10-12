@@ -22,6 +22,7 @@ using win32_named_pipe_internal_strvw = ::fast_io::containers::basic_string_view
 
 template <win32_family family, typename... Args>
 constexpr inline win32_named_pipe_internal_str<family> concat_win32_named_pipe_internal_str(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<win32_named_pipe_internal_char_type<family>>, Args...>};
 	if constexpr (type_error)
@@ -38,6 +39,7 @@ constexpr inline win32_named_pipe_internal_str<family> concat_win32_named_pipe_i
 
 template <win32_family family, typename... Args>
 constexpr inline win32_named_pipe_internal_tlc_str<family> concat_win32_named_pipe_internal_tlc_str(Args &&...args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<win32_named_pipe_internal_char_type<family>>, Args...>};
 	if constexpr (type_error)
@@ -57,6 +59,7 @@ using win32_client_connection_handle = void;
 // SERVER
 template <win32_family family>
 inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_char_type<family> const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// check filename
 	using family_internal_char_type = win32_named_pipe_internal_char_type<family>;
@@ -69,7 +72,7 @@ inline void *win32_family_create_named_pipe_ipc_server_impl(win32_named_pipe_cha
 #endif
 		= family_internal_char_type const *;
 #if 0
-	{
+{
 		// Prohibit including superior paths, otherwise it may cause vulnerability
 
 		auto const beg{reinterpret_cast<family_internal_char_type_const_may_alias_ptr>(server_name)};
@@ -233,6 +236,7 @@ inline void *win32_create_named_pipe_ipc_server_impl(T const &t, ipc_mode im)
 }
 
 inline void win32_family_named_pipe_ipc_server_wait_for_connect_impl(void *pipe_handle)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!::fast_io::win32::ConnectNamedPipe(pipe_handle, nullptr)) [[unlikely]]
 	{
@@ -241,6 +245,7 @@ inline void win32_family_named_pipe_ipc_server_wait_for_connect_impl(void *pipe_
 }
 
 inline void win32_family_named_pipe_ipc_server_disconnect_impl(void *pipe_handle)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!::fast_io::win32::DisconnectNamedPipe(pipe_handle)) [[unlikely]]
 	{
@@ -251,6 +256,7 @@ inline void win32_family_named_pipe_ipc_server_disconnect_impl(void *pipe_handle
 // CLIENT
 template <win32_family family>
 inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_char_type<family> const *server_name, ::std::size_t server_name_size, ::fast_io::ipc_mode mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// check filename
 	using family_char_type = win32_named_pipe_char_type<family>;
@@ -264,7 +270,7 @@ inline void *win32_family_ipc_named_pipe_client_connect_impl(win32_named_pipe_ch
 #endif
 		= family_internal_char_type const *;
 #if 0
-	{
+{
 		// Prohibit including superior paths, otherwise it may cause vulnerability
 
 		auto const beg{reinterpret_cast<family_internal_char_type_const_may_alias_ptr>(server_name)};
@@ -418,6 +424,7 @@ public:
 	inline constexpr basic_win32_family_named_pipe_ipc_server &operator=(basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>) noexcept = delete;
 
 	inline basic_win32_family_named_pipe_ipc_server(basic_win32_family_named_pipe_ipc_server const &other)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(other.handle)}
 	{
 	}
@@ -457,6 +464,7 @@ public:
 		this->handle = newhandle;
 	}
 	inline void close()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (*this) [[likely]]
 		{
@@ -477,6 +485,7 @@ public:
 	}
 
 	inline basic_win32_family_named_pipe_ipc_server(io_dup_t, basic_win32_family_named_pipe_ipc_server_observer<family, ch_type> wiob)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_win32_family_named_pipe_ipc_server_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(wiob.handle)}
 	{
 	}
@@ -517,6 +526,7 @@ public:
 	inline constexpr basic_win32_family_named_pipe_ipc_client &operator=(basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>) noexcept = delete;
 
 	inline basic_win32_family_named_pipe_ipc_client(basic_win32_family_named_pipe_ipc_client const &other)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(other.handle)}
 	{
 	}
@@ -556,6 +566,7 @@ public:
 		this->handle = newhandle;
 	}
 	inline void close()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (*this) [[likely]]
 		{
@@ -576,6 +587,7 @@ public:
 	}
 
 	inline basic_win32_family_named_pipe_ipc_client(io_dup_t, basic_win32_family_named_pipe_ipc_client_observer<family, ch_type> wiob)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_win32_family_named_pipe_ipc_client_observer<family, ch_type>{::fast_io::win32::details::win32_dup_impl(wiob.handle)}
 	{
 	}
@@ -598,6 +610,7 @@ public:
 
 template <win32_family server_family, ::std::integral server_ch_type, win32_family client_family = win32_family::native, ::std::integral client_ch_type = char>
 inline basic_win32_family_named_pipe_ipc_client<client_family, client_ch_type> wait_for_connect(basic_win32_family_named_pipe_ipc_server_observer<server_family, server_ch_type> server)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	win32::details::win32_family_named_pipe_ipc_server_wait_for_connect_impl(server.handle);
 	return basic_win32_family_named_pipe_ipc_client<client_family, client_ch_type>{};

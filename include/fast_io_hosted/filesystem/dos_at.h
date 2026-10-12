@@ -114,6 +114,7 @@ namespace details
 {
 
 inline void djgpp_libc_throw_posix_error(int ret)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (ret == -1) [[unlikely]]
 	{
@@ -122,12 +123,14 @@ inline void djgpp_libc_throw_posix_error(int ret)
 }
 
 inline void dos_renameat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_rename(::fast_io::details::my_dos_concat_tlc_path(olddirfd, oldpath).c_str(),
 																 ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
 }
 
 inline void dos_linkat_impl(int olddirfd, char const *oldpath, int newdirfd, char const *newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_link(::fast_io::details::my_dos_concat_tlc_path(olddirfd, oldpath).c_str(),
 															   ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
@@ -135,6 +138,7 @@ inline void dos_linkat_impl(int olddirfd, char const *oldpath, int newdirfd, cha
 
 template <posix_api_22 dsp, typename... Args>
 inline auto dos22_api_dispatcher(int olddirfd, char const *oldpath, int newdirfd, char const *newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_22::renameat)
 	{
@@ -147,6 +151,7 @@ inline auto dos22_api_dispatcher(int olddirfd, char const *oldpath, int newdirfd
 }
 
 inline void dos_symlinkat_impl([[maybe_unused]] char const *oldpath, [[maybe_unused]] int newdirfd, [[maybe_unused]] char const *newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(FAST_IO_USE_DJGPP_SYMLINK)
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_symlink(oldpath, ::fast_io::details::my_dos_concat_tlc_path(newdirfd, newpath).c_str()));
@@ -157,6 +162,7 @@ inline void dos_symlinkat_impl([[maybe_unused]] char const *oldpath, [[maybe_unu
 
 template <posix_api_12 dsp, typename... Args>
 inline auto dos12_api_dispatcher(char const *oldpath, int newdirfd, char const *newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_12::symlinkat)
 	{
@@ -165,11 +171,13 @@ inline auto dos12_api_dispatcher(char const *oldpath, int newdirfd, char const *
 }
 
 inline void dos_faccessat_impl(int dirfd, char const *pathname, int flags)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_access(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), flags));
 }
 
 inline void dos_fchownat_impl(int dirfd, char const *pathname, uintmax_t owner, uintmax_t group)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// chown does nothing under MS-DOS, so just check is_valid filename
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_chown(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(),
@@ -177,11 +185,13 @@ inline void dos_fchownat_impl(int dirfd, char const *pathname, uintmax_t owner, 
 }
 
 inline void dos_fchmodat_impl(int dirfd, char const *pathname, mode_t mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_chmod(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), mode));
 }
 
 inline posix_file_status dos_fstatat_impl(int dirfd, char const *pathname)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	struct stat buf;
 
@@ -190,18 +200,20 @@ inline posix_file_status dos_fstatat_impl(int dirfd, char const *pathname)
 }
 
 inline void dos_mkdirat_impl(int dirfd, char const *pathname, mode_t mode)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_mkdir(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), mode));
 }
 
 inline void dos_unlinkat_impl(int dirfd, char const *pathname)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_unlink(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str()));
 }
 
-inline constexpr ::std::time_t unix_timestamp_to_time_t(unix_timestamp stmp) noexcept
+inline constexpr ::std::time_t unix_timestamp_to_time_t(posix_statx_timestamp64 stmp) noexcept
 {
-	return static_cast<::std::time_t>(stmp.seconds);
+	return static_cast<::std::time_t>(stmp.tv_sec);
 }
 
 inline
@@ -209,7 +221,8 @@ inline
 	constexpr
 #endif
 	::std::time_t
-	unix_timestamp_to_time_t(unix_timestamp_option opt)
+	unix_timestamp_to_time_t(statx_timestamp_option opt)
+		FAST_IO_HERBCEPTIONS_THROWS
 {
 	switch (opt.flags)
 	{
@@ -222,8 +235,9 @@ inline
 	}
 }
 
-inline void dos_utimensat_impl(int dirfd, char const *pathname, unix_timestamp_option creation_time,
-							   unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time)
+inline void dos_utimensat_impl(int dirfd, char const *pathname, statx_timestamp_option creation_time,
+							   statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (creation_time.flags != utime_flags::omit)
 	{
@@ -240,6 +254,7 @@ inline void dos_utimensat_impl(int dirfd, char const *pathname, unix_timestamp_o
 
 template <posix_api_1x dsp, typename... Args>
 inline auto dos1x_api_dispatcher(int dirfd, char const *path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_1x::faccessat)
 	{
@@ -273,6 +288,7 @@ inline auto dos1x_api_dispatcher(int dirfd, char const *path, Args... args)
 
 template <::std::integral char_type>
 inline ::fast_io::details::basic_ct_string<char_type> dos_readlinkat_impl(int dirfd, char const *pathname)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	// DOS does not support readlink, so you must first verify its validity before throwing a einval exception (not symlink).
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_access(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str(), 0));
@@ -284,6 +300,7 @@ inline ::fast_io::details::basic_ct_string<char_type> dos_readlinkat_impl(int di
 
 template <::std::integral char_type, posix_api_ct dsp, typename... Args>
 inline auto dosct_api_dispatcher(int dirfd, char const *path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (dsp == ::fast_io::details::posix_api_ct::readlinkat)
 	{
@@ -294,37 +311,41 @@ inline auto dosct_api_dispatcher(int dirfd, char const *path, Args... args)
 template <posix_api_22 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type, typename... Args>
 inline auto dos_deal_with22(int olddirfd, old_path_type const &oldpath, int newdirfd, new_path_type const &newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::posix_api_common(
 		oldpath,
-		[&](char const *oldpath_c_str) {
+		[&](char const *oldpath_c_str) FAST_IO_HERBCEPTIONS_THROWS {
 			return ::fast_io::posix_api_common(
-				newpath, [&](char const *newpath_c_str) { return dos22_api_dispatcher<dsp>(olddirfd, oldpath_c_str, newdirfd, newpath_c_str, args...); });
+				newpath, [&](char const *newpath_c_str) FAST_IO_HERBCEPTIONS_THROWS { return dos22_api_dispatcher<dsp>(olddirfd, oldpath_c_str, newdirfd, newpath_c_str, args...); });
 		});
 }
 
 template <posix_api_12 dsp, ::fast_io::constructible_to_os_c_str old_path_type,
 		  ::fast_io::constructible_to_os_c_str new_path_type, typename... Args>
 inline auto dos_deal_with12(old_path_type const &oldpath, int newdirfd, new_path_type const &newpath, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::posix_api_common(
 		oldpath,
-		[&](char const *oldpath_c_str) {
+		[&](char const *oldpath_c_str) FAST_IO_HERBCEPTIONS_THROWS {
 			return ::fast_io::posix_api_common(
-				newpath, [&](char const *newpath_c_str) { return dos12_api_dispatcher<dsp>(oldpath_c_str, newdirfd, newpath_c_str, args...); });
+				newpath, [&](char const *newpath_c_str) FAST_IO_HERBCEPTIONS_THROWS { return dos12_api_dispatcher<dsp>(oldpath_c_str, newdirfd, newpath_c_str, args...); });
 		});
 }
 
 template <posix_api_1x dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
 inline auto dos_deal_with1x(int dirfd, path_type const &path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::posix_api_common(path, [&](char const *path_c_str) { return dos1x_api_dispatcher<dsp>(dirfd, path_c_str, args...); });
+	return ::fast_io::posix_api_common(path, [&](char const *path_c_str) FAST_IO_HERBCEPTIONS_THROWS { return dos1x_api_dispatcher<dsp>(dirfd, path_c_str, args...); });
 }
 
 template <::std::integral char_type, posix_api_ct dsp, ::fast_io::constructible_to_os_c_str path_type, typename... Args>
 inline auto dos_deal_withct(int dirfd, path_type const &path, Args... args)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::posix_api_common(path, [&](char const *path_c_str) { return dosct_api_dispatcher<char_type, dsp>(dirfd, path_c_str, args...); });
+	return ::fast_io::posix_api_common(path, [&](char const *path_c_str) FAST_IO_HERBCEPTIONS_THROWS { return dosct_api_dispatcher<char_type, dsp>(dirfd, path_c_str, args...); });
 }
 
 } // namespace details
@@ -332,12 +353,14 @@ inline auto dos_deal_withct(int dirfd, path_type const &path, Args... args)
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void dos_renameat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						 new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.fd, oldpath, newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str new_path_type>
 inline void dos_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with22<::fast_io::details::posix_api_22::renameat>(
 		fs_dirent.fd, ::fast_io::manipulators::os_c_str(fs_dirent.filename), newent.fd, newpath);
@@ -345,6 +368,7 @@ inline void dos_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, new_p
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void dos_symlinkat(old_path_type const &oldpath, posix_at_entry newent, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with12<::fast_io::details::posix_api_12::symlinkat>(oldpath, newent.fd, newpath);
 }
@@ -352,12 +376,14 @@ inline void dos_symlinkat(old_path_type const &oldpath, posix_at_entry newent, n
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_renameat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 							new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with22<::fast_io::details::posix_api_22::renameat>(oldent.fd, oldpath, newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with22<::fast_io::details::posix_api_22::renameat>(
 		fs_dirent.fd, ::fast_io::manipulators::os_c_str(fs_dirent.filename), newent.fd, newpath);
@@ -365,6 +391,7 @@ inline void native_renameat(posix_fs_dirent fs_dirent, posix_at_entry newent, ne
 
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_symlinkat(old_path_type const &oldpath, posix_at_entry newent, new_path_type const &newpath)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with12<::fast_io::details::posix_api_12::symlinkat>(oldpath, newent.fd, newpath);
 }
@@ -373,6 +400,7 @@ inline void native_symlinkat(old_path_type const &oldpath, posix_at_entry newent
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void dos_faccessat(posix_at_entry ent, path_type const &path, access_how mode,
 						  [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(mode));
 }
@@ -380,6 +408,7 @@ inline void dos_faccessat(posix_at_entry ent, path_type const &path, access_how 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_faccessat(posix_at_entry ent, path_type const &path, access_how mode,
 							 [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::faccessat>(ent.fd, path, static_cast<int>(mode));
 }
@@ -387,6 +416,7 @@ inline void native_faccessat(posix_at_entry ent, path_type const &path, access_h
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void dos_fchmodat(posix_at_entry ent, path_type const &path, perms mode,
 						 [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::fchmodat>(ent.fd, path, static_cast<int>(mode));
 }
@@ -394,6 +424,7 @@ inline void dos_fchmodat(posix_at_entry ent, path_type const &path, perms mode,
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchmodat(posix_at_entry ent, path_type const &path, perms mode,
 							[[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::fchmodat>(ent.fd, path, static_cast<int>(mode));
 }
@@ -401,6 +432,7 @@ inline void native_fchmodat(posix_at_entry ent, path_type const &path, perms mod
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void dos_fchownat(posix_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group,
 						 [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::fchownat>(ent.fd, path, owner, group);
 }
@@ -408,6 +440,7 @@ inline void dos_fchownat(posix_at_entry ent, path_type const &path, ::std::uintm
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_fchownat(posix_at_entry ent, path_type const &path, ::std::uintmax_t owner, ::std::uintmax_t group,
 							[[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::fchownat>(ent.fd, path, owner, group);
 }
@@ -415,6 +448,7 @@ inline void native_fchownat(posix_at_entry ent, path_type const &path, ::std::ui
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status dos_fstatat(posix_at_entry ent, path_type const &path,
 									 [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::fstatat>(ent.fd, path);
 }
@@ -422,30 +456,35 @@ inline posix_file_status dos_fstatat(posix_at_entry ent, path_type const &path,
 template <::fast_io::constructible_to_os_c_str path_type>
 inline posix_file_status native_fstatat(posix_at_entry ent, path_type const &path,
 										[[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::fstatat>(ent.fd, path);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void dos_mkdirat(posix_at_entry ent, path_type const &path, perms perm = static_cast<perms>(509))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::mkdirat>(ent.fd, path, static_cast<mode_t>(perm));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_mkdirat(posix_at_entry ent, path_type const &path, perms perm = static_cast<perms>(509))
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::mkdirat>(ent.fd, path, static_cast<mode_t>(perm));
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void dos_unlinkat(posix_at_entry ent, path_type const &path, [[maybe_unused]] dos_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::unlinkat>(ent.fd, path);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
 inline void native_unlinkat(posix_at_entry ent, path_type const &path, [[maybe_unused]] dos_at_flags flags = {})
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::unlinkat>(ent.fd, path);
 }
@@ -453,6 +492,7 @@ inline void native_unlinkat(posix_at_entry ent, path_type const &path, [[maybe_u
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void dos_linkat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 					   new_path_type const &newpath, [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with22<::fast_io::details::posix_api_22::linkat>(oldent.fd, oldpath, newent.fd, newpath);
 }
@@ -460,23 +500,26 @@ inline void dos_linkat(posix_at_entry oldent, old_path_type const &oldpath, posi
 template <::fast_io::constructible_to_os_c_str old_path_type, ::fast_io::constructible_to_os_c_str new_path_type>
 inline void native_linkat(posix_at_entry oldent, old_path_type const &oldpath, posix_at_entry newent,
 						  new_path_type const &newpath, [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with22<::fast_io::details::posix_api_22::linkat>(oldent.fd, oldpath, newent.fd, newpath);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void dos_utimensat(posix_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-						  unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void dos_utimensat(posix_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+						  statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 						  [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::utimensat>(ent.fd, path, creation_time, last_access_time,
 																					 last_modification_time);
 }
 
 template <::fast_io::constructible_to_os_c_str path_type>
-inline void native_utimensat(posix_at_entry ent, path_type const &path, unix_timestamp_option creation_time,
-							 unix_timestamp_option last_access_time, unix_timestamp_option last_modification_time,
+inline void native_utimensat(posix_at_entry ent, path_type const &path, statx_timestamp_option creation_time,
+							 statx_timestamp_option last_access_time, statx_timestamp_option last_modification_time,
 							 [[maybe_unused]] dos_at_flags flags = dos_at_flags::symlink_nofollow)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::dos_deal_with1x<::fast_io::details::posix_api_1x::utimensat>(ent.fd, path, creation_time, last_access_time,
 																					 last_modification_time);
@@ -484,12 +527,14 @@ inline void native_utimensat(posix_at_entry ent, path_type const &path, unix_tim
 
 template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
 inline ::fast_io::details::basic_ct_string<char_type> dos_readlinkat(posix_at_entry ent, path_type const &path)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::dos_deal_withct<char_type, ::fast_io::details::posix_api_ct::readlinkat>(ent.fd, path);
 }
 
 template <::std::integral char_type, ::fast_io::constructible_to_os_c_str path_type>
 inline ::fast_io::details::basic_ct_string<char_type> native_readlinkat(posix_at_entry ent, path_type const &path)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::dos_deal_withct<char_type, ::fast_io::details::posix_api_ct::readlinkat>(ent.fd, path);
 }

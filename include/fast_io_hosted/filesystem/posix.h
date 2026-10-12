@@ -9,19 +9,19 @@ namespace details
 #if defined(__CYGWIN__)
 struct my_cygwin_DIR
 {
-  /* This is first to set alignment in non _LIBC case.  */
-  unsigned long	__d_cookie;
-  struct dirent	*__d_dirent;
-  char		*__d_dirname;		/* use for internal caching */
-  ::std::int32_t	 __d_position;		/* used by telldir/seekdir */
-  int		 __d_fd;
-  ::std::uintptr_t	 __d_internal;
-  void		*__handle;
-  void		*__fh;
-  unsigned	 __flags;
+	/* This is first to set alignment in non _LIBC case.  */
+	unsigned long __d_cookie;
+	struct dirent *__d_dirent;
+	char *__d_dirname;           /* use for internal caching */
+	::std::int32_t __d_position; /* used by telldir/seekdir */
+	int __d_fd;
+	::std::uintptr_t __d_internal;
+	void *__handle;
+	void *__fh;
+	unsigned __flags;
 };
 
-using my_cygwin_DIR_may_alias_ptr = 
+using my_cygwin_DIR_may_alias_ptr =
 #if __has_cpp_attribute(__gnu__::__may_alias__)
 	[[__gnu__::__may_alias__]]
 #endif
@@ -73,6 +73,7 @@ namespace details
 {
 
 inline DIR *sys_dup_dir(DIR *dirp)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (dirp == nullptr)
 	{
@@ -111,11 +112,12 @@ public:
 	inline constexpr posix_directory_file &operator=(posix_directory_io_observer) noexcept = delete;
 	template <typename native_hd>
 		requires ::std::same_as<native_handle_type, ::std::remove_cvref_t<native_hd>>
-	inline constexpr posix_directory_file(native_hd dirp1)
+	inline constexpr posix_directory_file(native_hd dirp1) noexcept
 		: posix_directory_io_observer{dirp1}
 	{
 	}
 	inline posix_directory_file(posix_file &&pioh)
+		FAST_IO_HERBCEPTIONS_THROWS
 		: posix_directory_io_observer{noexcept_call(::fdopendir, pioh.fd)}
 	{
 		if (this->dirp == nullptr)
@@ -125,6 +127,7 @@ public:
 		pioh.release();
 	}
 	inline posix_directory_file &operator=(posix_directory_file const &other)
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (__builtin_addressof(other) == this) [[unlikely]]
 		{
@@ -165,6 +168,7 @@ public:
 		this->dirp = dirp1;
 	}
 	inline void close()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (*this) [[likely]]
 		{
@@ -176,7 +180,7 @@ public:
 			}
 		}
 	}
-	inline ~posix_directory_file()
+	inline ~posix_directory_file() noexcept
 	{
 		if (this->dirp) [[likely]]
 		{
@@ -327,6 +331,7 @@ inline posix_directory_entry operator*(posix_directory_iterator pdit) noexcept
 }
 
 inline posix_directory_iterator &operator++(posix_directory_iterator &pdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	/*
 	To fix: avoid setting errno
@@ -355,6 +360,7 @@ inline posix_directory_iterator &operator++(posix_directory_iterator &pdit)
 }
 
 inline posix_directory_iterator begin(posix_directory_generator const &pdg)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto dirp{pdg.dir_fl.dirp};
 	::fast_io::noexcept_call(::rewinddir, dirp);
@@ -386,6 +392,7 @@ inline constexpr bool operator!=(posix_directory_iterator const &b, ::std::defau
 }
 
 inline posix_directory_generator current(posix_at_entry pate)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return {.dir_fl = posix_directory_file(posix_file(details::sys_dup(pate.fd)))};
 }
@@ -398,8 +405,8 @@ struct basic_posix_recursive_directory_iterator
 	struct dirent *entry{};
 	::std::size_t d_namlen{};
 	stack_type stack;
-	inline constexpr basic_posix_recursive_directory_iterator() = default;
-	inline explicit constexpr basic_posix_recursive_directory_iterator(DIR *dp)
+	inline constexpr basic_posix_recursive_directory_iterator() noexcept = default;
+	inline explicit constexpr basic_posix_recursive_directory_iterator(DIR *dp) noexcept
 		: dirp(dp)
 	{}
 	inline basic_posix_recursive_directory_iterator(basic_posix_recursive_directory_iterator const &) = delete;
@@ -416,7 +423,9 @@ struct basic_posix_recursive_directory_generator
 };
 
 using posix_recursive_directory_generator = basic_posix_recursive_directory_generator<
-	::fast_io::containers::vector<posix_directory_file, ::fast_io::posix_api_encoding_converter::allocator_type>>;
+	::fast_io::containers::deque<posix_directory_file,
+								 ::fast_io::generic_allocator_adapter<::fast_io::c_malloc_allocator,
+																	  ::fast_io::allocator_adapter_flags::throws_on_allocation_failure>>>;
 
 template <typename StackType>
 inline ::std::size_t depth(basic_posix_recursive_directory_iterator<StackType> const &prdit) noexcept
@@ -427,11 +436,12 @@ inline ::std::size_t depth(basic_posix_recursive_directory_iterator<StackType> c
 template <typename StackType>
 inline basic_posix_recursive_directory_iterator<StackType> &
 operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (;;)
 	{
 		errno = 0;
-		if (prdit.stack.empty())
+		if (prdit.stack.is_empty())
 		{
 			auto entry{::fast_io::noexcept_call(::readdir, prdit.dirp)};
 			if (entry == nullptr)
@@ -456,7 +466,7 @@ operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
 				{
 					throw_posix_error(en);
 				}
-				prdit.stack.pop_back();
+				prdit.stack.pop_back_unchecked();
 				continue;
 			}
 			prdit.entry = entry;
@@ -476,7 +486,7 @@ operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
 			}
 			prdit.stack.emplace_back(::fast_io::posix_file(
 				::fast_io::posix_fs_dirent{
-					details::dirp_to_fd(prdit.stack.empty() ? prdit.dirp : prdit.stack.back().dirp), name},
+					details::dirp_to_fd(prdit.stack.is_empty() ? prdit.dirp : prdit.stack.back().dirp), name},
 				::fast_io::open_mode::directory));
 		}
 		if (prdit.entry) [[likely]]
@@ -496,16 +506,17 @@ operator++(basic_posix_recursive_directory_iterator<StackType> &prdit)
 }
 
 template <typename StackType>
-inline void pop(basic_posix_recursive_directory_iterator<StackType> &prdit) noexcept
+inline void pop(basic_posix_recursive_directory_iterator<StackType> &prdit)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	if (prdit.stack.empty())
+	if (prdit.stack.is_empty())
 	{
 		prdit.entry = nullptr;
 		prdit.d_namlen = 0;
 	}
 	else
 	{
-		prdit.stack.pop_back();
+		prdit.stack.pop_back_unchecked();
 		++prdit;
 	}
 }
@@ -513,6 +524,7 @@ inline void pop(basic_posix_recursive_directory_iterator<StackType> &prdit) noex
 template <typename StackType>
 inline basic_posix_recursive_directory_iterator<StackType>
 begin(basic_posix_recursive_directory_generator<StackType> const &pdg)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto dirp{pdg.dir_fl.dirp};
 	::fast_io::noexcept_call(::rewinddir, dirp);
@@ -530,13 +542,13 @@ inline ::std::default_sentinel_t end(basic_posix_recursive_directory_generator<S
 template <typename StackType>
 inline posix_directory_entry operator*(basic_posix_recursive_directory_iterator<StackType> const &prdit) noexcept
 {
-	return {prdit.stack.empty() ? prdit.dirp : prdit.stack.back().dirp, prdit.entry, prdit.d_namlen};
+	return {prdit.stack.is_empty() ? prdit.dirp : prdit.stack.back().dirp, prdit.entry, prdit.d_namlen};
 }
 
 template <typename StackType>
 inline bool operator==(::std::default_sentinel_t, basic_posix_recursive_directory_iterator<StackType> const &b) noexcept
 {
-	return b.stack.empty() && b.entry == nullptr;
+	return b.stack.is_empty() && b.entry == nullptr;
 }
 
 template <typename StackType>
@@ -561,6 +573,7 @@ inline bool operator!=(basic_posix_recursive_directory_iterator<StackType> const
 }
 
 inline posix_recursive_directory_generator recursive(posix_at_entry pate)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return {.dir_fl = posix_directory_file(posix_file(details::sys_dup(pate.fd)))};
 }

@@ -49,25 +49,25 @@ int main()
 	std::istringstream s;
 	std::vector v1{3, 4, 5};
 	fast_io::vector v2{3, 4, 5};
-	println("-----");
+	print("-----\n");
 
 	v1.insert(v1.begin(), 3);
 	v2.insert(v2.begin(), 3);
 	println(fast_io::mnp::rgvw(v1, " "));
 	println(fast_io::mnp::rgvw(v2, " "));
-	println("-----");
+	print("-----\n");
 
 	v1.insert(v1.begin() + 1, {3, 4, 5});
 	v2.insert(v2.begin() + 1, {3, 4, 5});
 	println(fast_io::mnp::rgvw(v1, " "));
 	println(fast_io::mnp::rgvw(v2, " "));
-	println("-----");
+	print("-----\n");
 
 	v1.insert(v1.begin(), v.begin(), v.end());
 	v2.insert(v2.begin(), v.begin(), v.end());
 	println(fast_io::mnp::rgvw(v1, " "));
 	println(fast_io::mnp::rgvw(v2, " "));
-	println("-----");
+	print("-----\n");
 
 	s = std::istringstream{"1 2 3 4 5"};
 	v1.insert(v1.end() - 1, std::istream_iterator<int>{s}, std::istream_iterator<int>{});
@@ -75,29 +75,29 @@ int main()
 	v2.insert(v2.end() - 1, std::istream_iterator<int>{s}, std::istream_iterator<int>{});
 	println(fast_io::mnp::rgvw(v1, " "));
 	println(fast_io::mnp::rgvw(v2, " "));
-	println("-----");
+	print("-----\n");
 
 	std::vector v3{test_t{3}, test_t{4}, test_t{5}};
 	fast_io::vector v4{test_t{3}, test_t{4}, test_t{5}};
-	println("-----");
+	print("-----\n");
 
 	v3.insert(v3.begin(), 3);
 	v4.insert(v4.begin(), 3);
 	println(fast_io::mnp::rgvw(v3, " "));
 	println(fast_io::mnp::rgvw(v4, " "));
-	println("-----");
+	print("-----\n");
 
 	v3.insert(v3.begin() + 1, {3, 4, 5});
 	v4.insert(v4.begin() + 1, {3, 4, 5});
 	println(fast_io::mnp::rgvw(v3, " "));
 	println(fast_io::mnp::rgvw(v4, " "));
-	println("-----");
+	print("-----\n");
 
 	v3.insert(v3.begin(), v.begin(), v.end());
 	v4.insert(v4.begin(), v.begin(), v.end());
 	println(fast_io::mnp::rgvw(v3, " "));
 	println(fast_io::mnp::rgvw(v4, " "));
-	println("-----");
+	print("-----\n");
 
 	s = std::istringstream{"1 2 3 4 5"};
 	v3.insert(v3.end() - 1, std::istream_iterator<int>{s}, std::istream_iterator<int>{});
@@ -105,5 +105,5 @@ int main()
 	v4.insert(v4.end() - 1, std::istream_iterator<int>{s}, std::istream_iterator<int>{});
 	println(fast_io::mnp::rgvw(v3, " "));
 	println(fast_io::mnp::rgvw(v4, " "));
-	println("-----");
+	print("-----\n");
 }

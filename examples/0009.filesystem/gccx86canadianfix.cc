@@ -94,14 +94,13 @@ int main(int argc, char **argv)
 			for (auto it{loader.data()}, ed{it + loader.size()};;)
 			{
 				auto retit{std::search(it, ed, searcher)};
-				::fast_io::operations::write_all(obf, it, retit);
+				::fast_io::operations::write_all(obf, it, static_cast<::std::size_t>(retit - it));
 				if (retit == ed)
 				{
 					break;
 				}
 				::fast_io::operations::write_all_bytes(
-					obf, reinterpret_cast<::std::byte const *>(newvw.data()),
-					reinterpret_cast<::std::byte const *>(newvw.data() + newvw.size()));
+					obf, reinterpret_cast<::std::byte const *>(newvw.data()), newvw.size());
 				it = retit + vw.size();
 			}
 		}

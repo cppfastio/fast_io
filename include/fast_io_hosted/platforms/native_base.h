@@ -3,7 +3,7 @@
 #include "util.h"
 #include "dos_filename.h"
 #if defined(_WIN32) || defined(__CYGWIN__)
-#include "win32/impl.h"
+#include "win32/api/impl.h"
 namespace fast_io
 {
 
@@ -11,17 +11,32 @@ inline constexpr ::std::uint_least32_t win32_stdin_number(static_cast<::std::uin
 inline constexpr ::std::uint_least32_t win32_stdout_number(static_cast<::std::uint_least32_t>(-11));
 inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::uint_least32_t>(-12));
 
+[[noreturn]] inline void throw_win32_error() FAST_IO_HERBCEPTIONS_THROWS
+{
+	::fast_io::herbceptions::throws_win32_errc_with_value(::fast_io::win32::GetLastError());
+}
+
+[[noreturn]] inline void throw_win32_error([[maybe_unused]] ::std::uint_least32_t err) FAST_IO_HERBCEPTIONS_THROWS
+{
+	::fast_io::herbceptions::throws_win32_errc_with_value(err);
+}
+
 } // namespace fast_io
-#include "win32_code.h"
 #include "win32_io_redirection.h"
 #include "nt/impl.h"
-#include "win32_error.h"
-
-#include "nt.h"
-// #include"win32_iocp_overlapped.h"
 
 #include "win32.h"
 #include "win32_network/win32.h"
+#if defined(__HERBCEPTIONS__)
+#include "win32_iocp.h"
+/* thread-pool backend: OS default pool (QueueUserWorkItem) runs the
+ * synchronous ops off the submission thread; the completion queue is a
+ * critical-section list signalled by a manual-reset event */
+#include "win32_thread_pool.h"
+/* Windows 11 IoRing backend — opt-in, never the io_async default:
+ * resolved at runtime, absent on Win10 and wine */
+#include "win32_ioring.h"
+#endif
 #endif
 #include "linux/system_call.h"
 #include "posix.h"
@@ -30,6 +45,9 @@ inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::ui
 #include "posix_netop.h"
 #if __has_include(<netdb.h>)
 #include "posix_dns.h"
+#endif
+#if __has_include(<ifaddrs.h>)
+#include "posix_ifaddrs.h"
 #endif
 #endif
 

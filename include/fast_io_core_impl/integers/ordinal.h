@@ -76,7 +76,7 @@ inline constexpr char_type *prrsv_ordinal_impl(char_type *iter, T t) noexcept
 } // namespace details
 
 template <::std::integral char_type, ::fast_io::manipulators::scalar_flags flags, ::fast_io::details::my_integral T>
-inline constexpr ::std::size_t print_reserve_size(::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_t<flags, ::fast_io::manipulators::ordinal_t<T>>>)
+inline constexpr ::std::size_t print_reserve_size(::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_t<flags, ::fast_io::manipulators::ordinal_t<T>>>) noexcept
 {
 	return ::fast_io::details::print_integer_reserved_size_cache<flags.base, flags.showbase, flags.showpos, T> + 2u;
 }

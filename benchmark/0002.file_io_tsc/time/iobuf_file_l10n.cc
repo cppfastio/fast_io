@@ -7,7 +7,7 @@ using namespace fast_io::io;
 
 int main()
 {
-	fast_io::native_l10n loc("");
+	auto const *loc{::fast_io::l10n::load_l10n(u8"")};
 	constexpr std::size_t N(10000000);
 	{
 		fast_io::timer t(u8"output");

@@ -13,7 +13,7 @@ freestanding ones.
 #endif
 
 #if !defined(__cpp_concepts)
-#error "fast_io requires at least C++20 standard compiler."
+#error "fast_io requires at least a C++26 standard compiler."
 #else
 
 #include "fast_io_freestanding.h"
@@ -24,25 +24,7 @@ freestanding ones.
 	  !defined(_LIBCPP_FREESTANDING)) ||                                             \
 	 defined(FAST_IO_ENABLE_HOSTED_FEATURES))
 
-#if __has_include(<stdio.h>)
-#if __has_include(<bits/error_constants.h>)
-#include <bits/error_constants.h>
-#include "fast_io_hosted/platforms/errc_default_impl.h"
-#elif __has_include(<__errc>) && !defined(__clang__)
-#include <__errc>
-#include "fast_io_hosted/platforms/errc_default_impl.h"
-#elif __has_include(<xerrc.h>) && !defined(__BIONIC__)
-#include <xerrc.h>
-#include "fast_io_hosted/platforms/errc_default_impl.h"
-#elif __has_include(<system_error>)
-#include <system_error>
-#include "fast_io_hosted/platforms/errc_default_impl.h"
-#else
-#include "fast_io_hosted/platforms/errc_impl.h"
-#endif
 
-#include "fast_io_hosted/posix_error_scatter/impl.h"
-#include "fast_io_hosted/posix_error.h"
 #ifdef __MSDOS__
 #undef __STRICT_ANSI__
 #endif
@@ -59,6 +41,7 @@ freestanding ones.
 #include "fast_io_unit/timespec.h"
 #endif
 
+
 #if !defined(__AVR__)
 #include "fast_io_dsal/impl/common.h"
 #include "fast_io_dsal/impl/tuple.h"
@@ -66,6 +49,11 @@ freestanding ones.
 #include "fast_io_dsal/impl/cstring_view.h"
 #include "fast_io_dsal/impl/string.h"
 #include "fast_io_dsal/impl/vector.h"
+#include "fast_io_dsal/impl/span.h"
+#include "fast_io_dsal/impl/deque.h"
+#if defined(FAST_IO_HAS_WINE_UNIX)
+#include "fast_io_hosted/platforms/wine/wine.h"
+#endif
 #include "fast_io_hosted/platforms/native.h"
 #include "fast_io_hosted/file_loaders/impl.h"
 #include "fast_io_hosted/wrapper.h"
@@ -83,6 +71,13 @@ freestanding ones.
 #include "fast_io_hosted/process/process.h"
 
 #include "fast_io_hosted/io_file.h"
+
+#if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__))
+#endif
+
+#if defined(__HERBCEPTIONS__)
+
+#endif
 
 #if defined(_MSVC_EXECUTION_CHARACTER_SET)
 #if _MSVC_EXECUTION_CHARACTER_SET == 936 || _MSVC_EXECUTION_CHARACTER_SET == 54936
@@ -126,6 +121,3 @@ freestanding ones.
 
 #include "fast_io_dsal/impl/misc/pop_macros.h"
 #include "fast_io_dsal/impl/misc/pop_warnings.h"
-
-
-#endif

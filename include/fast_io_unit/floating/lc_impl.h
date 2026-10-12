@@ -1,7 +1,6 @@
-﻿#pragma once
+#pragma once
 
-#include "lc_hexfloat.h"
-#include "lc_roundtrip.h"
+#include "../../fast_io_dsal/impl/misc/push_macros.h"
 
 namespace fast_io
 {
@@ -9,146 +8,273 @@ namespace fast_io
 namespace details
 {
 
-template <::std::integral char_type, my_floating_point flt, ::fast_io::manipulators::floating_format mf>
-inline constexpr ::std::size_t lc_print_rsv_iec559_size(basic_lc_all<char_type> const *all)
+// ---------------------------------------------------------------------------
+// locale float rewrite — the standard scalar/precision format is emitted
+// into scratch, then the text is walked once:
+//   [-]int[.frac][eEpP ±exp]   or   inf / nan / 0x…p…
+//   '.' becomes numeric.decimal_point units; the trailing decimal-digit
+//   run before '.' (the integer part) gets the numeric grouping +
+//   thousands_sep when the format is decimal
+// ---------------------------------------------------------------------------
+
+// emit digit characters df..dl with grouping separators, or raw when
+// the locale has none — same ascending-cum bound math as lc_grouped_write
+template <::std::integral char_type, typename sink>
+inline constexpr void lc_put_grouped_digits(lc_ctx<char_type> const *ctx,
+											char_type const *df,
+											char_type const *dl, sink &sk) noexcept
 {
-	using trait = iec559_traits<flt>;
-	if constexpr (mf == ::fast_io::manipulators::floating_format::fixed)
+	auto const nd{static_cast<::std::size_t>(dl - df)};
+	if (ctx->grouping_len == 0 || ctx->sep_len == 0 || nd == 0)
 	{
-		//(+/-)(significants+sep)
-		constexpr ::std::size_t sum{2};
-		constexpr ::std::size_t digits{trait::e10max + trait::m10digits};
-		static_assert(digits != 0);
-		constexpr ::std::size_t digitsm1{digits - 1};
-		return sum + digitsm1 + all->numeric.decimal_point.len + digitsm1 * all->numeric.thousands_sep.len;
+		for (auto p{df}; p != dl; ++p)
+		{
+			sk.put(*p);
+		}
+		return;
 	}
-	else if constexpr (mf == ::fast_io::manipulators::floating_format::scientific)
+	::std::size_t bounds[32];
+	::std::size_t nb{};
 	{
-		constexpr ::std::size_t sum{print_rsv_cache<flt, mf>};
-		return sum + all->numeric.decimal_point.len;
+		::std::uint_least8_t prev{};
+		::std::size_t cum{};
+		for (::std::size_t gi{}; nb < 32; ++gi)
+		{
+			auto const g{lc_group_size(ctx, gi, prev)};
+			if (g == 0)
+			{
+				break;
+			}
+			prev = g;
+			if (cum + g >= nd)
+			{
+				break;
+			}
+			cum += g;
+			bounds[nb++] = cum;
+		}
 	}
-	else
+	::std::size_t bi{};
+	for (::std::size_t i{}; i < nd; ++i)
 	{
-		constexpr ::std::size_t sum{3 + trait::e10digits};
-		constexpr ::std::size_t digitsplus3{trait::m10digits + 3};
-		return sum + digitsplus3 + all->numeric.decimal_point.len + digitsplus3 * all->numeric.thousands_sep.len;
+		sk.put(df[i]);
+		if (bi < nb && nd - i - 1 == bounds[nb - 1 - bi])
+		{
+			sk.put_units(ctx->sep, ctx->sep_len);
+			++bi;
+		}
 	}
 }
 
-template <::std::integral char_type, manipulators::scalar_flags flags, ::fast_io::details::my_floating_point flt>
-inline constexpr ::std::size_t lc_print_reserve_float_size_impl(basic_lc_all<char_type> const *all) noexcept
+// rewrite one formatted float range — group=true applies the numeric
+// grouping to the decimal-digit run before '.'
+template <bool group, ::std::integral char_type, typename sink>
+inline constexpr void lc_float_rewrite(lc_ctx<char_type> const *ctx,
+									   char_type const *f,
+									   char_type const *l, sink &sk)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	static_assert(manipulators::floating_format::general == flags.floating ||
-				  manipulators::floating_format::scientific == flags.floating ||
-				  manipulators::floating_format::fixed == flags.floating ||
-				  manipulators::floating_format::decimal == flags.floating ||
-				  manipulators::floating_format::hexfloat == flags.floating);
-	if constexpr (flags.floating == manipulators::floating_format::hexfloat)
+	auto const dp{ctx->sc(ctx->all->numeric.decimal_point)};
+	// split at '.' or the exponent marker, whichever comes first
+	char_type const *dot{l}, *ex{l};
+	for (auto p{f}; p != l; ++p)
 	{
-		constexpr ::std::size_t non_lc_reserve_size{
-			print_reserve_size(io_reserve_type<char_type, manipulators::scalar_manip_t<flags, flt>>)};
-		static_assert(non_lc_reserve_size != 0);
-		constexpr ::std::size_t non_lc_reserve_size_m1{non_lc_reserve_size - 1u};
-		return all->numeric.decimal_point.len + non_lc_reserve_size_m1;
+		auto const ch{*p};
+		if (ch == ::fast_io::char_literal_v<u8'.', char_type>)
+		{
+			dot = p;
+			break;
+		}
+		if (ch == ::fast_io::char_literal_v<u8'e', char_type> ||
+			ch == ::fast_io::char_literal_v<u8'E', char_type> ||
+			ch == ::fast_io::char_literal_v<u8'p', char_type> ||
+			ch == ::fast_io::char_literal_v<u8'P', char_type>)
+		{
+			ex = p;
+			break;
+		}
+	}
+	if (dot == l)
+	{
+		dot = ex; // no dot — the tail starts at the exponent
+	}
+	// trailing decimal-digit run of [f, dot) — the groupable integer
+	// digits; "0x1", "inf", "nan" leave no suffix digits
+	auto de{dot};
+	while (de != f && ::fast_io::char_category::is_c_digit(de[-1]))
+	{
+		--de;
+	}
+	// the integer region minus its digit suffix (sign / 0x / inf-nan
+	// letters) is raw
+	for (auto p{f}; p != de; ++p)
+	{
+		sk.put(*p);
+	}
+	if constexpr (group)
+	{
+		lc_put_grouped_digits<char_type>(ctx, de, dot, sk);
 	}
 	else
 	{
-		if constexpr (::std::same_as<::std::remove_cvref_t<flt>, long double> &&
-					  sizeof(flt) == sizeof(double)) // this is the case on xxx-windows-msvc
+		for (auto p{de}; p != dot; ++p)
 		{
-			return lc_print_rsv_iec559_size<char_type, double, flags.floating>(all);
+			sk.put(*p);
 		}
-		static_assert((::std::same_as<::std::remove_cvref_t<flt>, double> ||
-					   ::std::same_as<::std::remove_cvref_t<flt>, float>
-#ifdef __STDCPP_FLOAT32_T__
-					   || ::std::same_as<::std::remove_cvref_t<flt>, _Float32>
-#endif
-#ifdef __STDCPP_FLOAT64_T__
-					   || ::std::same_as<::std::remove_cvref_t<flt>, _Float64>
-#endif
-					   ),
-					  "currently only support iec559 float32 and float64, sorry");
-		return lc_print_rsv_iec559_size<char_type, ::std::remove_cvref_t<flt>, flags.floating>(all);
+	}
+	if (dot != l)
+	{
+		// '.' is replaced by the locale decimal_point units
+		if (dp.base != nullptr)
+		{
+			sk.put_units(dp.base, dp.len);
+		}
+		else
+		{
+			sk.put(*dot);
+		}
+		for (auto p{dot + 1}; p != l; ++p)
+		{
+			sk.put(*p);
+		}
+	}
+	else
+	{
+		for (auto p{ex}; p != l; ++p)
+		{
+			sk.put(*p);
+		}
 	}
 }
+
+// emit one formatted float arg — format into scratch (constexpr bound
+// for scalar, dynamic for precision), then rewrite through the sink
+template <bool group, ::std::integral char_type, typename T, typename sink>
+inline constexpr void lc_float_emit(lc_ctx<char_type> const *ctx, T const &t,
+									sink &sk) FAST_IO_HERBCEPTIONS_THROWS
+{
+	if constexpr (requires { t.precision; })
+	{
+		::fast_io::details::local_operator_new_array_ptr<char_type> tmp(
+			print_reserve_size(::fast_io::io_reserve_type<char_type, T>, t));
+		auto const *l{print_reserve_define(::fast_io::io_reserve_type<char_type, T>,
+										   tmp.ptr, t)};
+		lc_float_rewrite<group>(ctx, tmp.ptr, l, sk);
+	}
+	else
+	{
+		constexpr ::std::size_t scratch{
+			print_reserve_size(::fast_io::io_reserve_type<char_type, T>)};
+		char_type tmp[scratch + 4];
+		auto const *l{print_reserve_define(::fast_io::io_reserve_type<char_type, T>,
+										   tmp, t)};
+		lc_float_rewrite<group>(ctx, tmp, l, sk);
+	}
+}
+
+template <::std::integral char_type, typename T>
+inline constexpr ::std::size_t lc_float_size(lc_ctx<char_type> const *ctx,
+											 T const &t, bool group)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	if (ctx->all == nullptr)
+	{
+		return 0;
+	}
+	lc_count_sink<char_type> sk{};
+	if (group)
+	{
+		lc_float_emit<true>(ctx, t, sk);
+	}
+	else
+	{
+		lc_float_emit<false>(ctx, t, sk);
+	}
+	return sk.n;
+}
+
+// a floating scalar — shortest or precision — base-10 only (hexfloat
+// gets decimal_point but no hex grouping)
+template <typename T>
+inline constexpr bool lc_float_scalar_v{false};
+
+template <::fast_io::manipulators::scalar_flags flags, typename T>
+inline constexpr bool lc_float_scalar_v<::fast_io::manipulators::scalar_manip_t<flags, T>>{
+	::fast_io::details::my_floating_point<::std::remove_cvref_t<T>> && flags.base == 10};
+
+template <::fast_io::manipulators::scalar_flags flags, typename T>
+inline constexpr bool lc_float_scalar_v<::fast_io::manipulators::scalar_manip_precision_t<flags, T>>{
+	::fast_io::details::my_floating_point<::std::remove_cvref_t<T>> && flags.base == 10};
 
 } // namespace details
 
-template <::std::integral char_type, manipulators::scalar_flags flags, details::my_floating_point flt>
-	requires(flags.base == 10)
-inline constexpr ::std::size_t print_reserve_size(basic_lc_all<char_type> const *all,
-												  manipulators::scalar_manip_t<flags, flt>) noexcept
+// ---------------------------------------------------------------------------
+// print hooks keyed on lc_ctx — count and write share lc_float_emit so
+// they cannot disagree
+// ---------------------------------------------------------------------------
+
+template <::std::integral char_type, ::fast_io::manipulators::scalar_flags flags,
+		  typename T>
+	requires(::fast_io::details::lc_float_scalar_v<
+			 ::fast_io::manipulators::scalar_manip_t<flags, T>>)
+inline constexpr ::std::size_t
+print_reserve_size(lc_ctx<char_type> const *ctx,
+				   ::fast_io::manipulators::scalar_manip_t<flags, T> t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::lc_print_reserve_float_size_impl<char_type, flags, flt>(all);
+	constexpr bool group{
+		flags.floating != ::fast_io::manipulators::floating_format::hexfloat};
+	return ::fast_io::details::lc_float_size<char_type>(ctx, t, group);
 }
 
-template <::std::integral char_type, manipulators::scalar_flags flags, details::my_floating_point flt>
-	requires(flags.base == 10)
-inline constexpr char_type *print_reserve_define(basic_lc_all<char_type> const *all, char_type *iter,
-												 manipulators::scalar_manip_t<flags, flt> f) noexcept
+template <::std::integral char_type, ::fast_io::manipulators::scalar_flags flags,
+		  typename T>
+	requires(::fast_io::details::lc_float_scalar_v<
+			 ::fast_io::manipulators::scalar_manip_t<flags, T>>)
+inline constexpr char_type *
+print_reserve_define(lc_ctx<char_type> const *ctx, char_type *iter,
+					 ::fast_io::manipulators::scalar_manip_t<flags, T> t)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	static_assert(manipulators::floating_format::general == flags.floating ||
-				  manipulators::floating_format::scientific == flags.floating ||
-				  manipulators::floating_format::fixed == flags.floating ||
-				  manipulators::floating_format::decimal == flags.floating ||
-				  manipulators::floating_format::hexfloat == flags.floating);
+	constexpr bool group{
+		flags.floating != ::fast_io::manipulators::floating_format::hexfloat};
+	::fast_io::details::lc_write_sink<char_type> sk{
+		iter, iter + ::fast_io::details::lc_float_size<char_type>(ctx, t, group)};
+	::fast_io::details::lc_float_emit<group>(ctx, t, sk);
+	return sk.it;
+}
 
-	if constexpr (flags.floating == manipulators::floating_format::hexfloat)
-	{
-		auto decimal_point{all->numeric.decimal_point};
-		if constexpr (::std::same_as<::std::remove_cvref_t<flt>, long double>
-#if defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)
-					  || ::std::same_as<::std::remove_cvref_t<flt>, __float128>
-#endif
-		)
-		{
-#if (defined(__SIZEOF_FLOAT128__) || defined(__FLOAT128__)) && defined(__SIZEOF_INT128__)
-			if constexpr (sizeof(flt) > sizeof(double))
-			{
-				return ::fast_io::details::lc_print_rsvhexfloat_define_impl<
-					flags.showbase, flags.uppercase_showbase, flags.showpos, flags.uppercase, flags.uppercase_e>(
-					iter, static_cast<__float128>(f.reference), decimal_point.base, decimal_point.len);
-			}
-			else
-#endif
-				return ::fast_io::details::lc_print_rsvhexfloat_define_impl<
-					flags.showbase, flags.uppercase_showbase, flags.showpos, flags.uppercase, flags.uppercase_e>(
-					iter, static_cast<double>(f.reference), decimal_point.base, decimal_point.len);
-		}
-		else
-		{
-			return ::fast_io::details::lc_print_rsvhexfloat_define_impl<
-				flags.showbase, flags.uppercase_showbase, flags.showpos, flags.uppercase, flags.uppercase_e>(
-				iter, f.reference, decimal_point.base, decimal_point.len);
-		}
-	}
-	else
-	{
-		if constexpr (::std::same_as<::std::remove_cvref_t<flt>, long double> &&
-					  sizeof(flt) == sizeof(double)) // this is the case on xxx-windows-msvc
-		{
-			return ::fast_io::details::lc_print_rsvflt_define_impl<flags.showpos, flags.uppercase, flags.uppercase_e,
-																   flags.floating>(all, iter,
-																				   static_cast<double>(f.reference));
-		}
-		else
-		{
-			// this is the case for every other platform, including xxx-windows-gnu
-			static_assert((::std::same_as<::std::remove_cvref_t<flt>, double> ||
-						   ::std::same_as<::std::remove_cvref_t<flt>, float>
-#ifdef __STDCPP_FLOAT32_T__
-						   || ::std::same_as<::std::remove_cvref_t<flt>, _Float32>
-#endif
-#ifdef __STDCPP_FLOAT64_T__
-						   || ::std::same_as<::std::remove_cvref_t<flt>, _Float64>
-#endif
-						   ),
-						  "currently only support iec559 float32 and float64, sorry");
-			return ::fast_io::details::lc_print_rsvflt_define_impl<flags.showpos, flags.uppercase, flags.uppercase_e,
-																   flags.floating>(all, iter, f.reference);
-		}
-		return iter;
-	}
+template <::std::integral char_type, ::fast_io::manipulators::scalar_flags flags,
+		  typename T>
+	requires(::fast_io::details::lc_float_scalar_v<
+			 ::fast_io::manipulators::scalar_manip_precision_t<flags, T>>)
+inline constexpr ::std::size_t
+print_reserve_size(lc_ctx<char_type> const *ctx,
+				   ::fast_io::manipulators::scalar_manip_precision_t<flags, T> t)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	constexpr bool group{
+		flags.floating != ::fast_io::manipulators::floating_format::hexfloat};
+	return ::fast_io::details::lc_float_size<char_type>(ctx, t, group);
+}
+
+template <::std::integral char_type, ::fast_io::manipulators::scalar_flags flags,
+		  typename T>
+	requires(::fast_io::details::lc_float_scalar_v<
+			 ::fast_io::manipulators::scalar_manip_precision_t<flags, T>>)
+inline constexpr char_type *
+print_reserve_define(lc_ctx<char_type> const *ctx, char_type *iter,
+					 ::fast_io::manipulators::scalar_manip_precision_t<flags, T> t)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+	constexpr bool group{
+		flags.floating != ::fast_io::manipulators::floating_format::hexfloat};
+	::fast_io::details::lc_write_sink<char_type> sk{
+		iter, iter + ::fast_io::details::lc_float_size<char_type>(ctx, t, group)};
+	::fast_io::details::lc_float_emit<group>(ctx, t, sk);
+	return sk.it;
 }
 
 } // namespace fast_io
+
+#include "../../fast_io_dsal/impl/misc/pop_macros.h"

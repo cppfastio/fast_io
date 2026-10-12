@@ -38,25 +38,27 @@ input_stream_require_secure_clear_define(basic_win32_crypt_gen_random_io_observe
 namespace win32::details
 {
 
-inline ::std::byte *win32_crypt_gen_random_some_impl(::std::size_t hprov, ::std::byte *first, ::std::byte *last)
+inline ::std::byte *win32_crypt_gen_random_some_impl(::std::size_t hprov, ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (sizeof(::std::size_t) <= sizeof(::std::uint_least32_t))
 	{
-		::std::size_t sz{static_cast<::std::size_t>(last - first)};
+		::std::size_t sz{count};
 		if (!::fast_io::win32::CryptGenRandom(hprov, static_cast<::std::uint_least32_t>(sz),
 											  reinterpret_cast<char unsigned *>(first)))
 		{
 			throw_win32_error();
 		}
-		return last;
+		return first + count;
 	}
 	else
 	{
 		constexpr ::std::size_t uintleast32mx{
 			static_cast<::std::size_t>(::std::numeric_limits<::std::uint_least32_t>::max())};
-		while (first != last)
+		auto const e{first + count};
+		while (first != e)
 		{
-			::std::size_t toreadthisround{static_cast<::std::size_t>(last - first)};
+			::std::size_t toreadthisround{static_cast<::std::size_t>(e - first)};
 			if (uintleast32mx < toreadthisround)
 			{
 				toreadthisround = uintleast32mx;
@@ -68,16 +70,17 @@ inline ::std::byte *win32_crypt_gen_random_some_impl(::std::size_t hprov, ::std:
 			}
 			first += toreadthisround;
 		}
-		return last;
+		return first + count;
 	}
 }
 
-inline void win32_crypt_gen_random_all_impl(::std::size_t hprov, ::std::byte *first, ::std::byte *last)
+inline void win32_crypt_gen_random_all_impl(::std::size_t hprov, ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto ret{win32_crypt_gen_random_some_impl(hprov, first, last)};
+	auto ret{win32_crypt_gen_random_some_impl(hprov, first, count)};
 	if constexpr (sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
 	{
-		if (ret != last)
+		if (ret != first + count)
 		{
 			throw_win32_error();
 		}
@@ -89,16 +92,18 @@ inline void win32_crypt_gen_random_all_impl(::std::size_t hprov, ::std::byte *fi
 template <::std::integral char_type>
 	requires(sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
 inline ::std::byte *read_some_bytes_underflow_define(basic_win32_crypt_gen_random_io_observer<char_type> bcgiob,
-													 ::std::byte *first, ::std::byte *last)
+													 ::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::win32_crypt_gen_random_some_impl(bcgiob.hprov, first, last);
+	return ::fast_io::win32::details::win32_crypt_gen_random_some_impl(bcgiob.hprov, first, count);
 }
 
 template <::std::integral char_type>
 inline void read_all_bytes_underflow_define(basic_win32_crypt_gen_random_io_observer<char_type> bcgiob,
-											::std::byte *first, ::std::byte *last)
+											::std::byte *first, ::std::size_t count)
+	FAST_IO_HERBCEPTIONS_THROWS
 {
-	::fast_io::win32::details::win32_crypt_gen_random_all_impl(bcgiob.hprov, first, last);
+	::fast_io::win32::details::win32_crypt_gen_random_all_impl(bcgiob.hprov, first, count);
 }
 
 template <win32_family family, ::std::integral ch_type>
@@ -108,6 +113,7 @@ public:
 	using native_handle_type = ::std::size_t;
 	using input_char_type = ch_type;
 	inline basic_win32_family_crypt_gen_random_file()
+		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_win32_crypt_gen_random_io_observer<ch_type>{
 			  ::fast_io::details::win32::crypt_acquire_context_fallback<family>()}
 	{
@@ -147,8 +153,9 @@ public:
 			::fast_io::win32::CryptReleaseContext(this->hprov, 0);
 		}
 	}
-	
+
 	inline void close()
+		FAST_IO_HERBCEPTIONS_THROWS
 	{
 		if (this->hprov) [[likely]]
 		{
