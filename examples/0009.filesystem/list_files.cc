@@ -36,9 +36,9 @@ int main(int argc, char **argv)
 			println(code_cvt(u8filename(ent)));
 		}
 	}
-	catch (fast_io::error &e)
+	catch throws(::std::error e)
 	{
-		perr("Fatal error: ", e);
+		perrln(e);
 		return 1;
 	}
 	return 0;
