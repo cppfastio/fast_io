@@ -74,6 +74,29 @@ inline ::std::byte const *posix_dos_write_bytes_impl(int fd, ::std::byte const *
 	}
 	return first + ret;
 }
+
+#endif
+
+#if ((!defined(_WIN32) && !defined(__NEWLIB__)) || defined(__WINE__) || defined(__CYGWIN__)) && !defined(__wasi__) && defined(MSG_NOSIGNAL)
+
+inline ::std::byte const *posix_socket_write_bytes_impl(int fd, ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+{
+#if defined(__linux__) && defined(__NR_sendto)
+	auto ret{system_call<__NR_sendto, ::std::ptrdiff_t>(fd, first, count, MSG_NOSIGNAL, nullptr, nullptr)};
+	if (::fast_io::linux_system_call_fails(ret))
+	{
+		::fast_io::linux_system_call_throw_error(ret);
+	}
+#else
+	auto ret{::fast_io::noexcept_call(::sendto, fd, first, count, MSG_NOSIGNAL, nullptr, nullptr)};
+	if (ret == -1)
+	{
+		::fast_io::throw_posix_error();
+	}
+#endif
+	return first + ret;
+}
+
 #endif
 
 } // namespace details
@@ -102,6 +125,12 @@ inline ::std::byte const *write_some_bytes_overflow_define(::fast_io::basic_posi
 	if constexpr (family == ::fast_io::posix_family::dos)
 	{
 		return ::fast_io::details::posix_dos_write_bytes_impl(piob.fd, first, count);
+	}
+	else
+#elif ((!defined(_WIN32) && !defined(__NEWLIB__)) || defined(__WINE__) || defined(__CYGWIN__)) && !defined(__wasi__) && defined(MSG_NOSIGNAL)
+	if constexpr (family == ::fast_io::posix_family::sock)
+	{
+		return ::fast_io::details::posix_socket_write_bytes_impl(piob.fd, first, count);
 	}
 	else
 #endif

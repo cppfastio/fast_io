@@ -30,6 +30,27 @@ using u32posix_io_observer = basic_posix_io_observer<char32_t>;
 using u32posix_file = basic_posix_file<char32_t>;
 using u32posix_pipe = basic_posix_pipe<char32_t>;
 
+
+template <::std::integral chartype>
+using basic_posix_socket_io_observer = basic_posix_family_io_observer<::fast_io::posix_family::native_sock, chartype>;
+template <::std::integral chartype>
+using basic_posix_socket_file = basic_posix_family_file<::fast_io::posix_family::native_sock, chartype>;
+
+using posix_socket_io_observer = basic_posix_socket_io_observer<char>;
+using posix_socket_file = basic_posix_socket_file<char>;
+
+using wposix_socket_io_observer = basic_posix_socket_io_observer<wchar_t>;
+using wposix_socket_file = basic_posix_socket_file<wchar_t>;
+
+using u8posix_socket_io_observer = basic_posix_socket_io_observer<char8_t>;
+using u8posix_socket_file = basic_posix_socket_file<char8_t>;
+
+using u16posix_socket_io_observer = basic_posix_socket_io_observer<char16_t>;
+using u16posix_socket_file = basic_posix_socket_file<char16_t>;
+
+using u32posix_socket_io_observer = basic_posix_socket_io_observer<char32_t>;
+using u32posix_socket_file = basic_posix_socket_file<char32_t>;
+
 inline constexpr int posix_stdin_number{0};
 inline constexpr int posix_stdout_number{1};
 inline constexpr int posix_stderr_number{2};

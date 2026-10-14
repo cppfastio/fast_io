@@ -465,32 +465,33 @@ inline void io_uring_scatter_submit(sched_type sched, ::fast_io::liburing::io_ur
 	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_type>;
 	using cookie_type = io_uring_scatter_cookie<alloc_type, T>;
 	::std::size_t const neff{n < io_uring_max_iov ? n : io_uring_max_iov};
-	if (neff == 0)
-	{
-		callback(::std::cxx_std_error{}, ::fast_io::io_scatter_status_t{0, 0});
-		return;
-	}
+	::std::cxx_std_error err{};
 	try
 	{
-		::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
-			io_uring_new_state<cookie_type>(sched, io_uring_invoke_func{},
-											io_uring_timeout_link_block{}, 0zu, 0,
-											::fast_io::liburing::io_uring_timespec{}, scatters, neff,
-											::std::move(callback))};
-		guard.cookie->invoke = io_uring_scatter_invoke<alloc_type, T>;
-		io_uring_reserve_sqes(ring, timeout.has_opt ? 2 : 1);
-		io_uring_sqe *sqe{io_uring_get_sqe(ring)};
-		io_uring_prep_rw(op, sqe, fd, scatters, static_cast<::std::uint_least32_t>(neff),
-						 io_uring_off_or_current(off));
-		io_uring_arm_timeout(ring, guard.cookie, sqe, io_uring_scatter_deliver<alloc_type, T>,
-							 timeout);
-		guard.release();
-		io_uring_commit(ring);
+		if (neff != 0)
+		{
+			::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
+				io_uring_new_state<cookie_type>(sched, io_uring_invoke_func{},
+												io_uring_timeout_link_block{}, 0zu, 0,
+												::fast_io::liburing::io_uring_timespec{}, scatters, neff,
+												::std::move(callback))};
+			guard.cookie->invoke = io_uring_scatter_invoke<alloc_type, T>;
+			io_uring_reserve_sqes(ring, timeout.has_opt ? 2 : 1);
+			io_uring_sqe *sqe{io_uring_get_sqe(ring)};
+			io_uring_prep_rw(op, sqe, fd, scatters, static_cast<::std::uint_least32_t>(neff),
+							 io_uring_off_or_current(off));
+			io_uring_arm_timeout(ring, guard.cookie, sqe, io_uring_scatter_deliver<alloc_type, T>,
+								 timeout);
+			guard.release();
+			io_uring_commit(ring);
+			return;
+		}
 	}
 	catch throws(::std::error e)
 	{
-		callback(e.release(), ::fast_io::io_scatter_status_t{});
+		err = e.release();
 	}
+	callback(err, ::fast_io::io_scatter_status_t{});
 }
 
 /* ======================= splice transmit ======================= */
@@ -898,9 +899,18 @@ inline void async_pwrite_some_bytes_overflow_callback_define(
 	::fast_io::basic_posix_family_io_observer<family, char_type> piob, ::std::byte const *first,
 	::std::size_t count, ::fast_io::intfpos_opt off, func callback) noexcept
 {
-	::fast_io::liburing::details::io_uring_rw_submit(sched, *sched.ring, ::fast_io::liburing::io_uring_op_write,
-													 piob.fd, first, count, off, timeout,
-													 ::std::move(callback));
+	if constexpr (family == ::fast_io::posix_family::sock)
+	{
+		::fast_io::liburing::details::io_uring_rw_submit(sched, *sched.ring, ::fast_io::liburing::io_uring_op_write,
+														 piob.fd, first, count, off, timeout,
+														 ::std::move(callback));
+	}
+	else
+	{
+		::fast_io::liburing::details::io_uring_rw_submit(sched, *sched.ring, ::fast_io::liburing::io_uring_op_write,
+														 piob.fd, first, count, off, timeout,
+														 ::std::move(callback));
+	}
 }
 
 /*
@@ -931,10 +941,20 @@ inline void async_scatter_pwrite_some_bytes_overflow_callback_define(
 	::fast_io::io_scatter_t const *scatters, ::std::size_t n, ::fast_io::intfpos_opt off,
 	func callback) noexcept
 {
-	::fast_io::liburing::details::io_uring_scatter_submit(sched, *sched.ring,
-														  ::fast_io::liburing::io_uring_op_writev, piob.fd,
-														  scatters, n, off, timeout,
-														  ::std::move(callback));
+	if constexpr (family == ::fast_io::posix_family::sock)
+	{
+		::fast_io::liburing::details::io_uring_scatter_submit(sched, *sched.ring,
+															  ::fast_io::liburing::io_uring_op_writev, piob.fd,
+															  scatters, n, off, timeout,
+															  ::std::move(callback));
+	}
+	else
+	{
+		::fast_io::liburing::details::io_uring_scatter_submit(sched, *sched.ring,
+															  ::fast_io::liburing::io_uring_op_writev, piob.fd,
+															  scatters, n, off, timeout,
+															  ::std::move(callback));
+	}
 }
 
 /*

@@ -85,14 +85,16 @@ public:
 	{
 		return gzfile;
 	}
-	explicit operator basic_posix_io_observer<char_type>() const noexcept
+	template <::fast_io::posix_family fam>
+	explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
 	{
 		return {details::hack_gz_file_fd(gzfile)};
 	}
 #if defined(__WINNT__) || defined(_MSC_VER)
-	explicit operator basic_win32_io_observer<char_type>() const
+	template <::fast_io::win32_family fam>
+	explicit operator basic_win32_family_io_observer<fam, char_type>() const
 	{
-		return static_cast<basic_win32_io_observer<char_type>>(static_cast<basic_posix_io_observer<char_type>>(*this));
+		return static_cast<basic_win32_family_io_observer<fam, char_type>>(static_cast<basic_posix_io_observer<char_type>>(*this));
 	}
 #endif
 };

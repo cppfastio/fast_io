@@ -24,20 +24,22 @@ public:
 		return temp;
 	}
 
-	inline operator basic_posix_io_observer<char_type>()
+	template <::fast_io::posix_family fam>
+	inline operator basic_posix_family_io_observer<fam, char_type>()
 		requires requires() {
 			{ this->qdevice->handle() } -> ::std::same_as<int>;
 		}
 	{
-		return basic_posix_io_observer<char_type>{this->qdevice->handle()};
+		return ::fast_io::basic_posix_family_io_observer<char_type>{this->qdevice->handle()};
 	}
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
+	template <::fast_io::win32_family fam>
 	inline operator basic_win32_io_observer<char_type>()
 		requires requires() {
 			{ this->qdevice->handle() } -> ::std::same_as<int>;
 		}
 	{
-		return static_cast<basic_win32_io_observer<char_type>>(static_cast<basic_posix_io_observer<char_type>>(*this));
+		return static_cast<basic_win32_io_observer<char_type>>(static_cast<basic_win32_family_io_observer<char_type>>(*this));
 	}
 	template <nt_family family>
 	inline operator basic_nt_family_io_observer<family, char_type>()

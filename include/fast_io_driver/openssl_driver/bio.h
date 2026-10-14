@@ -290,12 +290,13 @@ public:
 	template <::fast_io::c_family family>
 	explicit operator basic_c_family_io_observer<family, char_type>() const noexcept
 	{
-		return {details::bio_to_fp(bio)};
+		return {::fast_io::details::bio_to_fp(bio)};
 	}
 #if !defined(__AVR__)
-	explicit operator basic_posix_io_observer<char_type>() const noexcept
+	template <::fast_io::posix_family fam>
+	explicit operator basic_posix_family_io_observer<family, char_type>() const noexcept
 	{
-		return {details::bio_to_fd(bio)};
+		return {::fast_io::details::bio_to_fd(bio)};
 	}
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
 	template <::fast_io::win32_family family>
@@ -303,7 +304,7 @@ public:
 	{
 		return basic_win32_io_observer<char_type>(static_cast<basic_posix_io_observer<char_type>>(*this));
 	}
-	template <nt_family fam>
+	template <::fast_io::nt_family fam>
 	explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
 	{
 		return basic_nt_family_io_observer<fam, char_type>(static_cast<basic_posix_io_observer<char_type>>(*this));

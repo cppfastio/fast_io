@@ -17,15 +17,16 @@ extern int libc_ioctl(int fd, unsigned long request, ...) noexcept __asm__("ioct
 enum class posix_family
 {
 	api,
-#ifdef __MSDOS__
-	dos,
-#endif
 	sock,
-	native = api,
+	native_sock =
 #ifdef __linux__
-	native_sock = sock
+		sock
 #else
-	native_sock = api
+		api
+#endif
+		,
+#ifdef __MSDOS__
+	dos
 #endif
 };
 

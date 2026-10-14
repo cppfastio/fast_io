@@ -27,18 +27,20 @@ public:
 		return os;
 	}
 #if !defined(__AVR__)
-	explicit operator basic_posix_io_observer<char_type>() const noexcept
+	template <::fast_io::posix_family fam>
+	explicit operator basic_posix_family_io_observer<fam, char_type>() const noexcept
 		requires(::std::derived_from<T, ::llvm::raw_fd_ostream>)
 	{
 		return {::fast_io::llvm::details::hack_fd_from_llvm_raw_fd_ostream(this->os)};
 	}
 #if (defined(_WIN32) && !defined(__WINE__)) || defined(__CYGWIN__)
-	explicit operator basic_win32_io_observer<char_type>() const noexcept
+	template <::fast_io::win32_family fam>
+	explicit operator basic_win32_family_io_observer<fam, char_type>() const noexcept
 		requires(::std::derived_from<T, ::llvm::raw_fd_ostream>)
 	{
 		return static_cast<basic_win32_io_observer<char_type>>(static_cast<basic_posix_io_observer<char_type>>(*this));
 	}
-	template <nt_family fam>
+	template <::fast_io::nt_family fam>
 	explicit operator basic_nt_family_io_observer<fam, char_type>() const noexcept
 		requires(::std::derived_from<T, ::llvm::raw_fd_ostream>)
 	{
