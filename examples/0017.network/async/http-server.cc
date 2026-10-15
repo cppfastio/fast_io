@@ -1076,9 +1076,8 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 						co_await respond_status(sched, sock, 403, u8"Forbidden", req, cfg);
 					}
 				}
-				catch throws(::std::error e)
+				catch throws(::std::error)
 				{
-					fi::perrln(e);
 					failed = true;
 				}
 				if (failed)

@@ -345,6 +345,10 @@ struct io_uring_rw_cookie
 	int errn{};
 	::fast_io::liburing::io_uring_timespec ts{};
 	T callback;
+	/* the msghdr and its single iovec for the sendmsg(2) form of a socket
+	 * write; the kernel reads both when the op executes, not at submission */
+	::fast_io::io_scatter_t single{};
+	struct msghdr msg{};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
 												   ::fast_io::details::empty>
 		alloc_handle{};
@@ -405,6 +409,50 @@ inline void io_uring_rw_submit(sched_type sched, ::fast_io::liburing::io_uring_r
 	}
 }
 
+/* One byte range sent with sendmsg(2): used for sockets so MSG_NOSIGNAL can
+ * be carried, and so the count is not clamped to the uint32_t a single-buffer
+ * send op would use.  The kernel dereferences the msghdr (and its iovec) when
+ * the op executes, so both live in the cookie.  There is no offset: sendmsg
+ * on a socket has none. */
+template <typename sched_type, typename T>
+inline void io_uring_sendmsg_submit(sched_type sched, ::fast_io::liburing::io_uring_ring_state &ring,
+									int fd, void const *buf, ::std::size_t count,
+									::fast_io::posix_statx_timestamp_opt timeout, T callback,
+									::std::uint_least32_t msg_flags) noexcept
+{
+	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_type>;
+	using cookie_type = io_uring_rw_cookie<alloc_type, T>;
+	try
+	{
+		::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
+			io_uring_new_state<cookie_type>(sched, io_uring_invoke_func{},
+											io_uring_timeout_link_block{}, 0zu, 0,
+											::fast_io::liburing::io_uring_timespec{},
+											::std::move(callback))};
+		guard.cookie->invoke = io_uring_rw_invoke<alloc_type, T>;
+		io_uring_reserve_sqes(ring, timeout.has_opt ? 2 : 1);
+		io_uring_sqe *sqe{io_uring_get_sqe(ring)};
+		using iovec_may_alias_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+			[[__gnu__::__may_alias__]]
+#endif
+			= struct iovec *;
+		guard.cookie->single = {const_cast<void *>(buf), count};
+		guard.cookie->msg.msg_iov =
+			reinterpret_cast<iovec_may_alias_const_ptr>(__builtin_addressof(guard.cookie->single));
+		guard.cookie->msg.msg_iovlen = 1;
+		::fast_io::liburing::io_uring_prep_sendmsg(sqe, fd, __builtin_addressof(guard.cookie->msg),
+												   msg_flags);
+		io_uring_arm_timeout(ring, guard.cookie, sqe, io_uring_rw_deliver<alloc_type, T>, timeout);
+		guard.release();
+		io_uring_commit(ring);
+	}
+	catch throws(::std::error e)
+	{
+		callback(e.release(), 0zu);
+	}
+}
+
 /* ======================= scatter readv / writev ======================= */
 
 /* The kernel caps vectored ios at UIO_MAXIOV; anything beyond is a legal
@@ -424,6 +472,10 @@ struct io_uring_scatter_cookie
 	::fast_io::io_scatter_t const *scatters{};
 	::std::size_t n{};
 	T callback;
+	/* msghdr for the sendmsg(2) form of a socket write; filled at submit
+	 * time from `scatters` and kept here because the kernel dereferences it
+	 * (and the caller's iovecs) when the op executes, not at submission */
+	struct msghdr msg{};
 	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
 												   ::fast_io::details::empty>
 		alloc_handle{};
@@ -460,7 +512,8 @@ inline void io_uring_scatter_submit(sched_type sched, ::fast_io::liburing::io_ur
 									::fast_io::liburing::io_uring_op op, int fd,
 									::fast_io::io_scatter_t const *scatters, ::std::size_t n,
 									::fast_io::intfpos_opt off,
-									::fast_io::posix_statx_timestamp_opt timeout, T callback) noexcept
+									::fast_io::posix_statx_timestamp_opt timeout, T callback,
+									::std::uint_least32_t msg_flags = 0) noexcept
 {
 	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_type>;
 	using cookie_type = io_uring_scatter_cookie<alloc_type, T>;
@@ -478,8 +531,27 @@ inline void io_uring_scatter_submit(sched_type sched, ::fast_io::liburing::io_ur
 			guard.cookie->invoke = io_uring_scatter_invoke<alloc_type, T>;
 			io_uring_reserve_sqes(ring, timeout.has_opt ? 2 : 1);
 			io_uring_sqe *sqe{io_uring_get_sqe(ring)};
-			io_uring_prep_rw(op, sqe, fd, scatters, static_cast<::std::uint_least32_t>(neff),
-							 io_uring_off_or_current(off));
+			if (op == ::fast_io::liburing::io_uring_op_sendmsg)
+			{
+				/* sendmsg(2) instead of writev(2): only the msghdr form can
+				 * carry MSG_NOSIGNAL through the sqe.  The iovecs keep the
+				 * lifetime contract the writev path already relies on. */
+				using iovec_may_alias_const_ptr
+#if __has_cpp_attribute(__gnu__::__may_alias__)
+					[[__gnu__::__may_alias__]]
+#endif
+					= struct iovec *;
+				guard.cookie->msg.msg_iov =
+					reinterpret_cast<iovec_may_alias_const_ptr>(const_cast<::fast_io::io_scatter_t *>(scatters));
+				guard.cookie->msg.msg_iovlen = neff;
+				::fast_io::liburing::io_uring_prep_sendmsg(sqe, fd, __builtin_addressof(guard.cookie->msg),
+														   msg_flags);
+			}
+			else
+			{
+				io_uring_prep_rw(op, sqe, fd, scatters, static_cast<::std::uint_least32_t>(neff),
+								 io_uring_off_or_current(off));
+			}
 			io_uring_arm_timeout(ring, guard.cookie, sqe, io_uring_scatter_deliver<alloc_type, T>,
 								 timeout);
 			guard.release();
@@ -541,50 +613,52 @@ inline void io_uring_transmit_deliver(void *self) noexcept
 	using cookie_type = io_uring_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T>;
 	auto *cookie{static_cast<cookie_type *>(self)};
 	::std::size_t const transferred{cookie->transferred};
+	::std::cxx_std_error err{};
 	if (cookie->tlink.fired)
 	{
-		auto callback{::std::move(cookie->callback)};
-		::fast_io::details::async_delete_state(cookie);
-		callback(::fast_io::details::async_make_error(::std::errc::timed_out), transferred);
-		return;
+		err = ::fast_io::details::async_make_error(::std::errc::timed_out);
 	}
-
-	if (cookie->errn == 0 || !io_uring_splice_unsupported(cookie->errn))
+	else if (cookie->errn != 0 && io_uring_splice_unsupported(cookie->errn))
 	{
-		auto callback{::std::move(cookie->callback)};
-		::std::cxx_std_error err{io_uring_cqe_error(false, cookie->errn)};
-		::fast_io::details::async_delete_state(cookie);
-		callback(err, transferred);
-		return;
+		/* splice cannot serve this fd pair (no pipe endpoint, EXDEV, ...):
+		 * rebuild as the generic bounce-buffer emulation. The emulation runs
+		 * the scalar pread/pwrite defines, which exist for the same stream
+		 * types, and reports through the same callback contract; once it is
+		 * built it owns the callback, so there is nothing left to deliver. */
+		using state_type =
+			::fast_io::details::async_transmit_bytes_state<false, sched_type, outstmtype, instmtype,
+														   alloc_type, T>;
+		sched_type const sched{cookie->sched};
+		outstmtype const outstm{cookie->outstm};
+		instmtype const instm{cookie->instm};
+		::fast_io::intfpos_opt const off_out{cookie->off_out};
+		::fast_io::intfpos_opt const off_in{cookie->off_in};
+		::std::size_t const remaining{
+			cookie->bound.has_opt ? cookie->bound.opt : ::std::numeric_limits<::std::size_t>::max()};
+		::fast_io::posix_statx_timestamp_opt const timeout{cookie->timeout};
+		try
+		{
+			::fast_io::details::async_transmit_bytes_read_round(
+				::fast_io::details::async_new_state<state_type>(sched, outstm, off_out, instm, off_in,
+																remaining, timeout,
+																::std::move(cookie->callback), 0zu, 0zu,
+																0zu));
+			::fast_io::details::async_delete_state(cookie);
+			return;
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
+		}
 	}
-	/* splice cannot serve this fd pair (no pipe endpoint, EXDEV, ...):
-	 * rebuild as the generic bounce-buffer emulation. The emulation runs
-	 * the scalar pread/pwrite defines, which exist for the same stream
-	 * types, and reports through the same callback contract. */
+	else
+	{
+		err = io_uring_cqe_error(false, cookie->errn);
+	}
+	/* the one delivery point every outcome above funnels into */
 	auto callback{::std::move(cookie->callback)};
-	using state_type =
-		::fast_io::details::async_transmit_bytes_state<false, sched_type, outstmtype, instmtype,
-													   alloc_type, T>;
-	sched_type const sched{cookie->sched};
-	outstmtype const outstm{cookie->outstm};
-	instmtype const instm{cookie->instm};
-	::fast_io::intfpos_opt const off_out{cookie->off_out};
-	::fast_io::intfpos_opt const off_in{cookie->off_in};
-	::std::size_t const remaining{
-		cookie->bound.has_opt ? cookie->bound.opt : ::std::numeric_limits<::std::size_t>::max()};
-	::fast_io::posix_statx_timestamp_opt const timeout{cookie->timeout};
 	::fast_io::details::async_delete_state(cookie);
-	try
-	{
-		::fast_io::details::async_transmit_bytes_read_round(
-			::fast_io::details::async_new_state<state_type>(sched, outstm, off_out, instm, off_in,
-															remaining, timeout, ::std::move(callback),
-															0zu, 0zu, 0zu));
-	}
-	catch throws(::std::error e)
-	{
-		callback(e.release(), transferred);
-	}
+	callback(err, transferred);
 }
 
 template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
@@ -832,35 +906,40 @@ inline void io_uring_connect_submit(sched_type sched, ::fast_io::liburing::io_ur
 {
 	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_type>;
 	using cookie_type = io_uring_connect_cookie<alloc_type, T>;
+	::std::cxx_std_error err{};
 	if (addr == nullptr || addrlen > sizeof(::fast_io::posix_sockaddr_storage)) [[unlikely]]
 	{
-		callback(::fast_io::details::async_make_error(::std::errc::invalid_argument));
-		return;
+		err = ::fast_io::details::async_make_error(::std::errc::invalid_argument);
 	}
-	try
+	else
 	{
-		::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
-			io_uring_new_state<cookie_type>(sched, io_uring_invoke_func{},
-											io_uring_timeout_link_block{}, 0,
-											::fast_io::liburing::io_uring_timespec{},
-											::fast_io::posix_sockaddr_storage{},
-											::std::move(callback))};
-		guard.cookie->invoke = io_uring_connect_invoke<alloc_type, T>;
-		__builtin_memcpy(__builtin_addressof(guard.cookie->addr), addr, addrlen);
-		io_uring_reserve_sqes(ring, timeout.has_opt ? 2 : 1);
-		io_uring_sqe *sqe{io_uring_get_sqe(ring)};
-		::fast_io::liburing::io_uring_prep_connect(
-			sqe, fd, __builtin_addressof(guard.cookie->addr),
-			static_cast<::std::uint_least32_t>(addrlen));
-		io_uring_arm_timeout(ring, guard.cookie, sqe,
-							 io_uring_connect_deliver<alloc_type, T>, timeout);
-		guard.release();
-		io_uring_commit(ring);
+		try
+		{
+			::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
+				io_uring_new_state<cookie_type>(sched, io_uring_invoke_func{},
+												io_uring_timeout_link_block{}, 0,
+												::fast_io::liburing::io_uring_timespec{},
+												::fast_io::posix_sockaddr_storage{},
+												::std::move(callback))};
+			guard.cookie->invoke = io_uring_connect_invoke<alloc_type, T>;
+			__builtin_memcpy(__builtin_addressof(guard.cookie->addr), addr, addrlen);
+			io_uring_reserve_sqes(ring, timeout.has_opt ? 2 : 1);
+			io_uring_sqe *sqe{io_uring_get_sqe(ring)};
+			::fast_io::liburing::io_uring_prep_connect(
+				sqe, fd, __builtin_addressof(guard.cookie->addr),
+				static_cast<::std::uint_least32_t>(addrlen));
+			io_uring_arm_timeout(ring, guard.cookie, sqe,
+								 io_uring_connect_deliver<alloc_type, T>, timeout);
+			guard.release();
+			io_uring_commit(ring);
+			return;
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
+		}
 	}
-	catch throws(::std::error e)
-	{
-		callback(e.release());
-	}
+	callback(err);
 }
 
 } // namespace details
@@ -901,9 +980,14 @@ inline void async_pwrite_some_bytes_overflow_callback_define(
 {
 	if constexpr (family == ::fast_io::posix_family::sock)
 	{
-		::fast_io::liburing::details::io_uring_rw_submit(sched, *sched.ring, ::fast_io::liburing::io_uring_op_write,
-														 piob.fd, first, count, off, timeout,
-														 ::std::move(callback));
+		/* Sockets write through sendmsg(2) so MSG_NOSIGNAL is carried: a
+		 * dead peer then surfaces as EPIPE through the completion instead
+		 * of killing the process with SIGPIPE.  A single-buffer send op is
+		 * not enough here — its count is a uint32_t, while the msghdr's
+		 * iov length is a size_t. */
+		::fast_io::liburing::details::io_uring_sendmsg_submit(sched, *sched.ring, piob.fd, first,
+															  count, timeout, ::std::move(callback),
+															  MSG_NOSIGNAL);
 	}
 	else
 	{
@@ -943,10 +1027,13 @@ inline void async_scatter_pwrite_some_bytes_overflow_callback_define(
 {
 	if constexpr (family == ::fast_io::posix_family::sock)
 	{
+		/* sendmsg(2) rather than writev(2) so MSG_NOSIGNAL is carried: a
+		 * dead peer then surfaces as EPIPE through the completion instead
+		 * of killing the process with SIGPIPE. */
 		::fast_io::liburing::details::io_uring_scatter_submit(sched, *sched.ring,
-															  ::fast_io::liburing::io_uring_op_writev, piob.fd,
+															  ::fast_io::liburing::io_uring_op_sendmsg, piob.fd,
 															  scatters, n, off, timeout,
-															  ::std::move(callback));
+															  ::std::move(callback), MSG_NOSIGNAL);
 	}
 	else
 	{
@@ -983,48 +1070,49 @@ inline void async_transmit_some_bytes_overflow_underflow_callback_define(
 		::fast_io::liburing::details::io_uring_transmit_cookie<::fast_io::linux_io_uring_observer,
 															   outstmtype, instmtype, alloc_type,
 															   ::std::remove_cvref_t<func>>;
-	if (bound.has_opt && bound.opt == 0)
+	::std::cxx_std_error err{};
+	if (!(bound.has_opt && bound.opt == 0))
 	{
-		callback(::std::cxx_std_error{}, 0zu);
-		return;
-	}
-	try
-	{
-		::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
-			::fast_io::liburing::details::io_uring_new_state<cookie_type>(
-				sched, ::fast_io::liburing::details::io_uring_invoke_func{},
-				::fast_io::liburing::details::io_uring_timeout_link_block{}, 0zu, 0,
-				::fast_io::liburing::io_uring_timespec{}, sched, outstm, off_out, instm, off_in,
-				bound, timeout, ::std::move(callback))};
-		guard.cookie->invoke = ::fast_io::liburing::details::io_uring_transmit_invoke<
-			::fast_io::linux_io_uring_observer, outstmtype, instmtype, alloc_type,
-			::std::remove_cvref_t<func>>;
-		::std::size_t want{bound.has_opt ? bound.opt
-										 : ::std::numeric_limits<::std::size_t>::max()};
-		::fast_io::liburing::details::io_uring_reserve_sqes(*sched.ring, timeout.has_opt ? 2 : 1);
-		::fast_io::liburing::io_uring_sqe *sqe{
-			::fast_io::liburing::io_uring_get_sqe(*sched.ring)};
-		::fast_io::liburing::io_uring_prep_splice(
-			sqe, instm.fd,
-			off_in.has_opt ? static_cast<::std::int_least64_t>(off_in.opt)
-						   : static_cast<::std::int_least64_t>(-1),
-			outstm.fd,
-			off_out.has_opt ? static_cast<::std::int_least64_t>(off_out.opt)
-							: static_cast<::std::int_least64_t>(-1),
-			::fast_io::liburing::details::io_uring_clamp_count(want), 0);
-		::fast_io::liburing::details::io_uring_arm_timeout(
-			*sched.ring, guard.cookie, sqe,
-			::fast_io::liburing::details::io_uring_transmit_deliver<
+		try
+		{
+			::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
+				::fast_io::liburing::details::io_uring_new_state<cookie_type>(
+					sched, ::fast_io::liburing::details::io_uring_invoke_func{},
+					::fast_io::liburing::details::io_uring_timeout_link_block{}, 0zu, 0,
+					::fast_io::liburing::io_uring_timespec{}, sched, outstm, off_out, instm, off_in,
+					bound, timeout, ::std::move(callback))};
+			guard.cookie->invoke = ::fast_io::liburing::details::io_uring_transmit_invoke<
 				::fast_io::linux_io_uring_observer, outstmtype, instmtype, alloc_type,
-				::std::remove_cvref_t<func>>,
-			timeout);
-		guard.release();
-		::fast_io::liburing::details::io_uring_commit(*sched.ring);
+				::std::remove_cvref_t<func>>;
+			::std::size_t want{bound.has_opt ? bound.opt
+											 : ::std::numeric_limits<::std::size_t>::max()};
+			::fast_io::liburing::details::io_uring_reserve_sqes(*sched.ring, timeout.has_opt ? 2 : 1);
+			::fast_io::liburing::io_uring_sqe *sqe{
+				::fast_io::liburing::io_uring_get_sqe(*sched.ring)};
+			::fast_io::liburing::io_uring_prep_splice(
+				sqe, instm.fd,
+				off_in.has_opt ? static_cast<::std::int_least64_t>(off_in.opt)
+							   : static_cast<::std::int_least64_t>(-1),
+				outstm.fd,
+				off_out.has_opt ? static_cast<::std::int_least64_t>(off_out.opt)
+								: static_cast<::std::int_least64_t>(-1),
+				::fast_io::liburing::details::io_uring_clamp_count(want), 0);
+			::fast_io::liburing::details::io_uring_arm_timeout(
+				*sched.ring, guard.cookie, sqe,
+				::fast_io::liburing::details::io_uring_transmit_deliver<
+					::fast_io::linux_io_uring_observer, outstmtype, instmtype, alloc_type,
+					::std::remove_cvref_t<func>>,
+				timeout);
+			guard.release();
+			::fast_io::liburing::details::io_uring_commit(*sched.ring);
+			return;
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
+		}
 	}
-	catch throws(::std::error e)
-	{
-		callback(e.release(), 0zu);
-	}
+	callback(err, 0zu);
 }
 
 /* async_accept_file_type for posix observers is shared by every posix

@@ -886,6 +886,7 @@ inline void async_handshake_callback_define(
 		::fast_io::details::async_scheduler_allocator_t<::fast_io::win32_ioring_observer>;
 	using cookie_type =
 		::fast_io::tls::details::tls_ioring_handshake_cookie<client_type, fcb, alloc_type>;
+	::std::cxx_std_error err{};
 	try
 	{
 		auto *cookie{::fast_io::details::async_new_state_plain<cookie_type>(
@@ -908,15 +909,20 @@ inline void async_handshake_callback_define(
 		{
 			auto cb{::std::move(cookie->callback)};
 			::fast_io::details::async_delete_state(cookie);
-			cb(::fast_io::details::async_make_error(
+			err = ::fast_io::details::async_make_error(
 				static_cast<::fast_io::freestanding::win32_errc>(
-					static_cast<::std::uint_least32_t>(::fast_io::win32::GetLastError()))));
+					static_cast<::std::uint_least32_t>(::fast_io::win32::GetLastError())));
+		}
+		else
+		{
+			return;
 		}
 	}
 	catch throws(::std::error e)
 	{
-		callback(e.release());
+		err = e.release();
 	}
+	callback(err);
 }
 
 /* server-side ioring handshake: tls_server_config rides in the state base */
@@ -936,6 +942,7 @@ inline void async_handshake_callback_define(
 		::fast_io::details::async_scheduler_allocator_t<::fast_io::win32_ioring_observer>;
 	using cookie_type =
 		::fast_io::tls::details::tls_ioring_server_handshake_cookie<client_type, fcb, alloc_type>;
+	::std::cxx_std_error err{};
 	try
 	{
 		auto *cookie{::fast_io::details::async_new_state_plain<cookie_type>(
@@ -956,15 +963,20 @@ inline void async_handshake_callback_define(
 		{
 			auto cb{::std::move(cookie->callback)};
 			::fast_io::details::async_delete_state(cookie);
-			cb(::fast_io::details::async_make_error(
+			err = ::fast_io::details::async_make_error(
 				static_cast<::fast_io::freestanding::win32_errc>(
-					static_cast<::std::uint_least32_t>(::fast_io::win32::GetLastError()))));
+					static_cast<::std::uint_least32_t>(::fast_io::win32::GetLastError())));
+		}
+		else
+		{
+			return;
 		}
 	}
 	catch throws(::std::error e)
 	{
-		callback(e.release());
+		err = e.release();
 	}
+	callback(err);
 }
 #endif
 
@@ -1291,6 +1303,7 @@ inline void async_close_define(
 {
 	auto *client{tob.handle};
 	auto const sock{client->sock_};
+	::std::cxx_std_error err{};
 	if (client->offloaded_)
 	{
 		/* cmsg close_notify is a cheap best-effort syscall; then the
@@ -1299,35 +1312,40 @@ inline void async_close_define(
 		FAST_IO_HERBCEPTIONS_TRY
 		{
 			async_close_define(sched, timeout, sock, ::std::move(callback));
+			return;
 		}
 		catch throws(::std::error e)
 		{
-			callback(e.release());
+			err = e.release();
 		}
-		return;
 	}
-	using sched_t = ::std::remove_cvref_t<
-		decltype(::fast_io::operations::async_scheduler_ref(sched))>;
-	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_t>;
-	using state_type = ::fast_io::tls::details::tls_sw_close_state<
-		sched_t, ::std::remove_cvref_t<decltype(*client)>, ::std::remove_cvref_t<func>,
-		alloc_type>;
-	auto sched_ref{::fast_io::operations::async_scheduler_ref(sched)};
-	FAST_IO_HERBCEPTIONS_TRY
+	else
 	{
-		auto *st{::fast_io::details::async_new_state<state_type>(
-			sched_ref, timeout, client, ::std::move(callback))};
-		st->wire_size = ::fast_io::tls::details::tls_client_sw_seal_alert(client, st->wire, ::fast_io::tls::alert_description::close_notify);
-		::fast_io::tls::details::tls_sw_close_round(st);
+		using sched_t = ::std::remove_cvref_t<
+			decltype(::fast_io::operations::async_scheduler_ref(sched))>;
+		using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_t>;
+		using state_type = ::fast_io::tls::details::tls_sw_close_state<
+			sched_t, ::std::remove_cvref_t<decltype(*client)>, ::std::remove_cvref_t<func>,
+			alloc_type>;
+		auto sched_ref{::fast_io::operations::async_scheduler_ref(sched)};
+		FAST_IO_HERBCEPTIONS_TRY
+		{
+			auto *st{::fast_io::details::async_new_state<state_type>(
+				sched_ref, timeout, client, ::std::move(callback))};
+			st->wire_size = ::fast_io::tls::details::tls_client_sw_seal_alert(client, st->wire, ::fast_io::tls::alert_description::close_notify);
+			::fast_io::tls::details::tls_sw_close_round(st);
+			return;
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
+		}
+		FAST_IO_HERBCEPTIONS_CATCH_ALL
+		{
+			err = ::fast_io::details::async_make_error(::std::errc::protocol_error);
+		}
 	}
-	catch throws(::std::error e)
-	{
-		callback(e.release());
-	}
-	FAST_IO_HERBCEPTIONS_CATCH_ALL
-	{
-		callback(::fast_io::details::async_make_error(::std::errc::protocol_error));
-	}
+	callback(err);
 }
 
 /*
