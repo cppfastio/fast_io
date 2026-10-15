@@ -686,6 +686,18 @@ static fi::io_async_task<> respond_file(fi::io_async_observer sched,
 		}
 	}
 	auto const length{rng.present ? rng.length : st.size};
+	/*
+	 * size_t_opt carries a ::std::size_t, so on a 32-bit target a body
+	 * wider than SIZE_MAX cannot be represented. Answer 500 here rather
+	 * than advertise the real Content-Length and then transmit a body
+	 * truncated by the cast below.
+	 */
+	constexpr ::std::size_t szmax{::std::numeric_limits<::std::size_t>::max()};
+	if (length > szmax)
+	{
+		co_await respond_status(sched, sock, 500, u8"Internal Server Error", req, cfg);
+		co_return;
+	}
 
 	co_await fi::io::async_print(
 		sched, {}, sock,
@@ -706,7 +718,7 @@ static fi::io_async_task<> respond_file(fi::io_async_observer sched,
 		::fast_io::intfpos_t const off{static_cast<::fast_io::intfpos_t>(rng.start)};
 		co_await fop::async_transmit_all_bytes(sched, {}, sock, {}, file,
 											   ::fast_io::intfpos_opt{off, true},
-											   fi::size_t_opt{length});
+											   fi::size_t_opt{static_cast<::std::size_t>(length)});
 	}
 	co_await fop::async_output_stream_flush(sched, {}, sock);
 }
@@ -755,7 +767,7 @@ static fi::io_async_task<> respond_directory(fi::io_async_observer sched,
 		try
 		{
 			fi::u8native_file idxf{dirat, fi::u8cstring_view{u8"index.html"},
-								   fi::open_mode::in};
+								   fi::open_mode::in | fi::open_mode::no_block};
 			auto const st{fi::status(idxf)};
 			if (st.type == fi::file_type::regular)
 			{
@@ -1053,7 +1065,8 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 					}
 					else if (st.type == fi::file_type::regular)
 					{
-						fi::u8native_file f{cfg.root, relc, fi::open_mode::in};
+						fi::u8native_file f{cfg.root, relc,
+											fi::open_mode::in | fi::open_mode::no_block};
 						co_await respond_file(
 							sched, sock, f, st, req,
 							fi::u8string_view{rel.data(), rel.size()}, cfg);
@@ -1063,8 +1076,9 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 						co_await respond_status(sched, sock, 403, u8"Forbidden", req, cfg);
 					}
 				}
-				catch throws(::std::error)
+				catch throws(::std::error e)
 				{
+					fi::perrln(e);
 					failed = true;
 				}
 				if (failed)
@@ -1232,7 +1246,7 @@ int main(int argc, char const **argv)
 				u8"\r\nAccess-Control-Allow-Headers: Authorization, Content-Type, "
 				"If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since",
 				cors_extra.is_empty() ? fi::u8string{}
-								   : fi::u8concat_fast_io(u8", ", cors_extra));
+									  : fi::u8concat_fast_io(u8", ", cors_extra));
 		}
 
 		/* status goes to stderr: stdout is block-buffered when piped,
