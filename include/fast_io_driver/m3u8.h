@@ -10,10 +10,12 @@
  * the playlist was fetched from with resolve_uri(). Nothing here fetches,
  * caches or interprets media.
  *
- * Parsing is lenient about everything except the "#EXTM3U" prologue:
- * unknown tags and attributes are skipped, an attribute-list entry without
- * "=" is skipped, and every numeric field carries a "has_" flag so a missing
- * or unparsable value stays distinguishable from a legitimate zero.
+ * Parsing is lenient about unknown tags and attributes — they are skipped, as
+ * is an attribute-list entry without "=" — but strict about numbers: a
+ * numeric field that is not a plain decimal value aborts the parse rather
+ * than quietly reading as zero, because a playlist that cannot be trusted
+ * about its own numbers is not one to schedule against. A missing optional
+ * field stays distinguishable from a present one through the "has_" flags.
  *
  * Durations are microseconds rather than floating point. EXTINF in the wild
  * carries up to six decimal places (8.333333, 11.583333, 15.400000), so
@@ -53,6 +55,13 @@ struct byte_range
 	::std::uint_least64_t length{};
 	::std::uint_least64_t offset{};
 	bool has_offset{};
+};
+
+/* EXT-X-STREAM-INF RESOLUTION */
+struct resolution
+{
+	::std::uint_least32_t width{};
+	::std::uint_least32_t height{};
 };
 
 enum class encryption_method : ::std::uint_least8_t
@@ -240,66 +249,75 @@ inline constexpr ::std::uint_least64_t pow10[19]{
 	100000000000000000,
 	1000000000000000000};
 
-/* Every numeric field here goes through fast_io's decimal scanner. The
- * scanner stops at the first byte that cannot continue the number, so a tag
- * value — which must be nothing but digits — needs the scanner to have
- * consumed all of v. Leading zeros are legal (RFC 8216 decimal-integer is
- * "a sequence of digits 0-9", and packagers do zero-pad MEDIA-SEQUENCE),
- * which is why the scan carries mnp::dec_get's skipzero flag: the default
- * integral scan reports "007" as invalid. */
-inline constexpr bool scan_uint(u8string_view v, ::std::uint_least64_t &out) noexcept
+/* Every numeric field here goes through fast_io's decimal scanner, which
+ * throws when it cannot read a value. The scanner stops at the first byte
+ * that cannot continue the number, so a tag value — which must be nothing but
+ * digits — additionally needs the scanner to have consumed all of v; a value
+ * that is not entirely digits aborts the parse. Leading zeros are legal
+ * (RFC 8216 decimal-integer is "a sequence of digits 0-9", and packagers do
+ * zero-pad MEDIA-SEQUENCE), which is why the scan carries mnp::dec_get's
+ * skipzero flag: the default integral scan rejects "007". */
+inline constexpr ::std::uint_least64_t scan_uint(u8string_view v) throws
 {
-	auto const *const first{v.data()};
-	auto const *const last{v.data() + v.size()};
-	auto const [it, ec] =
-		::fast_io::parse_by_scan(first, last, ::fast_io::mnp::dec_get<false, true>(out));
-	return ec == ::fast_io::freestanding::parse_errc::ok && it == last;
+	::std::uint_least64_t out{};
+	::fast_io::u8ibuffer_view ibv{v};
+	::fast_io::scan(ibv, ::fast_io::mnp::dec_get<false, true>(out));
+	if (ibv.curr_ptr != ibv.end_ptr)
+	{
+		::fast_io::herbceptions::throws_parse_errc(
+			::fast_io::freestanding::parse_errc::invalid);
+	}
+	return out;
 }
 
 /* TIME-OFFSET is a signed decimal-floating-point (or signed decimal-integer)
  * number of seconds. The sign is taken off here because the digits below are
  * shared with seconds_to_microseconds, and the scanner's sign phase does not
  * accept a leading '+'. */
-inline constexpr ::std::int_least64_t time_offset_microseconds(u8string_view v) noexcept;
+inline constexpr ::std::int_least64_t time_offset_microseconds(u8string_view v) throws;
 
 /* decimal seconds -> microseconds, exact through six decimal places:
  * "11.583333" -> 11583333, "15" -> 15000000, "15.4" -> 15400000.
- * Digits past microsecond precision are dropped, not rounded, and a value
- * that does not start with a digit (the spec's optional hexadecimal
- * floating-point form) reads as zero. */
-inline constexpr ::std::uint_least64_t seconds_to_microseconds(u8string_view v) noexcept
+ * Digits past microsecond precision are dropped, not rounded. The integer
+ * part must be all digits and, when a '.' is present, so must the fractional
+ * part: a value the parser cannot read aborts the parse. */
+inline constexpr ::std::uint_least64_t seconds_to_microseconds(u8string_view v) throws
 {
-	auto const *const first{v.data()};
-	auto const *const last{v.data() + v.size()};
+	::fast_io::u8ibuffer_view ibv{v};
 	::std::uint_least64_t whole{};
-	auto const [it, ec] =
-		::fast_io::parse_by_scan(first, last, ::fast_io::mnp::dec_get<false, true>(whole));
-	if (ec != ::fast_io::freestanding::parse_errc::ok)
-	{
-		return 0;
-	}
+	::fast_io::scan(ibv, ::fast_io::mnp::dec_get<false, true>(whole));
+	auto const *const last{ibv.end_ptr};
+	auto const *it{ibv.curr_ptr};
 	constexpr auto max{static_cast<::std::uint_least64_t>(-1)};
 	if (whole > max / 1000000)
 	{
 		return max; /* an absurd duration; clamping beats wrapping */
 	}
 	auto micros{whole * 1000000};
-	if (it == last || *it != u8'.')
+	if (it == last)
 	{
 		return micros;
 	}
+	if (*it != u8'.')
+	{
+		::fast_io::herbceptions::throws_parse_errc(
+			::fast_io::freestanding::parse_errc::invalid);
+	}
 	auto const *const fdigits{it + 1};
 	::std::uint_least64_t fraction{};
-	auto const [fit, fec] =
-		::fast_io::parse_by_scan(fdigits, last, ::fast_io::mnp::dec_get<false, true>(fraction));
-	if (fec != ::fast_io::freestanding::parse_errc::ok || fit == fdigits)
+	::fast_io::u8ibuffer_view fv{fdigits, last};
+	::fast_io::scan(fv, ::fast_io::mnp::dec_get<false, true>(fraction));
+	if (fv.curr_ptr != last)
 	{
-		return micros; /* "." with nothing usable behind it */
+		::fast_io::herbceptions::throws_parse_errc(
+			::fast_io::freestanding::parse_errc::invalid);
 	}
-	auto const digits{static_cast<::std::size_t>(fit - fdigits)};
+	auto const digits{static_cast<::std::size_t>(last - fdigits)};
 	if (digits > 18)
 	{
-		return micros; /* more fraction digits than a 64-bit integer holds */
+		/* more fraction digits than a 64-bit integer holds */
+		::fast_io::herbceptions::throws_parse_errc(
+			::fast_io::freestanding::parse_errc::invalid);
 	}
 	if (digits <= 6)
 	{
@@ -312,7 +330,7 @@ inline constexpr ::std::uint_least64_t seconds_to_microseconds(u8string_view v) 
 	return micros;
 }
 
-inline constexpr ::std::int_least64_t time_offset_microseconds(u8string_view v) noexcept
+inline constexpr ::std::int_least64_t time_offset_microseconds(u8string_view v) throws
 {
 	bool negative{};
 	if (!v.is_empty() && (v.front() == u8'-' || v.front() == u8'+'))
@@ -326,7 +344,7 @@ inline constexpr ::std::int_least64_t time_offset_microseconds(u8string_view v) 
 }
 
 /* FRAME-RATE keeps three decimals in the wild (29.970, 59.940) */
-inline constexpr ::std::uint_least64_t seconds_to_milliseconds(u8string_view v) noexcept
+inline constexpr ::std::uint_least64_t seconds_to_milliseconds(u8string_view v) throws
 {
 	return seconds_to_microseconds(v) / 1000;
 }
@@ -355,9 +373,9 @@ inline constexpr void split_tag(u8string_view line, u8string_view &tag,
 				: u8string_view{line.data() + colon + 1, line.size() - colon - 1};
 }
 
-/* "1280x720" -> 1280, 720 */
-inline constexpr void parse_resolution(u8string_view v, ::std::uint_least64_t &w,
-									   ::std::uint_least64_t &h) noexcept
+/* "1280x720" -> 1280, 720; a value with no "x" or a side that is not a plain
+ * decimal integer aborts the parse */
+inline constexpr resolution parse_resolution(u8string_view v) throws
 {
 	::std::size_t x{v.size()};
 	for (::std::size_t i{}; i != v.size(); ++i)
@@ -370,19 +388,16 @@ inline constexpr void parse_resolution(u8string_view v, ::std::uint_least64_t &w
 	}
 	if (x == v.size())
 	{
-		return;
+		::fast_io::herbceptions::throws_parse_errc(
+			::fast_io::freestanding::parse_errc::invalid);
 	}
-	::std::uint_least64_t width{}, height{};
-	if (scan_uint(trim(u8string_view{v.data(), x}), width) &&
-		scan_uint(trim(u8string_view{v.data() + x + 1, v.size() - x - 1}), height))
-	{
-		w = width;
-		h = height;
-	}
+	return {static_cast<::std::uint_least32_t>(scan_uint(trim(u8string_view{v.data(), x}))),
+			static_cast<::std::uint_least32_t>(
+				scan_uint(trim(u8string_view{v.data() + x + 1, v.size() - x - 1})))};
 }
 
 /* "<length>[@<offset>]" */
-inline constexpr byte_range parse_byte_range(u8string_view v, bool &ok) noexcept
+inline constexpr byte_range parse_byte_range(u8string_view v) throws
 {
 	byte_range r{};
 	::std::size_t at{v.size()};
@@ -394,15 +409,11 @@ inline constexpr byte_range parse_byte_range(u8string_view v, bool &ok) noexcept
 			break;
 		}
 	}
-	ok = scan_uint(trim(u8string_view{v.data(), at}), r.length);
-	if (!ok)
-	{
-		return r;
-	}
+	r.length = scan_uint(trim(u8string_view{v.data(), at}));
 	if (at != v.size())
 	{
-		r.has_offset =
-			scan_uint(trim(u8string_view{v.data() + at + 1, v.size() - at - 1}), r.offset);
+		r.offset = scan_uint(trim(u8string_view{v.data() + at + 1, v.size() - at - 1}));
+		r.has_offset = true;
 	}
 	return r;
 }
@@ -650,9 +661,8 @@ inline ::std::size_t intern_map(::fast_io::vector<map_info> &maps,
 			}
 			else if (ieq(it.name, u8string_view{u8"BYTERANGE"}))
 			{
-				bool ok{};
-				m.range = parse_byte_range(it.value, ok);
-				m.has_range = ok;
+				m.range = parse_byte_range(it.value);
+				m.has_range = true;
 			}
 		}
 	}
@@ -679,32 +689,27 @@ inline ::fast_io::m3u8::variant parse_variant(u8string_view attrs, bool iframe)
 	attribute_iterator it{attrs};
 	while (it.next())
 	{
-		::std::uint_least64_t n{};
 		if (ieq(it.name, u8string_view{u8"BANDWIDTH"}))
 		{
-			v.has_bandwidth = scan_uint(it.value, n);
-			v.bandwidth = v.has_bandwidth ? n : 0;
+			v.bandwidth = scan_uint(it.value);
+			v.has_bandwidth = true;
 		}
 		else if (ieq(it.name, u8string_view{u8"AVERAGE-BANDWIDTH"}))
 		{
-			v.has_average_bandwidth = scan_uint(it.value, n);
-			v.average_bandwidth = v.has_average_bandwidth ? n : 0;
+			v.average_bandwidth = scan_uint(it.value);
+			v.has_average_bandwidth = true;
 		}
 		else if (ieq(it.name, u8string_view{u8"RESOLUTION"}))
 		{
-			::std::uint_least64_t w{}, h{};
-			parse_resolution(it.value, w, h);
-			if (w != 0 && h != 0)
-			{
-				v.has_resolution = true;
-				v.width = static_cast<::std::uint_least32_t>(w);
-				v.height = static_cast<::std::uint_least32_t>(h);
-			}
+			auto const r{parse_resolution(it.value)};
+			v.has_resolution = true;
+			v.width = r.width;
+			v.height = r.height;
 		}
 		else if (ieq(it.name, u8string_view{u8"FRAME-RATE"}))
 		{
 			v.frame_rate_milli = seconds_to_milliseconds(it.value);
-			v.has_frame_rate = v.frame_rate_milli != 0;
+			v.has_frame_rate = true;
 		}
 		else if (ieq(it.name, u8string_view{u8"CODECS"}))
 		{
@@ -1137,9 +1142,8 @@ inline u8string resolve_uri(u8string_view base, u8string_view reference)
 		}
 		else if (details::ieq(tag, u8string_view{u8"#EXT-X-BYTERANGE"}))
 		{
-			bool ok{};
-			cur.range = details::parse_byte_range(value, ok);
-			cur.has_range = ok;
+			cur.range = details::parse_byte_range(value);
+			cur.has_range = true;
 		}
 		else if (details::ieq(tag, u8string_view{u8"#EXT-X-DISCONTINUITY"}))
 		{
@@ -1179,39 +1183,25 @@ inline u8string resolve_uri(u8string_view base, u8string_view reference)
 		}
 		else if (details::ieq(tag, u8string_view{u8"#EXT-X-TARGETDURATION"}))
 		{
-			::std::uint_least64_t n{};
-			if (details::scan_uint(details::trim(value), n))
-			{
-				pl.has_target_duration = true;
-				pl.target_duration_seconds = static_cast<::std::uint_least32_t>(n);
-			}
+			pl.target_duration_seconds =
+				static_cast<::std::uint_least32_t>(details::scan_uint(details::trim(value)));
+			pl.has_target_duration = true;
 		}
 		else if (details::ieq(tag, u8string_view{u8"#EXT-X-MEDIA-SEQUENCE"}))
 		{
-			::std::uint_least64_t n{};
-			if (details::scan_uint(details::trim(value), n))
-			{
-				pl.has_media_sequence = true;
-				pl.media_sequence = n;
-			}
+			pl.media_sequence = details::scan_uint(details::trim(value));
+			pl.has_media_sequence = true;
 		}
 		else if (details::ieq(tag, u8string_view{u8"#EXT-X-DISCONTINUITY-SEQUENCE"}))
 		{
-			::std::uint_least64_t n{};
-			if (details::scan_uint(details::trim(value), n))
-			{
-				pl.has_discontinuity_sequence = true;
-				pl.discontinuity_sequence = n;
-			}
+			pl.discontinuity_sequence = details::scan_uint(details::trim(value));
+			pl.has_discontinuity_sequence = true;
 		}
 		else if (details::ieq(tag, u8string_view{u8"#EXT-X-VERSION"}))
 		{
-			::std::uint_least64_t n{};
-			if (details::scan_uint(details::trim(value), n))
-			{
-				pl.has_version = true;
-				pl.version = static_cast<::std::uint_least8_t>(n);
-			}
+			pl.version =
+				static_cast<::std::uint_least8_t>(details::scan_uint(details::trim(value)));
+			pl.has_version = true;
 		}
 		else if (details::ieq(tag, u8string_view{u8"#EXT-X-PLAYLIST-TYPE"}))
 		{
