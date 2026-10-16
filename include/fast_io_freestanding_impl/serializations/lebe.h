@@ -125,8 +125,9 @@ inline constexpr auto be_get(int_type &t) noexcept
 
 template <::std::endian en, ::std::size_t sz, ::fast_io::details::my_integral int_type>
 	requires ::fast_io::details::supported_lebe_size<sz>
-inline constexpr auto lebe_put(int_type t) noexcept(
-	(::std::numeric_limits<::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<int_type>>>::digits) <= sz)
+inline constexpr auto lebe_put(int_type t)
+	FAST_IO_HERBCEPTIONS_THROWS_IF(!(
+		(::std::numeric_limits<::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<int_type>>>::digits) <= sz))
 {
 	using uint_type = ::fast_io::details::my_make_unsigned_t<::std::remove_cvref_t<int_type>>;
 	uint_type u{static_cast<uint_type>(t)};
@@ -154,14 +155,14 @@ inline constexpr auto lebe_put(int_type t) noexcept(
 
 template <::std::size_t sz, ::fast_io::details::my_integral int_type>
 	requires ::fast_io::details::supported_lebe_size<sz>
-inline constexpr auto le_put(int_type t) noexcept(noexcept(lebe_put<::std::endian::little, sz>(t)))
+inline constexpr auto le_put(int_type t) FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(lebe_put<::std::endian::little, sz>(t))
 {
 	return lebe_put<::std::endian::little, sz>(t);
 }
 
 template <::std::size_t sz, ::fast_io::details::my_integral int_type>
 	requires ::fast_io::details::supported_lebe_size<sz>
-inline constexpr auto be_put(int_type t) noexcept(noexcept(lebe_put<::std::endian::big, sz>(t)))
+inline constexpr auto be_put(int_type t) FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(lebe_put<::std::endian::big, sz>(t))
 {
 	return lebe_put<::std::endian::big, sz>(t);
 }
