@@ -14,14 +14,12 @@ namespace details
    ::fast_io::error{domain, code} so catch handlers still see an
    error object instead of a terminate. domain values are arbitrary
    per-code-space constants; there is no registry or printing. */
-inline constexpr ::std::size_t posix_domain_value{11138730069487200664ULL};
-inline constexpr ::std::size_t parse_domain_value{17020429607921007685ULL};
-#if defined(_WIN32) || defined(__CYGWIN__)
-inline constexpr ::std::size_t nt_domain_value{17311375720795711021ULL};
-inline constexpr ::std::size_t win32_domain_value{12911969238956088748ULL};
-inline constexpr ::std::size_t wine_domain_value{14792643980012753601ULL};
-inline constexpr ::std::size_t com_domain_value{11400714819323198485ULL};
-#endif
+inline constexpr ::std::size_t posix_domain_value{static_cast<::std::size_t>(11138730069487200664ULL)};
+inline constexpr ::std::size_t parse_domain_value{static_cast<::std::size_t>(17020429607921007685ULL)};
+inline constexpr ::std::size_t nt_domain_value{static_cast<::std::size_t>(17311375720795711021ULL)};
+inline constexpr ::std::size_t win32_domain_value{static_cast<::std::size_t>(12911969238956088748ULL)};
+inline constexpr ::std::size_t wine_domain_value{static_cast<::std::size_t>(14792643980012753601ULL)};
+inline constexpr ::std::size_t com_domain_value{static_cast<::std::size_t>(11400714819323198485ULL)};
 
 inline constexpr ::std::size_t legacy_errc_domain(::std::errc) noexcept
 {
