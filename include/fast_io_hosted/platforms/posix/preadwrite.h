@@ -163,16 +163,16 @@ inline ::fast_io::io_scatter_status_t posix_scatter_pwrite_bytes_impl(int fd, ::
 
 #ifndef __wasi__
 
-template <::std::integral char_type>
-inline ::std::byte *pread_some_bytes_underflow_define(::fast_io::basic_posix_io_observer<char_type> piob,
+template <::fast_io::posix_family fam, ::std::integral char_type>
+inline ::std::byte *pread_some_bytes_underflow_define(::fast_io::basic_posix_family_io_observer<fam, char_type> piob,
 													  ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::posix_pread_bytes_impl(piob.fd, first, count, off);
 }
 
-template <::std::integral char_type>
-inline ::std::byte const *pwrite_some_bytes_overflow_define(::fast_io::basic_posix_io_observer<char_type> piob,
+template <::fast_io::posix_family fam, ::std::integral char_type>
+inline ::std::byte const *pwrite_some_bytes_overflow_define(::fast_io::basic_posix_family_io_observer<fam, char_type> piob,
 															::std::byte const *first, ::std::size_t count,
 															::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
@@ -182,9 +182,9 @@ inline ::std::byte const *pwrite_some_bytes_overflow_define(::fast_io::basic_pos
 
 #endif
 
-template <::std::integral char_type>
+template <::fast_io::posix_family fam, ::std::integral char_type>
 inline ::fast_io::io_scatter_status_t
-scatter_pread_some_bytes_underflow_define(::fast_io::basic_posix_io_observer<char_type> piob,
+scatter_pread_some_bytes_underflow_define(::fast_io::basic_posix_family_io_observer<fam, char_type> piob,
 										  ::fast_io::io_scatter_t const *pscatters, ::std::size_t n,
 										  ::fast_io::intfpos_t fpos)
 	FAST_IO_HERBCEPTIONS_THROWS
@@ -192,9 +192,9 @@ scatter_pread_some_bytes_underflow_define(::fast_io::basic_posix_io_observer<cha
 	return ::fast_io::details::posix_scatter_pread_bytes_impl(piob.fd, pscatters, n, fpos);
 }
 
-template <::std::integral char_type>
+template <::fast_io::posix_family fam, ::std::integral char_type>
 inline ::fast_io::io_scatter_status_t
-scatter_pwrite_some_bytes_overflow_define(::fast_io::basic_posix_io_observer<char_type> piob,
+scatter_pwrite_some_bytes_overflow_define(::fast_io::basic_posix_family_io_observer<fam, char_type> piob,
 										  ::fast_io::io_scatter_t const *pscatters, ::std::size_t n,
 										  ::fast_io::intfpos_t fpos)
 	FAST_IO_HERBCEPTIONS_THROWS

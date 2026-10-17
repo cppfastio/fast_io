@@ -363,86 +363,96 @@ template <typename async_scheduler_type, ::std::integral ch_type,
 		  typename socket_observer_type, typename func>
 	requires(::fast_io::tls::details::tls_generic_sched<
 			 ::std::remove_cvref_t<async_scheduler_type>>)
+
 inline void async_pread_some_bytes_underflow_callback_define(
 	async_scheduler_type &&sched, ::fast_io::posix_statx_timestamp_opt timeout,
 	basic_schannel_tls_io_observer<ch_type, socket_observer_type> tob,
 	::std::byte *first, ::std::size_t count, ::fast_io::intfpos_opt off,
 	func callback) noexcept
 {
+	::std::cxx_std_error err{};
 	if (off.has_opt)
 	{
-		callback(::fast_io::details::async_make_error(::std::errc::io_error),
-				 ::std::size_t{});
-		return;
+		err = ::fast_io::details::async_make_error(::std::errc::io_error);
 	}
-	auto *client{tob.handle};
-	if (!client->established_)
+	else
 	{
-		async_pread_some_bytes_underflow_callback_define(
-			sched, timeout, client->sock_, first, count, off,
-			::std::move(callback));
-		return;
+		auto *client{tob.handle};
+		if (!client->established_)
+		{
+			async_pread_some_bytes_underflow_callback_define(
+				sched, timeout, client->sock_, first, count, off,
+				::std::move(callback));
+			return;
+		}
+		using alloc_type = ::fast_io::details::async_scheduler_allocator_t<
+			::std::remove_cvref_t<async_scheduler_type>>;
+		using state_type =
+			::fast_io::tls::details::schannel_tls_recv_state<
+				::std::remove_cvref_t<async_scheduler_type>,
+				::std::remove_cvref_t<decltype(*client)>, alloc_type,
+				::std::remove_cvref_t<func>>;
+		FAST_IO_HERBCEPTIONS_TRY
+		{
+			auto *st{::fast_io::details::async_new_state<state_type>(
+				sched, timeout, client, first, count, ::std::move(callback))};
+			::fast_io::tls::details::schannel_tls_recv_pump(st);
+			return;
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
+		}
 	}
-	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<
-		::std::remove_cvref_t<async_scheduler_type>>;
-	using state_type =
-		::fast_io::tls::details::schannel_tls_recv_state<
-			::std::remove_cvref_t<async_scheduler_type>,
-			::std::remove_cvref_t<decltype(*client)>, alloc_type,
-			::std::remove_cvref_t<func>>;
-	FAST_IO_HERBCEPTIONS_TRY
-	{
-		auto *st{::fast_io::details::async_new_state<state_type>(
-			sched, timeout, client, first, count, ::std::move(callback))};
-		::fast_io::tls::details::schannel_tls_recv_pump(st);
-	}
-	catch throws(::std::error e)
-	{
-		callback(e.release(), ::std::size_t{});
-	}
+	callback(err, ::std::size_t{});
 }
 
 template <typename async_scheduler_type, ::std::integral ch_type,
 		  typename socket_observer_type, typename func>
 	requires(::fast_io::tls::details::tls_generic_sched<
 			 ::std::remove_cvref_t<async_scheduler_type>>)
+
 inline void async_pwrite_some_bytes_overflow_callback_define(
 	async_scheduler_type &&sched, ::fast_io::posix_statx_timestamp_opt timeout,
 	basic_schannel_tls_io_observer<ch_type, socket_observer_type> tob,
 	::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_opt off,
 	func callback) noexcept
 {
+	::std::cxx_std_error err{};
 	if (off.has_opt)
 	{
-		callback(::fast_io::details::async_make_error(::std::errc::io_error),
-				 ::std::size_t{});
-		return;
+		err = ::fast_io::details::async_make_error(::std::errc::io_error);
 	}
-	auto *client{tob.handle};
-	if (!client->established_)
+	else
 	{
-		async_pwrite_some_bytes_overflow_callback_define(
-			sched, timeout, client->sock_, first, count, off,
-			::std::move(callback));
-		return;
+		auto *client{tob.handle};
+		if (!client->established_)
+		{
+			async_pwrite_some_bytes_overflow_callback_define(
+				sched, timeout, client->sock_, first, count, off,
+				::std::move(callback));
+			return;
+		}
+		using alloc_type = ::fast_io::details::async_scheduler_allocator_t<
+			::std::remove_cvref_t<async_scheduler_type>>;
+		using state_type =
+			::fast_io::tls::details::schannel_tls_send_state<
+				::std::remove_cvref_t<async_scheduler_type>,
+				::std::remove_cvref_t<decltype(*client)>, alloc_type,
+				::std::remove_cvref_t<func>>;
+		FAST_IO_HERBCEPTIONS_TRY
+		{
+			auto *st{::fast_io::details::async_new_state<state_type>(
+				sched, timeout, client, ::std::size_t{}, ::std::move(callback))};
+			::fast_io::tls::details::schannel_tls_send_submit(st, first, count);
+			return;
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
+		}
 	}
-	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<
-		::std::remove_cvref_t<async_scheduler_type>>;
-	using state_type =
-		::fast_io::tls::details::schannel_tls_send_state<
-			::std::remove_cvref_t<async_scheduler_type>,
-			::std::remove_cvref_t<decltype(*client)>, alloc_type,
-			::std::remove_cvref_t<func>>;
-	FAST_IO_HERBCEPTIONS_TRY
-	{
-		auto *st{::fast_io::details::async_new_state<state_type>(
-			sched, timeout, client, ::std::size_t{}, ::std::move(callback))};
-		::fast_io::tls::details::schannel_tls_send_submit(st, first, count);
-	}
-	catch throws(::std::error e)
-	{
-		callback(e.release(), ::std::size_t{});
-	}
+	callback(err, ::std::size_t{});
 }
 
 } // namespace fast_io::tls

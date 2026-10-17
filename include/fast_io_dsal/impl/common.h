@@ -36,6 +36,19 @@ template <bool throwing>
 	}
 }
 
+template <bool throwing>
+[[noreturn]] inline constexpr void contract_violation_report_invalid_argument() FAST_IO_HERBCEPTIONS_THROWS_IF(throwing)
+{
+	if constexpr (throwing)
+	{
+		::fast_io::herbceptions::throws_errc(::std::errc::invalid_argument);
+	}
+	else
+	{
+		::fast_io::fast_terminate();
+	}
+}
+
 /*
 Completeness-safe wrappers around the standard nothrow traits. Querying a
 nothrow trait on an incomplete type is a hard error; guarding it with

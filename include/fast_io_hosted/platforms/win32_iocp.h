@@ -251,6 +251,7 @@ win32_iocp_relative_deadline(::fast_io::posix_statx_timestamp64 timeout) noexcep
  * failures — is delivered through the callback exactly once.
  */
 template <bool is_write, typename sched_type, typename stream_type, typename T>
+
 inline void win32_iocp_rw_submit(sched_type sched, stream_type stream, void *first,
 								 ::std::size_t count, ::fast_io::intfpos_opt off,
 								 ::fast_io::posix_statx_timestamp_opt timeout, T &&callback) noexcept
@@ -262,13 +263,19 @@ inline void win32_iocp_rw_submit(sched_type sched, stream_type stream, void *fir
 		::std::same_as<typename ::std::remove_cvref_t<stream_type>::native_handle_type,
 					   ::std::size_t>};
 
-	::std::cxx_std_error early_err{};
+	/* every failure funnels into the one invocation at the bottom, so the
+	 * callback body is emitted once per callback type instead of once per
+	 * failure path */
+	callback_type cb{::std::forward<T>(callback)};
+	cookie_type *cookie{};
+	::std::cxx_std_error err{};
+
 	void *file_handle{};
 	if constexpr (is_socket)
 	{
 		if (off.has_opt) [[unlikely]]
 		{
-			early_err = ::fast_io::details::async_make_error(::std::errc::invalid_seek);
+			err = ::fast_io::details::async_make_error(::std::errc::invalid_seek);
 		}
 		file_handle = reinterpret_cast<void *>(stream.native_handle());
 	}
@@ -276,7 +283,7 @@ inline void win32_iocp_rw_submit(sched_type sched, stream_type stream, void *fir
 	{
 		file_handle = stream.native_handle();
 	}
-	if (early_err.domain == nullptr)
+	if (err.domain == nullptr)
 	{
 		try
 		{
@@ -284,177 +291,179 @@ inline void win32_iocp_rw_submit(sched_type sched, stream_type stream, void *fir
 		}
 		catch throws(::std::error e)
 		{
-			early_err = e.release();
+			err = e.release();
 		}
 	}
-	if (early_err.domain != nullptr)
-	{
-		auto e{early_err};
-		early_err = {};
-		callback(e, 0zu);
-		return;
-	}
 
-	cookie_type *cookie;
-	try
-	{
-		cookie = ::fast_io::details::async_new_state_plain<cookie_type>(
-			sched,
-			win32_iocp_state_base{{},
-								  &win32_iocp_rw_deliver<alloc_type, callback_type, !is_write>,
-								  file_handle},
-			::fast_io::win32::wsabuf{}, callback_type{::std::forward<T>(callback)});
-	}
-	catch throws(::std::error e)
-	{
-		callback(e.release(), 0zu);
-		return;
-	}
-
-	if (off.has_opt)
+	if (err.domain == nullptr)
 	{
 		try
 		{
-			::fast_io::win32::details::win32_calculate_offset_impl(file_handle, cookie->base.ovl,
-																   off.opt);
+			cookie = ::fast_io::details::async_new_state_plain<cookie_type>(
+				sched,
+				win32_iocp_state_base{{},
+									  &win32_iocp_rw_deliver<alloc_type, callback_type, !is_write>,
+									  file_handle},
+				::fast_io::win32::wsabuf{}, ::std::move(cb));
 		}
 		catch throws(::std::error e)
 		{
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
-			cb(e.release(), 0zu);
-			return;
+			err = e.release();
 		}
 	}
-	else if constexpr (!is_socket)
-	{
-		/* empty offset = current file position: FILE_USE_FILE_POINTER_POSITION.
-		 * Wine does not implement the ~0/~0 sentinel in overlapped I/O
-		 * (ERROR_INVALID_PARAMETER), so emulate it: take the file object's
-		 * current position as an explicit offset and advance it on
-		 * delivery. Non-seekable handles (pipes) can't report a position —
-		 * their offset fields are ignored by the kernel, so 0 is fine. */
-		::std::int_least64_t cur{};
-		if (::fast_io::win32::SetFilePointerEx(file_handle, 0,
-											   __builtin_addressof(cur),
-											   1u /* FILE_CURRENT */))
-		{
-			cookie->base.ovl.dummy_union_name.dummy_struct_name = {
-				static_cast<::std::uint_least32_t>(cur),
-				static_cast<::std::uint_least32_t>(static_cast<::std::uint_least64_t>(cur) >> 32u)};
-			cookie->advance_position = true;
-		}
-		else
-		{
-			cookie->base.ovl.dummy_union_name.dummy_struct_name = {0u, 0u};
-		}
-	}
+
 	::std::uint_least32_t const len{
 		::fast_io::details::read_write_bytes_compute<::std::uint_least32_t>(
 			static_cast<::std::byte *>(first), count)};
-	if constexpr (is_socket)
+
+	if (err.domain == nullptr)
 	{
-		cookie->wsa = {len, static_cast<char *>(first)};
+		if (off.has_opt)
+		{
+			try
+			{
+				::fast_io::win32::details::win32_calculate_offset_impl(file_handle, cookie->base.ovl,
+																	   off.opt);
+			}
+			catch throws(::std::error e)
+			{
+				err = e.release();
+			}
+		}
+		else if constexpr (!is_socket)
+		{
+			/* empty offset = current file position: FILE_USE_FILE_POINTER_POSITION.
+			 * Wine does not implement the ~0/~0 sentinel in overlapped I/O
+			 * (ERROR_INVALID_PARAMETER), so emulate it: take the file object's
+			 * current position as an explicit offset and advance it on
+			 * delivery. Non-seekable handles (pipes) can't report a position —
+			 * their offset fields are ignored by the kernel, so 0 is fine. */
+			::std::int_least64_t cur{};
+			if (::fast_io::win32::SetFilePointerEx(file_handle, 0,
+												   __builtin_addressof(cur),
+												   1u /* FILE_CURRENT */))
+			{
+				cookie->base.ovl.dummy_union_name.dummy_struct_name = {
+					static_cast<::std::uint_least32_t>(cur),
+					static_cast<::std::uint_least32_t>(static_cast<::std::uint_least64_t>(cur) >> 32u)};
+				cookie->advance_position = true;
+			}
+			else
+			{
+				cookie->base.ovl.dummy_union_name.dummy_struct_name = {0u, 0u};
+			}
+		}
 	}
 
-	/* the deadline timer is created before the op goes out so a
-	 * submission failure tears down cleanly; it is armed only once the
-	 * kernel owns the op. A zero-length timeout fails immediately. */
-	if (timeout.has_opt)
+	if (err.domain == nullptr)
 	{
-		if (timeout.opt.tv_sec == 0 && timeout.opt.tv_nsec == 0) [[unlikely]]
+		if constexpr (is_socket)
 		{
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
-			cb(::fast_io::details::async_make_error(::std::errc::timed_out), 0zu);
-			return;
+			cookie->wsa = {len, static_cast<char *>(first)};
 		}
-		cookie->base.timer = ::fast_io::win32::CreateThreadpoolTimer(
-			win32_iocp_timer_thunk, cookie, nullptr);
-		if (cookie->base.timer == nullptr) [[unlikely]]
+		/* the deadline timer is created before the op goes out so a
+		 * submission failure tears down cleanly; it is armed only once the
+		 * kernel owns the op. A zero-length timeout fails immediately. */
+		if (timeout.has_opt)
 		{
-			auto err{::fast_io::win32::GetLastError()};
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
-			cb(::fast_io::details::async_make_error(
-				   static_cast<::fast_io::freestanding::win32_errc>(err)),
-			   0zu);
-			return;
+			if (timeout.opt.tv_sec == 0 && timeout.opt.tv_nsec == 0) [[unlikely]]
+			{
+				err = ::fast_io::details::async_make_error(::std::errc::timed_out);
+			}
+			else
+			{
+				cookie->base.timer = ::fast_io::win32::CreateThreadpoolTimer(
+					win32_iocp_timer_thunk, cookie, nullptr);
+				if (cookie->base.timer == nullptr) [[unlikely]]
+				{
+					err = ::fast_io::details::async_make_error(
+						static_cast<::fast_io::freestanding::win32_errc>(
+							::fast_io::win32::GetLastError()));
+				}
+			}
 		}
 	}
 
-	::std::uint_least32_t err{};
-	bool pending{};
-	if constexpr (is_socket)
+	if (err.domain == nullptr)
 	{
-		auto const sock{stream.native_handle()};
-		if constexpr (is_write)
+		::std::uint_least32_t ioerr{};
+		bool pending{};
+		if constexpr (is_socket)
 		{
-			pending = ::fast_io::win32::WSASend(sock, __builtin_addressof(cookie->wsa), 1u, nullptr,
-												0u, __builtin_addressof(cookie->base.ovl),
-												nullptr) == 0;
+			auto const sock{stream.native_handle()};
+			if constexpr (is_write)
+			{
+				pending = ::fast_io::win32::WSASend(sock, __builtin_addressof(cookie->wsa), 1u,
+													nullptr, 0u,
+													__builtin_addressof(cookie->base.ovl),
+													nullptr) == 0;
+				if (!pending)
+				{
+					ioerr = static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError());
+					pending = ioerr == 997u; // WSA_IO_PENDING
+				}
+			}
+			else
+			{
+				::std::uint_least32_t flags{};
+				pending = ::fast_io::win32::WSARecv(sock, __builtin_addressof(cookie->wsa), 1u,
+													nullptr, __builtin_addressof(flags),
+													__builtin_addressof(cookie->base.ovl),
+													nullptr) == 0;
+				if (!pending)
+				{
+					ioerr = static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError());
+					pending = ioerr == 997u;
+				}
+			}
+		}
+		else if constexpr (is_write)
+		{
+			pending = ::fast_io::win32::WriteFile(file_handle, first, len, nullptr,
+												  __builtin_addressof(cookie->base.ovl)) != 0;
 			if (!pending)
 			{
-				err = static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError());
-				pending = err == 997u; // WSA_IO_PENDING
+				ioerr = ::fast_io::win32::GetLastError();
+				pending = ioerr == 997u; // ERROR_IO_PENDING
 			}
 		}
 		else
 		{
-			::std::uint_least32_t flags{};
-			pending = ::fast_io::win32::WSARecv(sock, __builtin_addressof(cookie->wsa), 1u, nullptr,
-												__builtin_addressof(flags),
-												__builtin_addressof(cookie->base.ovl),
-												nullptr) == 0;
+			pending = ::fast_io::win32::ReadFile(file_handle, first, len, nullptr,
+												 __builtin_addressof(cookie->base.ovl)) != 0;
 			if (!pending)
 			{
-				err = static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError());
-				pending = err == 997u;
+				ioerr = ::fast_io::win32::GetLastError();
+				pending = ioerr == 997u;
 			}
 		}
-	}
-	else if constexpr (is_write)
-	{
-		pending = ::fast_io::win32::WriteFile(file_handle, first, len, nullptr,
-											  __builtin_addressof(cookie->base.ovl)) != 0;
-		if (!pending)
-		{
-			err = ::fast_io::win32::GetLastError();
-			pending = err == 997u; // ERROR_IO_PENDING
-		}
-	}
-	else
-	{
-		pending = ::fast_io::win32::ReadFile(file_handle, first, len, nullptr,
-											 __builtin_addressof(cookie->base.ovl)) != 0;
-		if (!pending)
-		{
-			err = ::fast_io::win32::GetLastError();
-			pending = err == 997u;
-		}
-	}
 
-	if (pending)
-	{
-		/* synchronous success and ERROR_IO_PENDING both end here: the
-		 * kernel queues the completion packet either way */
+		if (pending)
+		{
+			/* synchronous success and ERROR_IO_PENDING both end here: the
+			 * kernel queues the completion packet either way */
+			if (auto *timer{cookie->base.timer}; timer != nullptr)
+			{
+				auto due{win32_iocp_relative_deadline(timeout.opt)};
+				::fast_io::win32::SetThreadpoolTimer(timer, __builtin_addressof(due), 0, 0);
+			}
+			return;
+		}
+
 		if (auto *timer{cookie->base.timer}; timer != nullptr)
 		{
-			auto due{win32_iocp_relative_deadline(timeout.opt)};
-			::fast_io::win32::SetThreadpoolTimer(timer, __builtin_addressof(due), 0, 0);
+			::fast_io::win32::CloseThreadpoolTimer(timer);
 		}
-		return;
+		err = ::fast_io::details::async_make_error(
+			static_cast<::fast_io::freestanding::win32_errc>(ioerr));
 	}
 
-	if (auto *timer{cookie->base.timer}; timer != nullptr)
+	callback_type deliver{::std::move(cookie != nullptr ? cookie->callback : cb)};
+	if (cookie != nullptr)
 	{
-		::fast_io::win32::CloseThreadpoolTimer(timer);
+		::fast_io::details::async_delete_state(cookie);
 	}
-	auto cb{::std::move(cookie->callback)};
-	::fast_io::details::async_delete_state(cookie);
-	cb(::fast_io::details::async_make_error(
-		   static_cast<::fast_io::freestanding::win32_errc>(err)),
-	   0zu);
+	deliver(err, 0zu);
 }
 
 /*
@@ -558,13 +567,13 @@ inline void win32_iocp_accept_deliver(void *self, ::std::size_t,
 			static_cast<::fast_io::freestanding::win32_errc>(
 				static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError())));
 	}
+	::std::size_t result{accept_sock};
 	if (e.domain != nullptr) [[unlikely]]
 	{
 		::fast_io::win32::closesocket(accept_sock);
-		callback(e, 0zu);
-		return;
+		result = 0zu;
 	}
-	callback(e, accept_sock);
+	callback(e, result);
 }
 
 /*
@@ -574,6 +583,7 @@ inline void win32_iocp_accept_deliver(void *self, ::std::size_t,
  * callback exactly once.
  */
 template <::fast_io::win32_family family, typename sched_type, typename stream_type, typename T>
+
 inline void win32_iocp_accept_submit(sched_type sched, stream_type stream,
 									 ::fast_io::open_mode m,
 									 ::fast_io::posix_statx_timestamp_opt timeout,
@@ -583,9 +593,13 @@ inline void win32_iocp_accept_submit(sched_type sched, stream_type stream,
 	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_type>;
 	using cookie_type = win32_iocp_accept_cookie<alloc_type, callback_type>;
 
+	callback_type cb{::std::forward<T>(callback)};
+	cookie_type *cookie{};
+	::std::cxx_std_error err{};
+	::std::size_t accept_sock{};
+
 	::std::size_t const listen_sock{stream.native_handle()};
 	::fast_io::win32::acceptex_func acceptex{};
-	::std::size_t accept_sock{};
 	try
 	{
 		acceptex = win32_iocp_acceptex(listen_sock);
@@ -620,88 +634,96 @@ inline void win32_iocp_accept_submit(sched_type sched, stream_type stream,
 		{
 			::fast_io::win32::closesocket(accept_sock);
 		}
-		callback(e.release(), 0zu);
-		return;
+		err = e.release();
 	}
 
-	cookie_type *cookie;
-	try
+	if (err.domain == nullptr)
 	{
-		cookie = ::fast_io::details::async_new_state_plain<cookie_type>(
-			sched,
-			win32_iocp_state_base{{},
-								  &win32_iocp_accept_deliver<alloc_type, callback_type>,
-								  reinterpret_cast<void *>(listen_sock)},
-			accept_sock, 0u, callback_type{::std::forward<T>(callback)});
-	}
-	catch throws(::std::error e)
-	{
-		::fast_io::win32::closesocket(accept_sock);
-		callback(e.release(), 0zu);
-		return;
+		try
+		{
+			cookie = ::fast_io::details::async_new_state_plain<cookie_type>(
+				sched,
+				win32_iocp_state_base{{},
+									  &win32_iocp_accept_deliver<alloc_type, callback_type>,
+									  reinterpret_cast<void *>(listen_sock)},
+				accept_sock, 0u, ::std::move(cb));
+		}
+		catch throws(::std::error e)
+		{
+			::fast_io::win32::closesocket(accept_sock);
+			err = e.release();
+		}
 	}
 
 	/* the deadline timer is created before the op goes out so a
 	 * submission failure tears down cleanly; it is armed only once the
 	 * kernel owns the op */
-	if (timeout.has_opt)
+	if (err.domain == nullptr && timeout.has_opt)
 	{
 		if (timeout.opt.tv_sec == 0 && timeout.opt.tv_nsec == 0) [[unlikely]]
 		{
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
-			::fast_io::win32::closesocket(accept_sock);
-			cb(::fast_io::details::async_make_error(::std::errc::timed_out), 0zu);
-			return;
+			err = ::fast_io::details::async_make_error(::std::errc::timed_out);
 		}
-		cookie->base.timer = ::fast_io::win32::CreateThreadpoolTimer(
-			win32_iocp_timer_thunk, cookie, nullptr);
-		if (cookie->base.timer == nullptr) [[unlikely]]
+		else
 		{
-			auto err{::fast_io::win32::GetLastError()};
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
+			cookie->base.timer = ::fast_io::win32::CreateThreadpoolTimer(
+				win32_iocp_timer_thunk, cookie, nullptr);
+			if (cookie->base.timer == nullptr) [[unlikely]]
+			{
+				err = ::fast_io::details::async_make_error(
+					static_cast<::fast_io::freestanding::win32_errc>(
+						::fast_io::win32::GetLastError()));
+			}
+		}
+		if (err.domain != nullptr)
+		{
 			::fast_io::win32::closesocket(accept_sock);
-			cb(::fast_io::details::async_make_error(
-				   static_cast<::fast_io::freestanding::win32_errc>(err)),
-			   0zu);
+		}
+	}
+
+	if (err.domain == nullptr)
+	{
+		/* dwReceiveDataLength 0: the accepted socket is returned without
+		 * waiting for payload. The address buffer stays real — wine's
+		 * AcceptEx rejects a null lpOutputBuffer with WSAEINVAL, and real
+		 * Windows wants sockaddr_storage+16 per address slot anyway.
+		 * Synchronous success and WSA_IO_PENDING both queue a completion */
+		constexpr ::std::uint_least32_t addrslotlen{
+			static_cast<::std::uint_least32_t>(sizeof(::fast_io::posix_sockaddr_in6) + 16)};
+		if (acceptex(listen_sock, accept_sock, cookie->addrbuf, 0u, addrslotlen, addrslotlen,
+					 __builtin_addressof(cookie->received),
+					 __builtin_addressof(cookie->base.ovl)) == 0)
+		{
+			auto const ioerr{
+				static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError())};
+			if (ioerr != 997u) [[unlikely]] // WSA_IO_PENDING
+			{
+				if (auto *timer{cookie->base.timer}; timer != nullptr)
+				{
+					::fast_io::win32::CloseThreadpoolTimer(timer);
+				}
+				::fast_io::win32::closesocket(accept_sock);
+				err = ::fast_io::details::async_make_error(
+					static_cast<::fast_io::freestanding::win32_errc>(ioerr));
+			}
+		}
+		if (err.domain == nullptr)
+		{
+			if (auto *timer{cookie->base.timer}; timer != nullptr)
+			{
+				auto due{win32_iocp_relative_deadline(timeout.opt)};
+				::fast_io::win32::SetThreadpoolTimer(timer, __builtin_addressof(due), 0, 0);
+			}
 			return;
 		}
 	}
 
-	/* dwReceiveDataLength 0: the accepted socket is returned without
-	 * waiting for payload. The address buffer stays real — wine's
-	 * AcceptEx rejects a null lpOutputBuffer with WSAEINVAL, and real
-	 * Windows wants sockaddr_storage+16 per address slot anyway.
-	 * Synchronous success and WSA_IO_PENDING both queue a completion */
-	constexpr ::std::uint_least32_t addrslotlen{
-		static_cast<::std::uint_least32_t>(sizeof(::fast_io::posix_sockaddr_in6) + 16)};
-	if (acceptex(listen_sock, accept_sock, cookie->addrbuf, 0u, addrslotlen, addrslotlen,
-				 __builtin_addressof(cookie->received),
-				 __builtin_addressof(cookie->base.ovl)) == 0)
+	callback_type deliver{::std::move(cookie != nullptr ? cookie->callback : cb)};
+	if (cookie != nullptr)
 	{
-		auto const err{
-			static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError())};
-		if (err != 997u) [[unlikely]] // WSA_IO_PENDING
-		{
-			if (auto *timer{cookie->base.timer}; timer != nullptr)
-			{
-				::fast_io::win32::CloseThreadpoolTimer(timer);
-			}
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
-			::fast_io::win32::closesocket(accept_sock);
-			cb(::fast_io::details::async_make_error(
-				   static_cast<::fast_io::freestanding::win32_errc>(err)),
-			   0zu);
-			return;
-		}
+		::fast_io::details::async_delete_state(cookie);
 	}
-	if (auto *timer{cookie->base.timer}; timer != nullptr)
-	{
-		auto due{win32_iocp_relative_deadline(timeout.opt)};
-		::fast_io::win32::SetThreadpoolTimer(timer, __builtin_addressof(due), 0, 0);
-	}
+	deliver(err, 0zu);
 }
 
 /* ======================= connect ======================= */
@@ -806,6 +828,7 @@ inline void win32_iocp_connect_deliver(void *self, ::std::size_t,
  * failure paths — the op does not own it.
  */
 template <::fast_io::win32_family family, typename sched_type, typename stream_type, typename T>
+
 inline void win32_iocp_connect_submit(sched_type sched, stream_type stream, void const *addr,
 									  ::std::size_t addrlen,
 									  ::fast_io::posix_statx_timestamp_opt timeout,
@@ -815,113 +838,129 @@ inline void win32_iocp_connect_submit(sched_type sched, stream_type stream, void
 	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_type>;
 	using cookie_type = win32_iocp_connect_cookie<alloc_type, callback_type>;
 
+	callback_type cb{::std::forward<T>(callback)};
+	cookie_type *cookie{};
+	::std::cxx_std_error err{};
+
 	::std::size_t const sock{stream.native_handle()};
 	if (addr == nullptr || addrlen == 0 ||
 		addrlen > sizeof(::fast_io::posix_sockaddr_storage)) [[unlikely]]
 	{
-		callback(::fast_io::details::async_make_error(::std::errc::invalid_argument));
-		return;
+		err = ::fast_io::details::async_make_error(::std::errc::invalid_argument);
 	}
 
 	::fast_io::win32::connectex_func connectex{};
-	try
+	if (err.domain == nullptr)
 	{
-		connectex = win32_iocp_connectex(sock);
-		win32_iocp_associate(sched.native_handle(), reinterpret_cast<void *>(sock));
-	}
-	catch throws(::std::error e)
-	{
-		callback(e.release());
-		return;
-	}
-
-	cookie_type *cookie;
-	try
-	{
-		cookie = ::fast_io::details::async_new_state_plain<cookie_type>(
-			sched,
-			win32_iocp_state_base{{},
-								  &win32_iocp_connect_deliver<alloc_type, callback_type>,
-								  reinterpret_cast<void *>(sock)},
-			0u, ::fast_io::posix_sockaddr_storage{},
-			callback_type{::std::forward<T>(callback)});
-	}
-	catch throws(::std::error e)
-	{
-		callback(e.release());
-		return;
-	}
-	__builtin_memcpy(__builtin_addressof(cookie->addr), addr, addrlen);
-
-	try
-	{
-		/* ConnectEx requires a bound socket: bind the peer family's
-		 * wildcard address so the OS picks the source port/address */
-		::fast_io::posix_sockaddr_storage any{};
-		any.ss_family =
-			static_cast<::fast_io::posix_sockaddr const *>(addr)->sa_family;
-		if (::fast_io::win32::bind(sock, __builtin_addressof(any),
-								   static_cast<int>(addrlen)) != 0) [[unlikely]]
+		try
 		{
-			throw_win32_error(
-				static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+			connectex = win32_iocp_connectex(sock);
+			win32_iocp_associate(sched.native_handle(), reinterpret_cast<void *>(sock));
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
 		}
 	}
-	catch throws(::std::error e)
+
+	if (err.domain == nullptr)
 	{
-		auto cb{::std::move(cookie->callback)};
-		::fast_io::details::async_delete_state(cookie);
-		cb(e.release());
-		return;
+		try
+		{
+			cookie = ::fast_io::details::async_new_state_plain<cookie_type>(
+				sched,
+				win32_iocp_state_base{{},
+									  &win32_iocp_connect_deliver<alloc_type, callback_type>,
+									  reinterpret_cast<void *>(sock)},
+				0u, ::fast_io::posix_sockaddr_storage{}, ::std::move(cb));
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
+		}
+	}
+	if (err.domain == nullptr)
+	{
+		__builtin_memcpy(__builtin_addressof(cookie->addr), addr, addrlen);
 	}
 
-	if (timeout.has_opt)
+	if (err.domain == nullptr)
+	{
+		try
+		{
+			/* ConnectEx requires a bound socket: bind the peer family's
+			 * wildcard address so the OS picks the source port/address */
+			::fast_io::posix_sockaddr_storage any{};
+			any.ss_family =
+				static_cast<::fast_io::posix_sockaddr const *>(addr)->sa_family;
+			if (::fast_io::win32::bind(sock, __builtin_addressof(any),
+									   static_cast<int>(addrlen)) != 0) [[unlikely]]
+			{
+				throw_win32_error(
+					static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError()));
+			}
+		}
+		catch throws(::std::error e)
+		{
+			err = e.release();
+		}
+	}
+
+	if (err.domain == nullptr && timeout.has_opt)
 	{
 		if (timeout.opt.tv_sec == 0 && timeout.opt.tv_nsec == 0) [[unlikely]]
 		{
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
-			cb(::fast_io::details::async_make_error(::std::errc::timed_out));
-			return;
+			err = ::fast_io::details::async_make_error(::std::errc::timed_out);
 		}
-		cookie->base.timer = ::fast_io::win32::CreateThreadpoolTimer(
-			win32_iocp_timer_thunk, cookie, nullptr);
-		if (cookie->base.timer == nullptr) [[unlikely]]
+		else
 		{
-			auto err{::fast_io::win32::GetLastError()};
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
-			cb(::fast_io::details::async_make_error(
-				static_cast<::fast_io::freestanding::win32_errc>(err)));
+			cookie->base.timer = ::fast_io::win32::CreateThreadpoolTimer(
+				win32_iocp_timer_thunk, cookie, nullptr);
+			if (cookie->base.timer == nullptr) [[unlikely]]
+			{
+				err = ::fast_io::details::async_make_error(
+					static_cast<::fast_io::freestanding::win32_errc>(
+						::fast_io::win32::GetLastError()));
+			}
+		}
+	}
+
+	if (err.domain == nullptr)
+	{
+		/* synchronous success and WSA_IO_PENDING both queue a completion */
+		if (connectex(sock, __builtin_addressof(cookie->addr), static_cast<int>(addrlen), nullptr,
+					  0u, __builtin_addressof(cookie->received),
+					  __builtin_addressof(cookie->base.ovl)) == 0)
+		{
+			auto const ioerr{
+				static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError())};
+			if (ioerr != 997u) [[unlikely]] // WSA_IO_PENDING
+			{
+				if (auto *timer{cookie->base.timer}; timer != nullptr)
+				{
+					::fast_io::win32::CloseThreadpoolTimer(timer);
+				}
+				err = ::fast_io::details::async_make_error(
+					static_cast<::fast_io::freestanding::win32_errc>(ioerr));
+			}
+		}
+		if (err.domain == nullptr)
+		{
+			if (auto *timer{cookie->base.timer}; timer != nullptr)
+			{
+				auto due{win32_iocp_relative_deadline(timeout.opt)};
+				::fast_io::win32::SetThreadpoolTimer(timer, __builtin_addressof(due), 0, 0);
+			}
 			return;
 		}
 	}
 
-	/* synchronous success and WSA_IO_PENDING both queue a completion */
-	if (connectex(sock, __builtin_addressof(cookie->addr), static_cast<int>(addrlen), nullptr,
-				  0u, __builtin_addressof(cookie->received),
-				  __builtin_addressof(cookie->base.ovl)) == 0)
+	callback_type deliver{::std::move(cookie != nullptr ? cookie->callback : cb)};
+	if (cookie != nullptr)
 	{
-		auto const err{
-			static_cast<::std::uint_least32_t>(::fast_io::win32::WSAGetLastError())};
-		if (err != 997u) [[unlikely]] // WSA_IO_PENDING
-		{
-			if (auto *timer{cookie->base.timer}; timer != nullptr)
-			{
-				::fast_io::win32::CloseThreadpoolTimer(timer);
-			}
-			auto cb{::std::move(cookie->callback)};
-			::fast_io::details::async_delete_state(cookie);
-			cb(::fast_io::details::async_make_error(
-				static_cast<::fast_io::freestanding::win32_errc>(err)));
-			return;
-		}
+		::fast_io::details::async_delete_state(cookie);
 	}
-	if (auto *timer{cookie->base.timer}; timer != nullptr)
-	{
-		auto due{win32_iocp_relative_deadline(timeout.opt)};
-		::fast_io::win32::SetThreadpoolTimer(timer, __builtin_addressof(due), 0, 0);
-	}
+	deliver(err);
 }
 
 /* ======================= close ======================= */

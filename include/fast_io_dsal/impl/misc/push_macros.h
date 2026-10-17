@@ -327,6 +327,18 @@ target (dllimport decls only pull in wineunix.dll when actually used).
 #define FAST_IO_HAS_WINE_UNIX
 #endif
 
+/*
+webassembly threads need the atomics feature: clang spells it
+__wasm_atomics__ for the -threads targets, emscripten spells the same
+capability __EMSCRIPTEN_PTHREADS__. where the feature is present a wasm
+target has working pthreads and the async thread-pool scheduler.
+*/
+#pragma push_macro("FAST_IO_HAS_WASM_THREADS")
+#undef FAST_IO_HAS_WASM_THREADS
+#if defined(__wasm__) && (defined(__wasm_atomics__) || defined(__EMSCRIPTEN_PTHREADS__))
+#define FAST_IO_HAS_WASM_THREADS
+#endif
+
 /* if consteval is C++23. GCC/Clang accept it as an extension in older
  * modes (warning only); where it is unavailable entirely, fall back to
  * __builtin_is_constant_evaluated(), and where even that is missing,

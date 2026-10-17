@@ -99,7 +99,7 @@ public:
 	{
 		if (n <= idx) [[unlikely]]
 		{
-			::fast_io::containers::details::contract_violation_report<throwing_violations>(::std::errc::invalid_argument);
+			::fast_io::containers::details::contract_violation_report_invalid_argument<throwing_violations>();
 		}
 		return ptr[idx];
 	}

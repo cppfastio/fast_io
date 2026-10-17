@@ -50,7 +50,7 @@
 #include "../systemcall_details.h"
 
 #if ((!defined(_WIN32) || defined(__WINE__)) || defined(__CYGWIN__)) && \
-	__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__)
+	__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>)
 #include <netinet/in.h>
 #include "../posix_netmode.h"
 #endif
@@ -96,7 +96,9 @@
 
 /* thread-pool fallback scheduler — portable across every POSIX target;
  * on Linux io_uring remains the io_async default while the pool stays
- * available explicitly, elsewhere io_async maps to the pool */
-#if !defined(_WIN32) && !defined(__MSDOS__) && !defined(__wasi__) && defined(__HERBCEPTIONS__)
+ * available explicitly, elsewhere io_async maps to the pool. wasi gets
+ * the pool only when the target has the wasm threads feature; a plain
+ * single-threaded wasi build has no pthreads to run the workers. */
+#if !defined(_WIN32) && !defined(__MSDOS__) && (!defined(__wasi__) || defined(FAST_IO_HAS_WASM_THREADS)) && defined(__HERBCEPTIONS__)
 #include "async/thread_pool.h"
 #endif

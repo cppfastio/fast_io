@@ -3,36 +3,36 @@
 namespace fast_io
 {
 
-template <::std::integral ch_type>
-inline void posix_connect(basic_posix_io_observer<ch_type> h, void const *addr, posix_socklen_t addrlen)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline void posix_connect(basic_posix_family_io_observer<fam, ch_type> h, void const *addr, posix_socklen_t addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_connect_posix_socket_impl(h.fd, addr, addrlen);
 }
 
-template <::std::integral ch_type>
-inline void posix_bind(basic_posix_io_observer<ch_type> h, void const *addr, posix_socklen_t addrlen)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline void posix_bind(basic_posix_family_io_observer<fam, ch_type> h, void const *addr, posix_socklen_t addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_bind_posix_socket_impl(h.fd, addr, addrlen);
 }
 
-template <::std::integral ch_type>
-inline void posix_listen(basic_posix_io_observer<ch_type> h, int backlog)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline void posix_listen(basic_posix_family_io_observer<fam, ch_type> h, int backlog)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_listen_posix_socket_impl(h.fd, backlog);
 }
 
-template <::std::integral ch_type>
-inline ::std::ptrdiff_t posix_recvfrom(basic_posix_io_observer<ch_type> h, void *buf, ::std::size_t len, int flags, void *src_addr, posix_socklen_t *addrlen)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline ::std::ptrdiff_t posix_recvfrom(basic_posix_family_io_observer<fam, ch_type> h, void *buf, ::std::size_t len, int flags, void *src_addr, posix_socklen_t *addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_recvfrom_posix_socket_impl(h.fd, buf, len, flags, src_addr, addrlen);
 }
 
-template <::std::integral ch_type>
-inline ::std::ptrdiff_t posix_sendto(basic_posix_io_observer<ch_type> h, void const *buf, ::std::size_t len, int flags, void const *src_addr, posix_socklen_t addrlen)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline ::std::ptrdiff_t posix_sendto(basic_posix_family_io_observer<fam, ch_type> h, void const *buf, ::std::size_t len, int flags, void const *src_addr, posix_socklen_t addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return details::posix_sendto_posix_socket_impl(h.fd, buf, len, flags, src_addr, addrlen);
@@ -208,15 +208,15 @@ inline int posix_tcp_listen_dual_impl(::std::uint_least16_t port, open_mode m)
 
 } // namespace details
 
-template <::std::integral ch_type>
-inline posix_file_factory posix_accept(basic_posix_io_observer<ch_type> h, void *addr, posix_socklen_t *addrlen)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline posix_file_factory posix_accept(basic_posix_family_io_observer<fam, ch_type> h, void *addr, posix_socklen_t *addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return posix_file_factory{details::posix_accept_posix_socket_impl(h.fd, addr, addrlen)};
 }
 
-template <::std::integral ch_type>
-inline posix_file_factory tcp_accept(basic_posix_io_observer<ch_type> h)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline posix_file_factory tcp_accept(basic_posix_family_io_observer<fam, ch_type> h)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return posix_file_factory{details::posix_accept_posix_socket_impl(h.fd, nullptr, nullptr)};
@@ -260,14 +260,14 @@ inline posix_file_factory tcp_listen(::std::uint_least16_t port, open_mode m = o
 {
 	return posix_file_factory{details::posix_tcp_listen_dual_impl(port, m)};
 }
-template <::std::integral ch_type>
-inline void getpeername(basic_posix_io_observer<ch_type> h, void *addr, posix_socklen_t *addrlen)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline void getpeername(basic_posix_family_io_observer<fam, ch_type> h, void *addr, posix_socklen_t *addrlen)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	details::posix_getpeername_posix_socket_impl(h.fd, addr, addrlen);
 }
-template <::std::integral ch_type>
-inline ::fast_io::ip getpeername(basic_posix_io_observer<ch_type> h)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline ::fast_io::ip getpeername(basic_posix_family_io_observer<fam, ch_type> h)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	posix_sockaddr_storage sa{};
@@ -280,14 +280,14 @@ inline ::fast_io::ip getpeername(basic_posix_io_observer<ch_type> h)
 /* WICG local-network-access on the peer: classify the connected
  * socket's source address into its address space, and the containment
  * check `peer_space <= max` as one call */
-template <::std::integral ch_type>
-inline ::fast_io::ip_address_space lna_classify(basic_posix_io_observer<ch_type> h)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline ::fast_io::ip_address_space lna_classify(basic_posix_family_io_observer<fam, ch_type> h)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::lna_classify(getpeername(h).address);
 }
-template <::std::integral ch_type>
-inline bool lna_allows(basic_posix_io_observer<ch_type> h, ::fast_io::ip_address_space max)
+template <::fast_io::posix_family fam, ::std::integral ch_type>
+inline bool lna_allows(basic_posix_family_io_observer<fam, ch_type> h, ::fast_io::ip_address_space max)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::lna_classify(h) <= max;
@@ -304,9 +304,9 @@ inline posix_file_factory tcp_listen(ipv6 v6, open_mode m = open_mode{})
 }
 
 template <::std::integral ch_type>
-using basic_native_socket_io_observer = ::fast_io::basic_posix_io_observer<ch_type>;
+using basic_native_socket_io_observer = ::fast_io::basic_posix_socket_io_observer<ch_type>;
 template <::std::integral ch_type>
-using basic_native_socket_file = ::fast_io::basic_posix_file<ch_type>;
+using basic_native_socket_file = ::fast_io::basic_posix_socket_file<ch_type>;
 using net_service = ::fast_io::posix_empty_network_service;
 
 namespace operations

@@ -57,9 +57,9 @@ inline
 	constexpr
 #endif
 	nt_dirent *
-	new_nt_dirent() noexcept
+	new_nt_dirent() FAST_IO_HERBCEPTIONS_THROWS_IF(Allocator::throws_on_allocation_failure)
 {
-	if (__builtin_is_constant_evaluated())
+	if consteval
 	{
 		return ::new nt_dirent;
 	}
@@ -289,7 +289,7 @@ struct basic_nt_family_directory_generator
 	using allocator_type = Allocator;
 	nt_dirent *entry{};
 	inline constexpr basic_nt_family_directory_generator() noexcept = default;
-	inline explicit constexpr basic_nt_family_directory_generator(void *directory_handle) noexcept
+	inline explicit constexpr basic_nt_family_directory_generator(void *directory_handle) FAST_IO_HERBCEPTIONS_THROWS_IF(Allocator::throws_on_allocation_failure)
 		: entry(::fast_io::win32::nt::details::new_nt_dirent<Allocator>())
 	{
 		entry->d_handle = directory_handle;
@@ -378,7 +378,7 @@ struct basic_nt_family_recursive_directory_generator
 	void *root_handle{};
 	nt_dirent *entry{};
 	inline constexpr basic_nt_family_recursive_directory_generator() = default;
-	inline explicit constexpr basic_nt_family_recursive_directory_generator(void *rhd) noexcept
+	inline explicit constexpr basic_nt_family_recursive_directory_generator(void *rhd) FAST_IO_HERBCEPTIONS_THROWS_IF(allocator_type::throws_on_allocation_failure)
 		: root_handle(rhd), entry(::fast_io::win32::nt::details::new_nt_dirent<Allocator>())
 	{
 	}
@@ -570,12 +570,12 @@ using nt_family_recursive_directory_generator = basic_nt_family_recursive_direct
 using nt_recursive_directory_generator = nt_family_recursive_directory_generator<nt_family::nt>;
 using zw_recursive_directory_generator = nt_family_recursive_directory_generator<nt_family::zw>;
 
-inline nt_recursive_directory_generator recursive(nt_at_entry nate) noexcept
+inline nt_recursive_directory_generator recursive(nt_at_entry nate) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::nt_recursive_directory_generator::allocator_type::throws_on_allocation_failure)
 {
 	return nt_recursive_directory_generator{nate.handle};
 }
 
-inline zw_recursive_directory_generator recursive(zw_at_entry zate) noexcept
+inline zw_recursive_directory_generator recursive(zw_at_entry zate) FAST_IO_HERBCEPTIONS_THROWS_IF(::fast_io::zw_recursive_directory_generator::allocator_type::throws_on_allocation_failure)
 {
 	return zw_recursive_directory_generator{zate.handle};
 }

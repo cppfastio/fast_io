@@ -673,6 +673,13 @@ public:
 			{
 				auto const online{::fast_io::noexcept_call(::sysconf, _SC_NPROCESSORS_ONLN)};
 				worker_cap = online > 0 ? static_cast<::std::size_t>(online) : 4zu;
+				/* an indefinitely-parked op (the accept loop's poll) holds one
+				 * worker for its whole lifetime, so a single-worker pool can
+				 * never run the ops that do the actual work */
+				if (worker_cap < 4zu)
+				{
+					worker_cap = 4zu;
+				}
 			}
 			this->workers = ::fast_io::native_typed_global_allocator<pthread_t>::allocate(worker_cap);
 			for (; this->worker_count < worker_cap; ++this->worker_count)

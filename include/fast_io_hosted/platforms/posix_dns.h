@@ -174,9 +174,14 @@ inline constexpr int posix_eai_to_errno(int ec) noexcept
 	case EAI_FAMILY:
 		return EAFNOSUPPORT;
 #endif
-#ifdef EAI_SOCKTYPE
+#if defined(EAI_SOCKTYPE) && defined(ESOCKTNOSUPPORT)
 	case EAI_SOCKTYPE:
 		return ESOCKTNOSUPPORT;
+#elif defined(EAI_SOCKTYPE)
+	/* wasi's errno space has no ESOCKTNOSUPPORT — fold onto the closest
+	 * thing it does have */
+	case EAI_SOCKTYPE:
+		return EAFNOSUPPORT;
 #endif
 #ifdef EAI_SERVICE
 	case EAI_SERVICE:

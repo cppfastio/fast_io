@@ -2,6 +2,7 @@
 
 #pragma pop_macro("FAST_IO_IF_NOT_CONSTEVAL")
 #pragma pop_macro("FAST_IO_IF_CONSTEVAL")
+#pragma pop_macro("FAST_IO_HAS_WASM_THREADS")
 #pragma pop_macro("FAST_IO_HAS_WINE_UNIX")
 #pragma pop_macro("FAST_IO_NO_UNIQUE_ADDRESS")
 #pragma pop_macro("FAST_IO_INDETERMINATE")

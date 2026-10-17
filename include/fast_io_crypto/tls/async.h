@@ -719,10 +719,11 @@ inline void io_uring_tls_sw_recv_submit(
 {
 	using cookie_type =
 		io_uring_tls_sw_recv_cookie_of<client_t, ::std::remove_cvref_t<func>>;
+	::std::cxx_std_error err{};
+	::std::size_t drained{};
 	try
 	{
 		/* decrypted leftover beats the wire -- deliver without a sqe */
-		::std::size_t drained{};
 		if (scatters != nullptr)
 		{
 			drained = ::fast_io::tls::details::tls_client_rx_pending_drain(client, scatters, nscatters);
@@ -731,42 +732,33 @@ inline void io_uring_tls_sw_recv_submit(
 		{
 			drained = ::fast_io::tls::details::tls_client_rx_pending_drain(client, buf, buf_size);
 		}
-		if (drained != 0)
+		if (drained == 0)
 		{
-			if constexpr (::std::is_invocable_v<::std::remove_cvref_t<func>,
-												::std::cxx_std_error,
-												::fast_io::io_scatter_status_t>)
-			{
-				callback(::std::cxx_std_error{},
-						 ::fast_io::scatter_size_to_status(drained, scatters, nscatters));
-			}
-			else
-			{
-				callback(::std::cxx_std_error{}, drained);
-			}
+			::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
+				::fast_io::liburing::details::io_uring_new_state<cookie_type>(
+					sched, sched, client, buf, buf_size, scatters, nscatters, timeout,
+					::std::move(callback))};
+			guard.cookie->invoke = io_uring_tls_sw_recv_invoke;
+			io_uring_tls_sw_recv_round(guard.cookie);
+			guard.release();
 			return;
 		}
-		::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{
-			::fast_io::liburing::details::io_uring_new_state<cookie_type>(
-				sched, sched, client, buf, buf_size, scatters, nscatters, timeout,
-				::std::move(callback))};
-		guard.cookie->invoke = io_uring_tls_sw_recv_invoke;
-		io_uring_tls_sw_recv_round(guard.cookie);
-		guard.release();
 	}
 	catch throws(::std::error e)
 	{
-		auto err{e.release()};
-		if constexpr (::std::is_invocable_v<::std::remove_cvref_t<func>,
-											::std::cxx_std_error,
-											::fast_io::io_scatter_status_t>)
-		{
-			callback(err, ::fast_io::io_scatter_status_t{});
-		}
-		else
-		{
-			callback(err, ::std::size_t{});
-		}
+		err = e.release();
+	}
+	if constexpr (::std::is_invocable_v<::std::remove_cvref_t<func>,
+										::std::cxx_std_error,
+										::fast_io::io_scatter_status_t>)
+	{
+		callback(err,
+				 drained != 0 ? ::fast_io::scatter_size_to_status(drained, scatters, nscatters)
+							  : ::fast_io::io_scatter_status_t{});
+	}
+	else
+	{
+		callback(err, drained);
 	}
 }
 
@@ -1196,29 +1188,28 @@ inline void async_pread_some_bytes_underflow_callback_define(
 	basic_tls_io_observer<ch_type, allocator_type, socket_observer_type, crypto> tob, ::std::byte *first,
 	::std::size_t count, ::fast_io::intfpos_opt off, func callback) noexcept
 {
+	::std::cxx_std_error err{};
 	if (off.has_opt)
 	{
-		callback(::fast_io::details::async_make_error(::std::errc::invalid_seek),
-				 ::std::size_t{});
+		err = ::fast_io::details::async_make_error(::std::errc::invalid_seek);
+	}
+	else if (count != 0)
+	{
+		if (tob.handle->offloaded_)
+		{
+			::fast_io::tls::details::io_uring_tls_recv_submit(sched, timeout, tob.handle, first,
+															  count, nullptr, 0,
+															  ::std::move(callback));
+		}
+		else
+		{
+			::fast_io::tls::details::io_uring_tls_sw_recv_submit(sched, timeout, tob.handle, first,
+																 count, nullptr, 0,
+																 ::std::move(callback));
+		}
 		return;
 	}
-	if (count == 0)
-	{
-		callback(::std::cxx_std_error{}, ::std::size_t{});
-		return;
-	}
-	if (tob.handle->offloaded_)
-	{
-		::fast_io::tls::details::io_uring_tls_recv_submit(sched, timeout, tob.handle, first,
-														  count, nullptr, 0,
-														  ::std::move(callback));
-	}
-	else
-	{
-		::fast_io::tls::details::io_uring_tls_sw_recv_submit(sched, timeout, tob.handle, first,
-															 count, nullptr, 0,
-															 ::std::move(callback));
-	}
+	callback(err, ::std::size_t{});
 }
 
 /*
@@ -1238,33 +1229,32 @@ inline void async_scatter_pread_some_bytes_underflow_callback_define(
 	::fast_io::io_scatter_t const *scatters, ::std::size_t n, ::fast_io::intfpos_opt off,
 	func callback) noexcept
 {
-	if (off.has_opt)
-	{
-		callback(::fast_io::details::async_make_error(::std::errc::invalid_seek),
-				 ::fast_io::io_scatter_status_t{});
-		return;
-	}
+	::std::cxx_std_error err{};
 	::std::size_t const neff{
 		n < ::fast_io::liburing::details::io_uring_max_iov
 			? n
 			: ::fast_io::liburing::details::io_uring_max_iov};
-	if (neff == 0)
+	if (off.has_opt)
 	{
-		callback(::std::cxx_std_error{}, ::fast_io::io_scatter_status_t{0, 0});
+		err = ::fast_io::details::async_make_error(::std::errc::invalid_seek);
+	}
+	else if (neff != 0)
+	{
+		if (tob.handle->offloaded_)
+		{
+			::fast_io::tls::details::io_uring_tls_recv_submit(sched, timeout, tob.handle, nullptr,
+															  0, scatters, neff,
+															  ::std::move(callback));
+		}
+		else
+		{
+			::fast_io::tls::details::io_uring_tls_sw_recv_submit(sched, timeout, tob.handle, nullptr,
+																 0, scatters, neff,
+																 ::std::move(callback));
+		}
 		return;
 	}
-	if (tob.handle->offloaded_)
-	{
-		::fast_io::tls::details::io_uring_tls_recv_submit(sched, timeout, tob.handle, nullptr,
-														  0, scatters, neff,
-														  ::std::move(callback));
-	}
-	else
-	{
-		::fast_io::tls::details::io_uring_tls_sw_recv_submit(sched, timeout, tob.handle, nullptr,
-															 0, scatters, neff,
-															 ::std::move(callback));
-	}
+	callback(err, ::fast_io::io_scatter_status_t{});
 }
 
 /*
@@ -1283,26 +1273,25 @@ inline void async_pwrite_some_bytes_overflow_callback_define(
 	basic_tls_io_observer<ch_type, allocator_type, socket_observer_type, crypto> tob, ::std::byte const *first,
 	::std::size_t count, ::fast_io::intfpos_opt off, func callback) noexcept
 {
+	::std::cxx_std_error err{};
 	if (off.has_opt)
 	{
-		callback(::fast_io::details::async_make_error(::std::errc::invalid_seek),
-				 ::std::size_t{});
-		return;
+		err = ::fast_io::details::async_make_error(::std::errc::invalid_seek);
 	}
-	if (tob.handle->offloaded_)
+	else if (tob.handle->offloaded_)
 	{
 		async_pwrite_some_bytes_overflow_callback_define(
 			sched, timeout, tob.handle->sock_, first, count, off, ::std::move(callback));
 		return;
 	}
-	if (count == 0)
+	else if (count != 0)
 	{
-		callback(::std::cxx_std_error{}, ::std::size_t{});
+		::fast_io::tls::details::io_uring_tls_sw_write_submit(sched, timeout, tob.handle, first,
+															  count, nullptr, 0,
+															  ::std::move(callback));
 		return;
 	}
-	::fast_io::tls::details::io_uring_tls_sw_write_submit(sched, timeout, tob.handle, first,
-														  count, nullptr, 0,
-														  ::std::move(callback));
+	callback(err, ::std::size_t{});
 }
 
 /* vectored form -- cb(::std::cxx_std_error, io_scatter_status_t) */
@@ -1316,30 +1305,29 @@ inline void async_scatter_pwrite_some_bytes_overflow_callback_define(
 	::fast_io::io_scatter_t const *scatters, ::std::size_t n, ::fast_io::intfpos_opt off,
 	func callback) noexcept
 {
+	::std::cxx_std_error err{};
+	::std::size_t const neff{
+		n < ::fast_io::liburing::details::io_uring_max_iov
+			? n
+			: ::fast_io::liburing::details::io_uring_max_iov};
 	if (off.has_opt)
 	{
-		callback(::fast_io::details::async_make_error(::std::errc::invalid_seek),
-				 ::fast_io::io_scatter_status_t{});
-		return;
+		err = ::fast_io::details::async_make_error(::std::errc::invalid_seek);
 	}
-	if (tob.handle->offloaded_)
+	else if (tob.handle->offloaded_)
 	{
 		async_scatter_pwrite_some_bytes_overflow_callback_define(
 			sched, timeout, tob.handle->sock_, scatters, n, off, ::std::move(callback));
 		return;
 	}
-	::std::size_t const neff{
-		n < ::fast_io::liburing::details::io_uring_max_iov
-			? n
-			: ::fast_io::liburing::details::io_uring_max_iov};
-	if (neff == 0)
+	else if (neff != 0)
 	{
-		callback(::std::cxx_std_error{}, ::fast_io::io_scatter_status_t{0, 0});
+		::fast_io::tls::details::io_uring_tls_sw_write_submit(sched, timeout, tob.handle, nullptr,
+															  0, scatters, neff,
+															  ::std::move(callback));
 		return;
 	}
-	::fast_io::tls::details::io_uring_tls_sw_write_submit(sched, timeout, tob.handle, nullptr,
-														  0, scatters, neff,
-														  ::std::move(callback));
+	callback(err, ::fast_io::io_scatter_status_t{});
 }
 
 /*

@@ -41,7 +41,7 @@ inline constexpr ::std::uint_least32_t win32_stderr_number(static_cast<::std::ui
 #include "linux/system_call.h"
 #include "posix.h"
 #if (!defined(_WIN32) || defined(__WINE__)) && \
-	__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__)
+	__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>)
 #include "posix_netop.h"
 #if __has_include(<netdb.h>)
 #include "posix_dns.h"
@@ -114,7 +114,7 @@ using u32native_io_observer = basic_native_io_observer<char32_t>;
 using u32native_file = basic_native_file<char32_t>;
 using u32native_pipe = basic_native_pipe<char32_t>;
 
-#if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__))
+#if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>))
 using native_socket_io_observer = basic_native_socket_io_observer<char>;
 using native_socket_file = basic_native_socket_file<char>;
 

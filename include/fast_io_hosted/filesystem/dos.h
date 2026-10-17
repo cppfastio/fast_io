@@ -41,8 +41,8 @@ public:
 		return dirp.dirp;
 	}
 
-	template <::std::integral char_type>
-	inline operator basic_posix_io_observer<char_type>() const noexcept
+	template <::fast_io::posix_family fam, ::std::integral char_type>
+	inline operator basic_posix_family_io_observer<fam, char_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
 	}
@@ -252,8 +252,8 @@ struct dos_directory_entry
 	struct dirent *entry{};
 	::std::size_t d_namlen{};
 
-	template <::std::integral ch_type>
-	inline explicit operator basic_posix_io_observer<ch_type>() const noexcept
+	template <::fast_io::posix_family fam, ::std::integral ch_type>
+	inline explicit operator basic_posix_family_io_observer<fam, ch_type>() const noexcept
 	{
 		return {details::dirp_to_fd(dirp)};
 	}
