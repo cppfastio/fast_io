@@ -127,7 +127,7 @@ public:
 		: basic_posix_family_file(details::my_posix_openat_file_internal_impl(fsdirent.fd, fsdirent.filename, om, pm))
 	{
 	}
-#if !defined(__wasi__) && __has_include(<sys/socket.h>) && __has_include(<netinet/in.h>)
+#if __has_include(<sys/socket.h>) && __has_include(<netinet/in.h>)
 	inline basic_posix_family_file(sock_family d, sock_type t, open_mode m, sock_protocol p)
 		FAST_IO_HERBCEPTIONS_THROWS
 		: basic_posix_family_io_observer<family, char_type>{::fast_io::details::open_socket_impl(d, t, m, p)}

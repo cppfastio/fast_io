@@ -140,7 +140,7 @@ using u32ibuf_file_lockable = basic_ibuf_file_lockable<char32_t>;
 using u32obuf_file_lockable = basic_obuf_file_lockable<char32_t>;
 using u32iobuf_file_lockable = basic_iobuf_file_lockable<char32_t>;
 
-#if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>) && !defined(__wasi__))
+#if defined(_WIN32) || (__has_include(<sys/socket.h>) && __has_include(<netinet/in.h>))
 
 template <::std::integral char_type>
 using basic_iobuf_socket_file = basic_iobuf<basic_native_socket_file<char_type>>;

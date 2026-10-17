@@ -331,8 +331,7 @@ extern int my_posix_open_noexcept(char const *pathname, int flags, mode_t mode) 
 using dos_path_tlc_string = ::fast_io::containers::basic_string<char, ::fast_io::native_thread_local_allocator>;
 
 template <typename... Args>
-constexpr inline dos_path_tlc_string concat_dos_path_tlc_string(Args &&...args)
-	FAST_IO_HERBCEPTIONS_THROWS
+constexpr inline dos_path_tlc_string concat_dos_path_tlc_string(Args &&...args) noexcept
 {
 	constexpr bool type_error{::fast_io::operations::defines::print_freestanding_okay<::fast_io::details::dummy_buffer_output_stream<char>, Args...>};
 	if constexpr (type_error)
