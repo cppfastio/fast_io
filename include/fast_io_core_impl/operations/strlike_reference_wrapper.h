@@ -172,7 +172,7 @@ inline constexpr void write_all_overflow_define(io_strlike_reference_wrapper<ch_
 		}
 		strlike_reserve(::fast_io::io_strlike_type<ch_type, T>, strref, new_cap);
 		auto curr_ptr{strlike_curr(::fast_io::io_strlike_type<ch_type, T>, strref)};
-		curr_ptr = ::fast_io::freestanding::non_overlapped_copy_n(first, count, curr_ptr);
+		curr_ptr = ::fast_io::freestanding::non_overlapped_copy_n(first, count - bufferdiff, curr_ptr);
 		strlike_set_curr(::fast_io::io_strlike_type<ch_type, T>, strref, curr_ptr);
 	}
 }
