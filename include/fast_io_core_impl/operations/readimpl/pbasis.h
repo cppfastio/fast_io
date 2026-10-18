@@ -9,7 +9,7 @@ template <typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr typename instmtype::input_char_type *
+inline constexpr ::std::size_t
 pread_some_cold_impl(instmtype insm, typename instmtype::input_char_type *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
 	requires ::fast_io::operations::decay::defines::preadable<instmtype>
@@ -26,51 +26,46 @@ pread_some_cold_impl(instmtype insm, typename instmtype::input_char_type *first,
 		auto status{scatter_pread_some_underflow_define(insm, __builtin_addressof(sc), 1, off)};
 		if (!status.position)
 		{
-			return first + status.position_in_scatter;
+			return status.position_in_scatter;
 		}
-		return first + count;
+		return count;
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_pread_all_underflow_define<instmtype>)
 	{
 		pread_all_underflow_define(insm, first, count, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_scatter_pread_all_underflow_define<instmtype>)
 	{
 		::std::size_t len{count};
 		basic_io_scatter_t<char_type> sc{first, len};
 		return ::fast_io::scatter_status_one_size(
-				   scatter_pread_all_underflow_define(insm, __builtin_addressof(sc), 1, off), len) +
-			   first;
+			scatter_pread_all_underflow_define(insm, __builtin_addressof(sc), 1, off), len);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_any_of_pread_bytes_operations<instmtype>)
 	{
 		if constexpr (sizeof(typename instmtype::input_char_type) == 1)
 		{
 			::std::byte *firstptr{reinterpret_cast<::std::byte *>(first)};
-			::std::byte *ptr{pread_some_bytes_cold_impl(insm, firstptr, count, off)};
-			return ptr - firstptr + first;
+			return pread_some_bytes_cold_impl(insm, firstptr, count, off);
 		}
 		else
 		{
 			::std::byte *firstptr{reinterpret_cast<::std::byte *>(first)};
-			::std::byte *ptr{pread_some_bytes_cold_impl(insm, firstptr, count * sizeof(char_type), off)};
-			::std::ptrdiff_t ptdf{ptr - firstptr};
-			::std::size_t diff{static_cast<::std::size_t>(ptdf)};
+			::std::size_t diff{pread_some_bytes_cold_impl(insm, firstptr, count * sizeof(char_type), off)};
 			::std::size_t v{diff / sizeof(char_type)};
 			::std::size_t remain{diff % sizeof(char_type)};
 			if (remain != 0)
 			{
-				off = ::fast_io::fposoffadd_nonegative(off, ptdf);
-				auto ptred{ptr + remain};
-				auto ptrit{::fast_io::operations::decay::pread_some_bytes_decay(insm, ptr, remain, off)};
-				if (ptrit == ptred)
+				off = ::fast_io::fposoffadd_nonegative(off, static_cast<::std::ptrdiff_t>(diff));
+				auto ptrit{::fast_io::operations::decay::pread_some_bytes_decay(insm, firstptr + diff, remain, off)};
+				if (ptrit == remain)
 				{
 					++v;
 				}
 				//				pread_all_bytes_cold_impl(insm,ptr,ptr+remain,off);
 			}
-			return first + v;
+			return v;
 		}
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_seek_define<instmtype> &&
@@ -97,8 +92,8 @@ template <typename instmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr ::std::byte *pread_some_bytes_cold_impl(instmtype insm, ::std::byte *first, ::std::size_t count,
-														 ::fast_io::intfpos_t off)
+inline constexpr ::std::size_t pread_some_bytes_cold_impl(instmtype insm, ::std::byte *first, ::std::size_t count,
+														  ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
 	requires ::fast_io::operations::decay::defines::bytes_preadable<instmtype>
 {
@@ -112,8 +107,7 @@ inline constexpr ::std::byte *pread_some_bytes_cold_impl(instmtype insm, ::std::
 		::std::size_t len{count};
 		io_scatter_t sc{first, len};
 		return ::fast_io::scatter_status_one_size(
-				   scatter_pread_some_bytes_underflow_define(insm, __builtin_addressof(sc), 1, off), len) +
-			   first;
+			scatter_pread_some_bytes_underflow_define(insm, __builtin_addressof(sc), 1, off), len);
 	}
 	else if constexpr (sizeof(char_type) == 1 &&
 					   (::fast_io::operations::decay::defines::has_pread_some_underflow_define<instmtype>))
@@ -123,9 +117,8 @@ inline constexpr ::std::byte *pread_some_bytes_cold_impl(instmtype insm, ::std::
 			[[__gnu__::__may_alias__]]
 #endif
 			= char_type *;
-		return first + (::fast_io::details::pread_some_cold_impl(insm, reinterpret_cast<char_type_ptr>(first), count,
-															   off) -
-						reinterpret_cast<char_type_ptr>(first));
+		return ::fast_io::details::pread_some_cold_impl(insm, reinterpret_cast<char_type_ptr>(first), count,
+														off);
 	}
 	else if constexpr (sizeof(char_type) == 1 &&
 					   ::fast_io::operations::decay::defines::has_scatter_pread_some_underflow_define<instmtype>)
@@ -138,19 +131,18 @@ inline constexpr ::std::byte *pread_some_bytes_cold_impl(instmtype insm, ::std::
 		::std::size_t len{count};
 		basic_io_scatter_t<char_type> sc{reinterpret_cast<char_type_ptr>(first), len};
 		return ::fast_io::scatter_status_one_size(
-				   scatter_pread_some_bytes_underflow_define(insm, __builtin_addressof(sc), 1, off), len) +
-			   first;
+			scatter_pread_some_bytes_underflow_define(insm, __builtin_addressof(sc), 1, off), len);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_pread_all_bytes_underflow_define<instmtype>)
 	{
 		pread_all_bytes_underflow_define(insm, first, count, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_scatter_pread_all_bytes_underflow_define<instmtype>)
 	{
 		io_scatter_t sc{first, count};
 		scatter_pread_all_bytes_underflow_define(insm, __builtin_addressof(sc), 1, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (sizeof(char_type) == 1 &&
 					   ::fast_io::operations::decay::defines::has_pread_all_underflow_define<instmtype>)
@@ -162,14 +154,14 @@ inline constexpr ::std::byte *pread_some_bytes_cold_impl(instmtype insm, ::std::
 			= char_type *;
 		pread_all_underflow_define(insm, reinterpret_cast<char_type_ptr>(first), count,
 								   off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (sizeof(char_type) == 1 &&
 					   ::fast_io::operations::decay::defines::has_scatter_pread_all_underflow_define<instmtype>)
 	{
 		io_scatter_t sc{first, count};
 		scatter_pread_all_bytes_underflow_define(insm, __builtin_addressof(sc), 1, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_input_or_io_stream_seek_bytes_define<instmtype> &&
 					   (::fast_io::operations::decay::defines::has_any_of_read_bytes_operations<instmtype>))
@@ -216,7 +208,7 @@ inline constexpr void pread_all_cold_impl(instmtype insm, typename instmtype::in
 		auto const e{first + count};
 		for (;;)
 		{
-			auto nit{pread_some_underflow_define(insm, first, static_cast<::std::size_t>(e - first), off)};
+			auto nit{first + pread_some_underflow_define(insm, first, static_cast<::std::size_t>(e - first), off)};
 			off = ::fast_io::fposoffadd_nonegative(off, nit - first);
 			if (nit == e)
 			{
@@ -297,7 +289,7 @@ inline constexpr void pread_all_bytes_cold_impl(instmtype insm, ::std::byte *fir
 		auto const e{first + count};
 		while (first != e)
 		{
-			auto nit{pread_some_bytes_underflow_define(insm, first, static_cast<::std::size_t>(e - first), off)};
+			auto nit{first + pread_some_bytes_underflow_define(insm, first, static_cast<::std::size_t>(e - first), off)};
 			if (nit == e)
 			{
 				return;
@@ -363,7 +355,7 @@ inline constexpr void pread_all_bytes_cold_impl(instmtype insm, ::std::byte *fir
 }
 
 template <typename instmtype>
-inline constexpr typename instmtype::input_char_type *
+inline constexpr ::std::size_t
 pread_some_impl(instmtype insm, typename instmtype::input_char_type *first, ::std::size_t count,
 				::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
@@ -401,8 +393,8 @@ inline constexpr void pread_all_impl(instmtype insm, typename instmtype::input_c
 }
 
 template <typename instmtype>
-inline constexpr ::std::byte *pread_some_bytes_impl(instmtype insm, ::std::byte *first, ::std::size_t count,
-													::fast_io::intfpos_t off)
+inline constexpr ::std::size_t pread_some_bytes_impl(instmtype insm, ::std::byte *first, ::std::size_t count,
+													 ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
 	requires(::fast_io::operations::decay::defines::bytes_preadable<instmtype> || ::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 {

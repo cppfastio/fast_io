@@ -75,17 +75,17 @@ positional forms) is synthesized by the generic operations layer.
 Before a handshake runs the stream is the plain transport.
 */
 template <::std::integral ch_type, typename allocator_type, typename socket_observer_type, typename crypto>
-inline ::std::byte *read_some_bytes_underflow_define(basic_tls_io_observer<ch_type, allocator_type, socket_observer_type, crypto> tob,
-													 ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t read_some_bytes_underflow_define(basic_tls_io_observer<ch_type, allocator_type, socket_observer_type, crypto> tob,
+													  ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + details::tls_client_read_some(tob.handle, first, count);
+	return details::tls_client_read_some(tob.handle, first, count);
 }
 
 template <::std::integral ch_type, typename allocator_type, typename socket_observer_type, typename crypto>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_tls_io_observer<ch_type, allocator_type, socket_observer_type, crypto> tob,
-														   ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t write_some_bytes_overflow_define(basic_tls_io_observer<ch_type, allocator_type, socket_observer_type, crypto> tob,
+													  ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + details::tls_client_write_some(tob.handle, first, count);
+	return details::tls_client_write_some(tob.handle, first, count);
 }
 
 /* fully-configured handshake: caller supplies roots, checks, offload */

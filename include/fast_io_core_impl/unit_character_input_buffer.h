@@ -18,24 +18,26 @@ public:
 
 template <input_stream input>
 	requires(!buffer_input_stream<input>)
-inline constexpr typename input::char_type *
+inline constexpr ::std::size_t
 read_some_underflow_define(single_character_input_buffer<input> &in, typename input::char_type *first,
 						   ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(::fast_io::operations::decay::read_some_decay(in.reference, first,
 																							  count))
 {
+	::std::size_t ret{};
 	if (in.pos != in.pos_end)
 	{
 		if (!count)
 		{
-			return first;
+			return 0;
 		}
 		*first = in.single_character;
 		in.pos = in.pos_end;
 		++first;
 		--count;
+		ret = 1;
 	}
-	return ::fast_io::operations::decay::read_some_decay(in.reference, first, count);
+	return ret + ::fast_io::operations::decay::read_some_decay(in.reference, first, count);
 }
 
 template <input_stream input>
@@ -71,8 +73,7 @@ inline constexpr bool ibuffer_underflow(single_character_input_buffer<input> &in
 		in.reference, __builtin_addressof(in.single_character), 1))
 {
 	in.pos_end = (::fast_io::operations::decay::read_some_decay(
-					  in.reference, __builtin_addressof(in.single_character), 1) !=
-				  __builtin_addressof(in.single_character));
+					  in.reference, __builtin_addressof(in.single_character), 1) != 0);
 	in.pos = {};
 	return in.pos_end;
 }

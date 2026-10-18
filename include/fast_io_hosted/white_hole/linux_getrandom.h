@@ -43,10 +43,10 @@ inline ::std::byte *linux_getrandom_read_some_bytes_define_impl(unsigned flags, 
 } // namespace details
 
 template <::std::integral char_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_linux_getrandom<char_type> g, ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_linux_getrandom<char_type> g, ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::linux_getrandom_read_some_bytes_define_impl(g.flags, first, count);
+	return static_cast<::std::size_t>(::fast_io::details::linux_getrandom_read_some_bytes_define_impl(g.flags, first, count) - first);
 }
 
 using linux_getrandom = basic_linux_getrandom<char>;

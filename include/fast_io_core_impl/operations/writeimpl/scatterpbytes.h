@@ -34,14 +34,13 @@ scatter_pwrite_some_bytes_cold_impl(outstmtype outsm, io_scatter_t const *pscatt
 		{
 			auto [baseb, len] = pscatters[i];
 			::std::byte const *base{reinterpret_cast<::std::byte const *>(baseb)};
-			auto written{::fast_io::details::pwrite_some_bytes_impl(outsm, base, len, off)};
-			::std::ptrdiff_t dfsz{written - base};
-			::std::size_t sz{static_cast<::std::size_t>(written - base)};
+			::std::size_t written{::fast_io::details::pwrite_some_bytes_impl(outsm, base, len, off)};
+			::std::size_t sz{written};
 			if (sz != len)
 			{
 				return {i, sz};
 			}
-			off = ::fast_io::fposoffadd_nonegative(off, dfsz);
+			off = ::fast_io::fposoffadd_nonegative(off, static_cast<::std::ptrdiff_t>(written));
 		}
 		return {n, 0};
 	}

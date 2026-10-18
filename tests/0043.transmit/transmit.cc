@@ -38,7 +38,7 @@ inline constexpr fd_out io_stream_ref_define(fd_out f) noexcept
 	return f;
 }
 
-inline ::std::byte *read_some_bytes_underflow_define(fd_in f, ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(fd_in f, ::std::byte *first, ::std::size_t count)
 	throws
 {
 	auto res{::fast_io::noexcept_call(FAST_IO_TEST_READ, f.fd, first, count)};
@@ -46,11 +46,11 @@ inline ::std::byte *read_some_bytes_underflow_define(fd_in f, ::std::byte *first
 	{
 		::fast_io::fast_terminate();
 	}
-	return first + res;
+	return static_cast<::std::size_t>(res);
 }
 
-inline ::std::byte const *write_some_bytes_overflow_define(fd_out f, ::std::byte const *first,
-														   ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(fd_out f, ::std::byte const *first,
+													  ::std::size_t count)
 	throws
 {
 	auto res{::fast_io::noexcept_call(FAST_IO_TEST_WRITE, f.fd, first, count)};
@@ -58,7 +58,7 @@ inline ::std::byte const *write_some_bytes_overflow_define(fd_out f, ::std::byte
 	{
 		::fast_io::fast_terminate();
 	}
-	return first + res;
+	return static_cast<::std::size_t>(res);
 }
 
 constexpr ::std::size_t insize{200000};
@@ -93,7 +93,7 @@ inline void reset_in(T &f)
 	throws
 {
 	::fast_io::operations::decay::input_stream_seek_bytes_decay(::fast_io::operations::input_stream_ref(f), 0,
-															  ::fast_io::seekdir::beg);
+																::fast_io::seekdir::beg);
 }
 
 template <typename T>
@@ -103,7 +103,7 @@ inline void check_at(T &f, ::fast_io::intfpos_t pos, ::std::size_t expect_base, 
 	char got[16];
 	auto it{::fast_io::operations::decay::pread_some_bytes_decay(
 		::fast_io::operations::input_stream_ref(f), reinterpret_cast<::std::byte *>(got), n, pos)};
-	if (it != reinterpret_cast<::std::byte *>(got) + n)
+	if (it != n)
 	{
 		::fast_io::fast_terminate();
 	}
@@ -170,7 +170,7 @@ int main()
 		char tmp[512];
 		auto it{::fast_io::operations::decay::read_some_bytes_decay(
 			::fast_io::operations::input_stream_ref(inb), reinterpret_cast<::std::byte *>(tmp), 512)};
-		if (static_cast<::std::size_t>(it - reinterpret_cast<::std::byte *>(tmp)) != 512)
+		if (it != 512)
 		{
 			::fast_io::fast_terminate();
 		}

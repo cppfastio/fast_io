@@ -219,25 +219,25 @@ inline constexpr sync_only_file output_stream_ref_define(sync_only_file f) noexc
 	return f;
 }
 
-inline ::std::byte *read_some_bytes_underflow_define(sync_only_file in, ::std::byte *first,
-													 ::std::size_t count) noexcept
+inline ::std::size_t read_some_bytes_underflow_define(sync_only_file in, ::std::byte *first,
+													  ::std::size_t count) noexcept
 {
 	::std::size_t const room{*in.pos < in.size ? in.size - *in.pos : 0};
 	::std::size_t const n{room < count ? room : count};
 	::std::memcpy(first, in.data + *in.pos, n);
 	*in.pos += n;
-	return first + n;
+	return n;
 }
 
-inline ::std::byte const *write_some_bytes_overflow_define(sync_only_file out,
-														   ::std::byte const *first,
-														   ::std::size_t count) noexcept
+inline ::std::size_t write_some_bytes_overflow_define(sync_only_file out,
+													  ::std::byte const *first,
+													  ::std::size_t count) noexcept
 {
 	::std::size_t const room{*out.pos < out.size ? out.size - *out.pos : 0};
 	::std::size_t const n{room < count ? room : count};
 	::std::memcpy(out.data + *out.pos, first, n);
 	*out.pos += n;
-	return first + n;
+	return n;
 }
 
 /* sync input whose read always fails — checks error propagation through
@@ -252,8 +252,8 @@ inline constexpr sync_fail_file input_stream_ref_define(sync_fail_file f) noexce
 	return f;
 }
 
-inline ::std::byte *read_some_bytes_underflow_define(sync_fail_file, ::std::byte *,
-													 ::std::size_t) throws
+inline ::std::size_t read_some_bytes_underflow_define(sync_fail_file, ::std::byte *,
+													  ::std::size_t) throws
 {
 	::fast_io::herbceptions::throws_errc(::std::errc::io_error);
 }

@@ -66,8 +66,8 @@ inline void write_all_bytes_overflow_define(basic_avio_context_io_observer<char_
 }
 
 template <::std::integral char_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_avio_context_io_observer<char_type> baciob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_avio_context_io_observer<char_type> baciob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	baciob.avios->error = 0;
@@ -92,7 +92,7 @@ inline ::std::byte *read_some_bytes_underflow_define(basic_avio_context_io_obser
 	{
 		throw_posix_error(EINVAL);
 	}
-	return first + ret;
+	return static_cast<::std::size_t>(ret);
 }
 
 template <::std::integral ch_type>
@@ -271,8 +271,7 @@ inline basic_avio_buffer_context<typename rftype::char_type> create_avio_context
 			try
 			{
 				auto ret{::fast_io::operations::decay::read_some_bytes_decay(
-							 rft, reinterpret_cast<::std::byte *>(ptr), static_cast<::std::size_t>(bufsize)) -
-						 reinterpret_cast<::std::byte *>(ptr)};
+					rft, reinterpret_cast<::std::byte *>(ptr), static_cast<::std::size_t>(bufsize))};
 				if (ret == 0)
 				{
 					return AVERROR_EOF;

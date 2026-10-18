@@ -24,8 +24,7 @@ inline constexpr io_scatter_status_t scatter_read_some_bytes_cold_impl(instmtype
 		{
 			auto [baseb, len] = pscatters[i];
 			::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(baseb))};
-			auto written{::fast_io::details::read_some_bytes_impl(insm, base, len)};
-			::std::size_t sz{static_cast<::std::size_t>(written - base)};
+			::std::size_t sz{::fast_io::details::read_some_bytes_impl(insm, base, len)};
 			if (sz != len)
 			{
 				return {i, sz};

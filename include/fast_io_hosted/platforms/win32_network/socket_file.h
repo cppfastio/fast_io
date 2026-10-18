@@ -224,19 +224,19 @@ inline ::std::ptrdiff_t posix_sendto_win32_socket_impl(::std::size_t hsocket, vo
 } // namespace win32::details
 
 template <win32_family family, ::std::integral ch_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_win32_family_socket_io_observer<family, ch_type> wiob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_win32_family_socket_io_observer<family, ch_type> wiob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::win32_socket_read_bytes_impl(wiob.hsocket, first, count);
+	return static_cast<::std::size_t>(::fast_io::win32::details::win32_socket_read_bytes_impl(wiob.hsocket, first, count) - first);
 }
 
 template <win32_family family, ::std::integral ch_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_win32_family_socket_io_observer<family, ch_type> wiob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_win32_family_socket_io_observer<family, ch_type> wiob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::win32_socket_write_bytes_impl(wiob.hsocket, first, count);
+	return static_cast<::std::size_t>(::fast_io::win32::details::win32_socket_write_bytes_impl(wiob.hsocket, first, count) - first);
 }
 
 template <win32_family family, ::std::integral ch_type>

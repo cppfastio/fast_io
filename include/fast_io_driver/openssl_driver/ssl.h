@@ -185,8 +185,8 @@ public:
 };
 
 template <::std::integral ch_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_ssl_io_observer<ch_type> iob, ::std::byte *first,
-													 ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t read_some_bytes_underflow_define(basic_ssl_io_observer<ch_type> iob, ::std::byte *first,
+													  ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t read_bytes{};
 	auto ret(SSL_read_ex(iob.native_handle(), first, count, __builtin_addressof(read_bytes)));
@@ -195,16 +195,16 @@ inline ::std::byte *read_some_bytes_underflow_define(basic_ssl_io_observer<ch_ty
 		int error{SSL_get_error(iob.native_handle(), ret)};
 		if (error == SSL_ERROR_ZERO_RETURN)
 		{
-			return first; /* close_notify */
+			return 0; /* close_notify */
 		}
 		throw_openssl_error();
 	}
-	return first + read_bytes;
+	return read_bytes;
 }
 
 template <::std::integral ch_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_ssl_io_observer<ch_type> iob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_ssl_io_observer<ch_type> iob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t written_bytes{};
@@ -215,11 +215,11 @@ inline ::std::byte const *write_some_bytes_overflow_define(basic_ssl_io_observer
 		int error{SSL_get_error(iob.native_handle(), ret)};
 		if (error == SSL_ERROR_ZERO_RETURN)
 		{
-			return first; /* close_notify */
+			return 0; /* close_notify */
 		}
 		throw_openssl_error();
 	}
-	return first + written_bytes;
+	return written_bytes;
 }
 
 using ssl_io_observer = basic_ssl_io_observer<char>;

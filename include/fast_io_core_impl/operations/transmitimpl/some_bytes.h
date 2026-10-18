@@ -31,7 +31,7 @@ inline constexpr ::std::size_t transmit_some_bytes_emulation_impl(
 	}
 	::fast_io::details::local_operator_new_array_ptr<::std::byte> newptr(this_round);
 	::std::byte *buffer_start{newptr.ptr};
-	::std::byte *iter;
+	::std::size_t iter;
 	if constexpr (::fast_io::operations::decay::defines::bytes_preadable<instmtype>)
 	{
 		if (off_in.ptr != nullptr)
@@ -51,7 +51,7 @@ inline constexpr ::std::size_t transmit_some_bytes_emulation_impl(
 		}
 		iter = ::fast_io::operations::decay::read_some_bytes_decay(instm, buffer_start, this_round);
 	}
-	::std::size_t got{static_cast<::std::size_t>(iter - buffer_start)};
+	::std::size_t got{iter};
 	if (got == 0)
 	{
 		return 0;

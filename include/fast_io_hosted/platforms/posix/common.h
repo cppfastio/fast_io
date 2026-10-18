@@ -102,40 +102,40 @@ inline ::std::byte const *posix_socket_write_bytes_impl(int fd, ::std::byte cons
 } // namespace details
 
 template <::fast_io::posix_family family, ::std::integral char_type>
-inline ::std::byte *read_some_bytes_underflow_define(::fast_io::basic_posix_family_io_observer<family, char_type> piob,
-													 ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t read_some_bytes_underflow_define(::fast_io::basic_posix_family_io_observer<family, char_type> piob,
+													  ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 #ifdef __MSDOS__
 	if constexpr (family == ::fast_io::posix_family::dos)
 	{
-		return ::fast_io::details::posix_dos_read_bytes_impl(piob.fd, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::posix_dos_read_bytes_impl(piob.fd, first, count) - first);
 	}
 	else
 #endif
 	{
-		return ::fast_io::details::posix_read_bytes_impl(piob.fd, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::posix_read_bytes_impl(piob.fd, first, count) - first);
 	}
 }
 
 template <::fast_io::posix_family family, ::std::integral char_type>
-inline ::std::byte const *write_some_bytes_overflow_define(::fast_io::basic_posix_family_io_observer<family, char_type> piob,
-														   ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t write_some_bytes_overflow_define(::fast_io::basic_posix_family_io_observer<family, char_type> piob,
+													  ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 #ifdef __MSDOS__
 	if constexpr (family == ::fast_io::posix_family::dos)
 	{
-		return ::fast_io::details::posix_dos_write_bytes_impl(piob.fd, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::posix_dos_write_bytes_impl(piob.fd, first, count) - first);
 	}
 	else
 #elif ((!defined(_WIN32) && !defined(__NEWLIB__)) || defined(__WINE__) || defined(__CYGWIN__)) && !defined(__wasi__) && defined(MSG_NOSIGNAL)
 	if constexpr (family == ::fast_io::posix_family::sock)
 	{
-		return ::fast_io::details::posix_socket_write_bytes_impl(piob.fd, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::posix_socket_write_bytes_impl(piob.fd, first, count) - first);
 	}
 	else
 #endif
 	{
-		return ::fast_io::details::posix_write_bytes_impl(piob.fd, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::posix_write_bytes_impl(piob.fd, first, count) - first);
 	}
 }
 

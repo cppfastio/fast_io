@@ -7,14 +7,14 @@ namespace fast_io
 namespace operations::decay
 {
 template <typename instmtype>
-inline constexpr ::std::byte *read_some_bytes_decay(instmtype insm, ::std::byte *first, ::std::size_t count)
+inline constexpr ::std::size_t read_some_bytes_decay(instmtype insm, ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
 	requires(::fast_io::operations::decay::defines::bytes_readable<instmtype> || ::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 ;
 
 template <typename instmtype>
-inline constexpr ::std::byte *pread_some_bytes_decay(instmtype insm, ::std::byte *first, ::std::size_t count,
-													 ::fast_io::intfpos_t)
+inline constexpr ::std::size_t pread_some_bytes_decay(instmtype insm, ::std::byte *first, ::std::size_t count,
+													  ::fast_io::intfpos_t)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype>)
 	requires(::fast_io::operations::decay::defines::bytes_preadable<instmtype> || ::fast_io::operations::decay::defines::has_input_or_io_stream_mutex_ref_define<instmtype>)
 ;
@@ -74,8 +74,7 @@ scatter_read_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 		{
 			auto [basec, len] = pscatters[i];
 			char_type *base{const_cast<char_type *>(basec)};
-			auto written{::fast_io::details::read_some_impl(insm, base, len)};
-			::std::size_t sz{static_cast<::std::size_t>(written - base)};
+			::std::size_t sz{::fast_io::details::read_some_impl(insm, base, len)};
 			if (sz != len)
 			{
 				return {i, sz};
@@ -111,15 +110,14 @@ scatter_read_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmtyp
 				::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(basef))};
 				::std::byte *ed{reinterpret_cast<::std::byte *>(edf)};
 				auto readed{::fast_io::details::read_some_bytes_impl(insm, base, static_cast<::std::size_t>(ed - base))};
-				::std::size_t diff{static_cast<::std::size_t>(readed - base)};
+				::std::size_t diff{readed};
 				::std::size_t md{diff % sizeof(char_type)};
 				::std::size_t sz{diff / sizeof(char_type)};
 				if (md)
 				{
 					::std::size_t dfd{sizeof(char_type) - md};
-					auto readedend{readed + dfd};
-					auto it{::fast_io::operations::decay::read_some_bytes_decay(insm, readed, dfd)};
-					if (it == readedend)
+					auto it{::fast_io::operations::decay::read_some_bytes_decay(insm, base + diff, dfd)};
+					if (it == dfd)
 					{
 						++sz;
 					}

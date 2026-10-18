@@ -76,10 +76,10 @@ inline void rtl_gen_random_all_impl(::std::byte *first, ::std::size_t count)
 
 template <::std::integral char_type>
 	requires(sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
-inline ::std::byte *read_some_bytes_underflow_define(basic_rtl_gen_random<char_type>, ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_rtl_gen_random<char_type>, ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::rtl_gen_random_some_impl(first, count);
+	return static_cast<::std::size_t>(::fast_io::win32::details::rtl_gen_random_some_impl(first, count) - first);
 }
 
 template <::std::integral char_type>

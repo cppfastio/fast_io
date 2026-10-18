@@ -7,7 +7,7 @@ int main()
 		fast_io::native_process p{"test.exe", {}, {}, {{}, pipe, pipe}};
 		char *ptr{(char *)_alloca(4096)};
 		::fast_io::freestanding::bytes_clear_n((::std::byte *)ptr, 4096);
-		char *last{};
+		::std::size_t last{};
 		for (;;)
 		{
 

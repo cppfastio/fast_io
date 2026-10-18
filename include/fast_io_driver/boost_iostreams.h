@@ -44,27 +44,27 @@ public:
 };
 
 template <::std::integral ch_type, boost_iostreams_input_device src_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_boost_iostreams<ch_type, src_type> &in_device,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_boost_iostreams<ch_type, src_type> &in_device,
+													  ::std::byte *first, ::std::size_t count)
 {
 	auto ret{in_device.source.read(reinterpret_cast<char *>(first), static_cast<::std::streamsize>(count))};
 	if (ret == -1)
 	{
-		return first;
+		return 0;
 	}
-	return first + ret;
+	return static_cast<::std::size_t>(ret);
 }
 
 template <::std::integral ch_type, boost_iostreams_output_device src_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_boost_iostreams<ch_type, src_type> &out_device,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_boost_iostreams<ch_type, src_type> &out_device,
+													  ::std::byte const *first, ::std::size_t count)
 {
 	auto ret{out_device.source.write(reinterpret_cast<char const *>(first), static_cast<::std::streamsize>(count))};
 	if (ret == -1)
 	{
-		return first;
+		return 0;
 	}
-	return first + ret;
+	return static_cast<::std::size_t>(ret);
 }
 template <::std::integral ch_type, boost_iostreams_flushable_device src_type>
 inline void io_stream_buffer_flush_define(basic_boost_iostreams<ch_type, src_type> &out_device)

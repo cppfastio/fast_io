@@ -4,7 +4,7 @@ namespace fast_io::operations::decay
 {
 
 template <typename outstmtype>
-inline constexpr typename outstmtype::output_char_type const *
+inline constexpr ::std::size_t
 write_some_decay(outstmtype outsm, typename outstmtype::output_char_type const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::writable<outstmtype> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
@@ -21,7 +21,7 @@ inline constexpr void write_all_decay(outstmtype outsm, typename outstmtype::out
 }
 
 template <typename outstmtype>
-inline constexpr ::std::byte const *write_some_bytes_decay(outstmtype outsm, ::std::byte const *first, ::std::size_t count)
+inline constexpr ::std::size_t write_some_bytes_decay(outstmtype outsm, ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::bytes_writable<outstmtype> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 {
@@ -74,7 +74,7 @@ inline constexpr void scatter_write_all_bytes_decay(outstmtype outsm, io_scatter
 }
 
 template <typename outstmtype>
-inline constexpr typename outstmtype::output_char_type const *
+inline constexpr ::std::size_t
 pwrite_some_decay(outstmtype outsm, typename outstmtype::output_char_type const *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::pwritable<outstmtype> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
@@ -91,7 +91,7 @@ inline constexpr void pwrite_all_decay(outstmtype outsm, typename outstmtype::ou
 }
 
 template <typename outstmtype>
-inline constexpr ::std::byte const *pwrite_some_bytes_decay(outstmtype outsm, ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline constexpr ::std::size_t pwrite_some_bytes_decay(outstmtype outsm, ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::bytes_pwritable<outstmtype> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 {

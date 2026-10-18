@@ -103,7 +103,7 @@ inline constexpr void ibuffer_set_curr(basic_ibuffer_view_ref<ch_type> view, ch_
 }
 
 template <::std::integral ch_type>
-[[nodiscard]] inline constexpr ch_type *read_some_underflow_define(basic_ibuffer_view_ref<ch_type> view, ch_type *first, ::std::size_t count) noexcept
+[[nodiscard]] inline constexpr ::std::size_t read_some_underflow_define(basic_ibuffer_view_ref<ch_type> view, ch_type *first, ::std::size_t count) noexcept
 {
 	auto *curr{view.ptr->curr_ptr};
 	auto *ed{view.ptr->end_ptr};
@@ -113,9 +113,9 @@ template <::std::integral ch_type>
 	{
 		diff = itdiff;
 	}
-	auto it{::fast_io::details::non_overlapped_copy_n(curr, static_cast<::std::size_t>(diff), first)};
+	::fast_io::details::non_overlapped_copy_n(curr, static_cast<::std::size_t>(diff), first);
 	view.ptr->curr_ptr = curr + diff;
-	return it;
+	return static_cast<::std::size_t>(diff);
 }
 
 template <::std::integral ch_type>
@@ -300,10 +300,10 @@ inline constexpr void obuffer_set_curr(basic_obuffer_view_ref<ch_type> view, ch_
 }
 
 template <::std::integral ch_type>
-inline constexpr ch_type const *write_some_overflow_define(basic_obuffer_view_ref<ch_type>, ch_type const *first, ::std::size_t) noexcept
+inline constexpr ::std::size_t write_some_overflow_define(basic_obuffer_view_ref<ch_type>, ch_type const *, ::std::size_t) noexcept
 {
 	::fast_io::fast_terminate();
-	return first;
+	return 0;
 }
 
 template <::std::integral ch_type>

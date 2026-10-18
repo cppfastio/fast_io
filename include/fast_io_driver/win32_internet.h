@@ -167,8 +167,8 @@ public:
 };
 
 template <::std::integral ch_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_win32_internet_io_observer<ch_type> iob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_win32_internet_io_observer<ch_type> iob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	unsigned long readed{};
@@ -176,12 +176,12 @@ inline ::std::byte *read_some_bytes_underflow_define(basic_win32_internet_io_obs
 	{
 		throw ::fast_io::win32_error();
 	}
-	return first + readed;
+	return static_cast<::std::size_t>(readed);
 }
 
 template <::std::integral ch_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_win32_internet_io_observer<ch_type> iob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_win32_internet_io_observer<ch_type> iob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	unsigned long written{};
@@ -189,7 +189,7 @@ inline ::std::byte const *write_some_bytes_overflow_define(basic_win32_internet_
 	{
 		throw ::fast_io::win32_error();
 	}
-	return first + written;
+	return static_cast<::std::size_t>(written);
 }
 
 using win32_internet_io_observer = basic_win32_internet_io_observer<char>;

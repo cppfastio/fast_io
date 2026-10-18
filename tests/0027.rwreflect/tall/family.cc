@@ -15,12 +15,12 @@ inline constexpr foo output_stream_ref_define(foo f) noexcept
 	return f;
 }
 
-inline constexpr ::std::byte const *write_some_bytes_overflow_define(
+inline constexpr ::std::size_t write_some_bytes_overflow_define(
 	foo,
 	::std::byte const *first,
 	::std::size_t count)
 {
-	return fakewrite(first, first + count);
+	return static_cast<::std::size_t>(fakewrite(first, first + count) - first);
 }
 
 int main()

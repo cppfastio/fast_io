@@ -49,22 +49,22 @@ inline ::fast_io::io_scatter_status_t filebuf_scatter_pwrite_bytes_impl(::std::b
 template <::std::integral char_type, typename traits_type>
 	requires ::fast_io::operations::decay::defines::has_pread_some_bytes_underflow_define<
 		::fast_io::basic_c_io_observer_unlocked<char_type>>
-inline ::std::byte *pread_some_bytes_underflow_define(::fast_io::basic_filebuf_io_observer<char_type, traits_type> fiob,
-													  ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline ::std::size_t pread_some_bytes_underflow_define(::fast_io::basic_filebuf_io_observer<char_type, traits_type> fiob,
+													   ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::filebuf_pread_bytes_impl(fiob.fb, first, count, off);
+	return static_cast<::std::size_t>(::fast_io::details::filebuf_pread_bytes_impl(fiob.fb, first, count, off) - first);
 }
 
 template <::std::integral char_type, typename traits_type>
 	requires ::fast_io::operations::decay::defines::has_pwrite_some_bytes_overflow_define<
 		::fast_io::basic_c_io_observer_unlocked<char_type>>
-inline ::std::byte const *
+inline ::std::size_t
 pwrite_some_bytes_overflow_define(::fast_io::basic_filebuf_io_observer<char_type, traits_type> fiob,
 								  ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::filebuf_pwrite_bytes_impl(fiob.fb, first, count, off);
+	return static_cast<::std::size_t>(::fast_io::details::filebuf_pwrite_bytes_impl(fiob.fb, first, count, off) - first);
 }
 
 template <::std::integral char_type, typename traits_type>

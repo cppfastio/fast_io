@@ -255,8 +255,8 @@ inline void tls_write_full(stmtype sock, ::std::byte const *buf, ::std::size_t n
 }
 
 template <typename stmtype>
-inline ::std::byte const *tls_read_some(stmtype sock, ::std::byte *buf,
-										::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t tls_read_some(stmtype sock, ::std::byte *buf,
+								   ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (;;)
 	{
@@ -279,8 +279,8 @@ inline ::std::byte const *tls_read_some(stmtype sock, ::std::byte *buf,
 }
 
 template <typename stmtype>
-inline ::std::byte const *tls_write_some(stmtype sock, ::std::byte const *buf,
-										 ::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t tls_write_some(stmtype sock, ::std::byte const *buf,
+									::std::size_t n) FAST_IO_HERBCEPTIONS_THROWS
 {
 	for (;;)
 	{
@@ -1405,8 +1405,7 @@ inline ::std::size_t tls_client_read_some(basic_tls_client<allocator_type, socke
 	if (!client->established_)
 	{
 		/* no handshake was performed -- plain transport passthrough */
-		return static_cast<::std::size_t>(
-			::fast_io::operations::read_some_bytes(client->sock_, buf, buf_size) - buf);
+		return ::fast_io::operations::read_some_bytes(client->sock_, buf, buf_size);
 	}
 	if (!client->offloaded_)
 	{
@@ -1691,16 +1690,14 @@ inline ::std::size_t tls_client_write_some(basic_tls_client<allocator_type, sock
 	if (!client->established_)
 	{
 		/* no handshake was performed -- plain transport passthrough */
-		return static_cast<::std::size_t>(
-			::fast_io::operations::write_some_bytes(client->sock_, buf, buf_size) - buf);
+		return ::fast_io::operations::write_some_bytes(client->sock_, buf, buf_size);
 	}
 	if (!client->offloaded_)
 	{
 		return tls_client_sw_write_some(client, buf, buf_size);
 	}
 	/* offloaded: a plain stream write -- the kernel seals the records */
-	return static_cast<::std::size_t>(
-		::fast_io::operations::write_some_bytes(client->sock_, buf, buf_size) - buf);
+	return ::fast_io::operations::write_some_bytes(client->sock_, buf, buf_size);
 }
 
 template <typename allocator_type, typename socket_observer_type, typename crypto>

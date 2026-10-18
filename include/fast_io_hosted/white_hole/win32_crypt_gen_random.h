@@ -91,11 +91,11 @@ inline void win32_crypt_gen_random_all_impl(::std::size_t hprov, ::std::byte *fi
 
 template <::std::integral char_type>
 	requires(sizeof(::std::uint_least32_t) < sizeof(::std::size_t))
-inline ::std::byte *read_some_bytes_underflow_define(basic_win32_crypt_gen_random_io_observer<char_type> bcgiob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_win32_crypt_gen_random_io_observer<char_type> bcgiob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::win32_crypt_gen_random_some_impl(bcgiob.hprov, first, count);
+	return static_cast<::std::size_t>(::fast_io::win32::details::win32_crypt_gen_random_some_impl(bcgiob.hprov, first, count) - first);
 }
 
 template <::std::integral char_type>

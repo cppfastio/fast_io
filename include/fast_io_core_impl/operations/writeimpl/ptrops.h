@@ -13,7 +13,7 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr char_type const *write_some(outstmtype &&outstm, char_type const *first, ::std::size_t count)
+inline constexpr ::std::size_t write_some(outstmtype &&outstm, char_type const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::writable<decltype(::fast_io::operations::output_stream_ref(outstm))> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<decltype(::fast_io::operations::output_stream_ref(outstm))>)
 {
@@ -39,7 +39,7 @@ template <typename outstmtype>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr ::std::byte const *write_some_bytes(outstmtype &&outstm, ::std::byte const *first, ::std::size_t count)
+inline constexpr ::std::size_t write_some_bytes(outstmtype &&outstm, ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::bytes_writable<decltype(::fast_io::operations::output_stream_ref(outstm))> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<decltype(::fast_io::operations::output_stream_ref(outstm))>)
 {
@@ -117,8 +117,8 @@ template <typename outstmtype, ::std::integral char_type>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr char_type const *pwrite_some(outstmtype &&outstm, char_type const *first, ::std::size_t count,
-											  ::fast_io::intfpos_t off)
+inline constexpr ::std::size_t pwrite_some(outstmtype &&outstm, char_type const *first, ::std::size_t count,
+										   ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::pwritable<decltype(::fast_io::operations::output_stream_ref(outstm))> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<decltype(::fast_io::operations::output_stream_ref(outstm))>)
 {
@@ -145,7 +145,7 @@ template <typename outstmtype>
 #elif __has_cpp_attribute(msvc::forceinline)
 [[msvc::forceinline]]
 #endif
-inline constexpr ::std::byte const *pwrite_some_bytes(outstmtype &&outstm, ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline constexpr ::std::size_t pwrite_some_bytes(outstmtype &&outstm, ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::bytes_pwritable<decltype(::fast_io::operations::output_stream_ref(outstm))> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<decltype(::fast_io::operations::output_stream_ref(outstm))>)
 {

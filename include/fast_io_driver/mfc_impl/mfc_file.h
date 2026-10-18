@@ -117,18 +117,18 @@ using mfc_scatter_buffer_alloc_ptr = ::fast_io::details::buffer_alloc_arr_ptr<
 } // namespace details
 
 template <::std::integral T>
-inline ::std::byte *read_some_bytes_underflow_define(basic_mfc_io_observer<T> hd, ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_mfc_io_observer<T> hd, ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + ::fast_io::details::mfc_read_impl(hd.phandle, first, count);
+	return ::fast_io::details::mfc_read_impl(hd.phandle, first, count);
 }
 
 template <::std::integral T>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_mfc_io_observer<T> hd, ::std::byte const *first,
-														   ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t write_some_bytes_overflow_define(basic_mfc_io_observer<T> hd, ::std::byte const *first,
+													  ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::details::mfc_write_n_impl(hd.phandle, first, count);
-	return first + count;
+	return count;
 }
 
 template <::std::integral T>

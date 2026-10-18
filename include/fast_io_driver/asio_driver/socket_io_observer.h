@@ -34,28 +34,28 @@ public:
 	}
 };
 template <typename T, ::std::integral ch_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_socket_io_observer<T, ch_type> iob, ::std::byte *first,
-													 ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t read_some_bytes_underflow_define(basic_socket_io_observer<T, ch_type> iob, ::std::byte *first,
+													  ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::error_code ec{}; // WTF??? WHY?? WHY??WHY??WHY??WHY??WHY??WHY??WHY?? FUCK YOU ASIO
 	::std::size_t sz{iob.handle->read_some(asio::buffer(first, count), ec)};
 	if (ec == asio::error::eof) // This is BRAINDEAD RETARDED. HOW COULD THIS SHIT GET ADDED INTO ISO C++?
 	{
-		return first;
+		return 0;
 	}
 	else if (ec)
 	{
 		throw ::std::system_error(ec);
 	}
-	return first + sz;
+	return sz;
 }
 
 template <typename T, ::std::integral ch_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_socket_io_observer<T, ch_type> iob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_socket_io_observer<T, ch_type> iob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + iob.handle->write_some(asio::buffer(first, count));
+	return iob.handle->write_some(asio::buffer(first, count));
 }
 template <typename T, ::std::integral ch_type>
 inline constexpr void io_stream_buffer_flush_define(basic_socket_io_observer<T, ch_type>) noexcept
