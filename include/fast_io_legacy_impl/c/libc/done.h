@@ -362,31 +362,31 @@ inline ::std::byte const *c_unlocked_write_some_bytes_impl(FILE *__restrict fp, 
 } // namespace details
 
 template <::fast_io::c_family family, ::std::integral char_type>
-inline ::std::byte *read_some_bytes_underflow_define(::fast_io::basic_c_family_io_observer<family, char_type> ciob,
-													 ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t read_some_bytes_underflow_define(::fast_io::basic_c_family_io_observer<family, char_type> ciob,
+													  ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (family == ::fast_io::c_family::unlocked || family == ::fast_io::c_family::emulated_unlocked)
 	{
-		return ::fast_io::details::c_unlocked_read_some_bytes_impl(ciob.fp, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::c_unlocked_read_some_bytes_impl(ciob.fp, first, count) - first);
 	}
 	else
 	{
-		return ::fast_io::details::c_read_some_bytes_impl(ciob.fp, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::c_read_some_bytes_impl(ciob.fp, first, count) - first);
 	}
 }
 
 template <::fast_io::c_family family, ::std::integral char_type>
-inline ::std::byte const *
+inline ::std::size_t
 write_some_bytes_overflow_define(::fast_io::basic_c_family_io_observer<family, char_type> ciob,
 								 ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 	if constexpr (family == ::fast_io::c_family::unlocked || family == ::fast_io::c_family::emulated_unlocked)
 	{
-		return ::fast_io::details::c_unlocked_write_some_bytes_impl(ciob.fp, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::c_unlocked_write_some_bytes_impl(ciob.fp, first, count) - first);
 	}
 	else
 	{
-		return ::fast_io::details::c_write_some_bytes_impl(ciob.fp, first, count);
+		return static_cast<::std::size_t>(::fast_io::details::c_write_some_bytes_impl(ciob.fp, first, count) - first);
 	}
 }
 

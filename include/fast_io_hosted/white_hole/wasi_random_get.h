@@ -94,10 +94,10 @@ public:
 
 template <::std::integral char_type>
 	requires(sizeof(__wasi_size_t) < sizeof(::std::size_t))
-inline ::std::byte *read_some_bytes_underflow_define(basic_wasi_random_get<char_type>, ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_wasi_random_get<char_type>, ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::wasi_random_get_some_impl(first, count);
+	return static_cast<::std::size_t>(::fast_io::details::wasi_random_get_some_impl(first, count) - first);
 }
 
 template <::std::integral char_type>

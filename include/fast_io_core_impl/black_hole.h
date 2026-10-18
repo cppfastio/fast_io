@@ -21,9 +21,9 @@ using u16black_hole = basic_black_hole<char16_t>;
 using u32black_hole = basic_black_hole<char32_t>;
 
 template <::std::integral ch_type>
-inline constexpr ch_type *read_some_underflow_define(basic_black_hole<ch_type>, ch_type *first, ::std::size_t) noexcept
+inline constexpr ::std::size_t read_some_underflow_define(basic_black_hole<ch_type>, ch_type *, ::std::size_t) noexcept
 {
-	return first;
+	return 0;
 }
 
 template <::std::integral ch_type>
@@ -32,10 +32,10 @@ inline constexpr void write_all_overflow_define(basic_black_hole<ch_type>, ch_ty
 }
 
 template <::std::integral ch_type>
-inline constexpr ::std::byte *read_some_bytes_underflow_define(basic_black_hole<ch_type>, ::std::byte *first,
-															   ::std::size_t) noexcept
+inline constexpr ::std::size_t read_some_bytes_underflow_define(basic_black_hole<ch_type>, ::std::byte *,
+																::std::size_t) noexcept
 {
-	return first;
+	return 0;
 }
 
 template <::std::integral ch_type>
@@ -45,10 +45,10 @@ inline constexpr void write_all_bytes_overflow_define(basic_black_hole<ch_type>,
 }
 
 template <::std::integral ch_type>
-inline constexpr ch_type *pread_some_underflow_define(basic_black_hole<ch_type>, ch_type *first, ::std::size_t,
-													  ::fast_io::intfpos_t) noexcept
+inline constexpr ::std::size_t pread_some_underflow_define(basic_black_hole<ch_type>, ch_type *, ::std::size_t,
+														   ::fast_io::intfpos_t) noexcept
 {
-	return first;
+	return 0;
 }
 
 template <::std::integral ch_type>
@@ -58,10 +58,10 @@ inline constexpr void pwrite_all_overflow_define(basic_black_hole<ch_type>, ch_t
 }
 
 template <::std::integral ch_type>
-inline constexpr ::std::byte *pread_some_bytes_underflow_define(basic_black_hole<ch_type>, ::std::byte *first,
-																::std::size_t, ::fast_io::intfpos_t) noexcept
+inline constexpr ::std::size_t pread_some_bytes_underflow_define(basic_black_hole<ch_type>, ::std::byte *,
+																 ::std::size_t, ::fast_io::intfpos_t) noexcept
 {
-	return first;
+	return 0;
 }
 
 template <::std::integral ch_type>

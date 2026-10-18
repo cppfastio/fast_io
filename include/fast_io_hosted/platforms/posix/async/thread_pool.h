@@ -260,14 +260,14 @@ inline void posix_thread_pool_rw_run(posix_thread_pool_node *p) noexcept
 		}
 		if constexpr (is_write)
 		{
-			::std::byte const *last;
+			::std::size_t last;
 			if constexpr (::fast_io::operations::decay::defines::bytes_pwritable<stmtype>)
 			{
 				if (self->off.has_opt)
 				{
 					last = ::fast_io::operations::decay::pwrite_some_bytes_decay(
 						self->stm, self->buf, self->count, self->off.opt);
-					self->transferred = static_cast<::std::size_t>(last - self->buf);
+					self->transferred = last;
 					return;
 				}
 			}
@@ -300,18 +300,18 @@ inline void posix_thread_pool_rw_run(posix_thread_pool_node *p) noexcept
 					throw throws e;
 				}
 			}
-			self->transferred = static_cast<::std::size_t>(last - self->buf);
+			self->transferred = last;
 		}
 		else
 		{
-			::std::byte *last;
+			::std::size_t last;
 			if constexpr (::fast_io::operations::decay::defines::bytes_preadable<stmtype>)
 			{
 				if (self->off.has_opt)
 				{
 					last = ::fast_io::operations::decay::pread_some_bytes_decay(
 						self->stm, self->buf, self->count, self->off.opt);
-					self->transferred = static_cast<::std::size_t>(last - self->buf);
+					self->transferred = last;
 					return;
 				}
 			}
@@ -341,7 +341,7 @@ inline void posix_thread_pool_rw_run(posix_thread_pool_node *p) noexcept
 					throw throws e;
 				}
 			}
-			self->transferred = static_cast<::std::size_t>(last - self->buf);
+			self->transferred = last;
 		}
 	}
 	catch throws(::std::error e)

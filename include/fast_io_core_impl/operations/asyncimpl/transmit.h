@@ -199,7 +199,7 @@ inline void async_transmit_bytes_sync_read(async_transmit_bytes_state_base<all, 
 {
 	try
 	{
-		::std::byte *iter;
+		::std::size_t iter;
 		if (state->off_in.has_opt)
 		{
 			if constexpr (::fast_io::operations::decay::defines::bytes_preadable<instmtype>)
@@ -225,7 +225,7 @@ inline void async_transmit_bytes_sync_read(async_transmit_bytes_state_base<all, 
 			}
 		}
 		::fast_io::details::async_transmit_bytes_read_done(state, {},
-														   static_cast<::std::size_t>(iter - state->buf));
+														   iter);
 	}
 	catch throws(::std::error e)
 	{
@@ -241,7 +241,7 @@ inline void async_transmit_bytes_sync_write(async_transmit_bytes_state_base<all,
 {
 	try
 	{
-		::std::byte const *iter;
+		::std::size_t iter;
 		if (state->off_out.has_opt)
 		{
 			if constexpr (::fast_io::operations::decay::defines::bytes_pwritable<outstmtype>)
@@ -267,7 +267,7 @@ inline void async_transmit_bytes_sync_write(async_transmit_bytes_state_base<all,
 			}
 		}
 		::fast_io::details::async_transmit_bytes_write_done(state, {},
-															static_cast<::std::size_t>(iter - first));
+															iter);
 	}
 	catch throws(::std::error e)
 	{

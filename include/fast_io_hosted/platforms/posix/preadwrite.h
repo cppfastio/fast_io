@@ -7,7 +7,7 @@ namespace details
 {
 
 #ifndef __wasi__
-inline ::std::byte *posix_pread_bytes_impl(int fd, ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline ::std::size_t posix_pread_bytes_impl(int fd, ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto ret{::fast_io::noexcept_call(::pread, fd, first, count, off)};
@@ -15,11 +15,11 @@ inline ::std::byte *posix_pread_bytes_impl(int fd, ::std::byte *first, ::std::si
 	{
 		::fast_io::throw_posix_error();
 	}
-	return first + ret;
+	return static_cast<::std::size_t>(ret);
 }
 
-inline ::std::byte const *posix_pwrite_bytes_impl(int fd, ::std::byte const *first, ::std::size_t count,
-												  ::fast_io::intfpos_t off)
+inline ::std::size_t posix_pwrite_bytes_impl(int fd, ::std::byte const *first, ::std::size_t count,
+											 ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	auto ret{::fast_io::noexcept_call(::pwrite, fd, first, count, off)};
@@ -27,7 +27,7 @@ inline ::std::byte const *posix_pwrite_bytes_impl(int fd, ::std::byte const *fir
 	{
 		::fast_io::throw_posix_error();
 	}
-	return first + ret;
+	return static_cast<::std::size_t>(ret);
 }
 #endif
 
@@ -164,17 +164,17 @@ inline ::fast_io::io_scatter_status_t posix_scatter_pwrite_bytes_impl(int fd, ::
 #ifndef __wasi__
 
 template <::fast_io::posix_family fam, ::std::integral char_type>
-inline ::std::byte *pread_some_bytes_underflow_define(::fast_io::basic_posix_family_io_observer<fam, char_type> piob,
-													  ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline ::std::size_t pread_some_bytes_underflow_define(::fast_io::basic_posix_family_io_observer<fam, char_type> piob,
+													   ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::posix_pread_bytes_impl(piob.fd, first, count, off);
 }
 
 template <::fast_io::posix_family fam, ::std::integral char_type>
-inline ::std::byte const *pwrite_some_bytes_overflow_define(::fast_io::basic_posix_family_io_observer<fam, char_type> piob,
-															::std::byte const *first, ::std::size_t count,
-															::fast_io::intfpos_t off)
+inline ::std::size_t pwrite_some_bytes_overflow_define(::fast_io::basic_posix_family_io_observer<fam, char_type> piob,
+													   ::std::byte const *first, ::std::size_t count,
+													   ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return ::fast_io::details::posix_pwrite_bytes_impl(piob.fd, first, count, off);

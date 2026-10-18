@@ -213,19 +213,19 @@ inline void win32_ntw_pwrite_all_bytes_impl(void *__restrict handle, ::std::byte
 } // namespace win32::details
 
 template <win32_family family, ::std::integral ch_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_win32_family_io_observer<family, ch_type> wiob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_win32_family_io_observer<family, ch_type> wiob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::win32_read_some_bytes_impl(wiob.handle, first, count);
+	return static_cast<::std::size_t>(::fast_io::win32::details::win32_read_some_bytes_impl(wiob.handle, first, count) - first);
 }
 
 template <win32_family family, ::std::integral ch_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_win32_family_io_observer<family, ch_type> wiob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_win32_family_io_observer<family, ch_type> wiob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::win32_write_some_bytes_impl(wiob.handle, first, count);
+	return static_cast<::std::size_t>(::fast_io::win32::details::win32_write_some_bytes_impl(wiob.handle, first, count) - first);
 }
 
 template <win32_family family, ::std::integral ch_type>
@@ -245,20 +245,20 @@ I am not confident that i understand semantics correctly. Disabled first and tes
 // For Win9x, use the operation::p series functions, which automatically combine seek operations with non-p series functions.
 #if !defined(_WIN32_WINDOWS)
 template <win32_family family, ::std::integral ch_type>
-inline ::std::byte *pread_some_bytes_underflow_define(basic_win32_family_io_observer<family, ch_type> niob,
-													  ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline ::std::size_t pread_some_bytes_underflow_define(basic_win32_family_io_observer<family, ch_type> niob,
+													   ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::win32_ntw_pread_some_bytes_impl(niob.handle, first, count, off);
+	return static_cast<::std::size_t>(::fast_io::win32::details::win32_ntw_pread_some_bytes_impl(niob.handle, first, count, off) - first);
 }
 
 template <win32_family family, ::std::integral ch_type>
-inline ::std::byte const *pwrite_some_bytes_overflow_define(basic_win32_family_io_observer<family, ch_type> niob,
-															::std::byte const *first, ::std::size_t count,
-															::fast_io::intfpos_t off)
+inline ::std::size_t pwrite_some_bytes_overflow_define(basic_win32_family_io_observer<family, ch_type> niob,
+													   ::std::byte const *first, ::std::size_t count,
+													   ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::details::win32_ntw_pwrite_some_bytes_impl(niob.handle, first, count, off);
+	return static_cast<::std::size_t>(::fast_io::win32::details::win32_ntw_pwrite_some_bytes_impl(niob.handle, first, count, off) - first);
 }
 
 template <win32_family family, ::std::integral ch_type>

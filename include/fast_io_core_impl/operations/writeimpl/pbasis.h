@@ -9,7 +9,7 @@ template <typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr typename outstmtype::output_char_type const *
+inline constexpr ::std::size_t
 pwrite_some_cold_impl(outstmtype outsm, typename outstmtype::output_char_type const *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 	requires ::fast_io::operations::decay::defines::pwritable<outstmtype>
@@ -24,21 +24,19 @@ pwrite_some_cold_impl(outstmtype outsm, typename outstmtype::output_char_type co
 		::std::size_t len{count};
 		basic_io_scatter_t<char_type> sc{first, len};
 		return ::fast_io::scatter_status_one_size(
-				   scatter_pwrite_some_overflow_define(outsm, __builtin_addressof(sc), 1, off), len) +
-			   first;
+			scatter_pwrite_some_overflow_define(outsm, __builtin_addressof(sc), 1, off), len);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_pwrite_all_overflow_define<outstmtype>)
 	{
 		pwrite_all_overflow_define(outsm, first, count, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_scatter_pwrite_all_overflow_define<outstmtype>)
 	{
 		::std::size_t len{count};
 		basic_io_scatter_t<char_type> sc{first, len};
 		return ::fast_io::scatter_status_one_size(
-				   scatter_pwrite_all_overflow_define(outsm, __builtin_addressof(sc), 1, off), len) +
-			   first;
+			scatter_pwrite_all_overflow_define(outsm, __builtin_addressof(sc), 1, off), len);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_pwrite_all_bytes_overflow_define<outstmtype> ||
 					   ::fast_io::operations::decay::defines::has_scatter_pwrite_all_bytes_overflow_define<
@@ -49,25 +47,20 @@ pwrite_some_cold_impl(outstmtype outsm, typename outstmtype::output_char_type co
 		if constexpr (sizeof(typename outstmtype::output_char_type) == 1)
 		{
 			::std::byte const *firstptr{reinterpret_cast<::std::byte const *>(first)};
-			::std::byte const *ptr{
-				pwrite_some_bytes_cold_impl(outsm, firstptr, count, off)};
-			return ptr - firstptr + first;
+			return pwrite_some_bytes_cold_impl(outsm, firstptr, count, off);
 		}
 		else
 		{
 			::std::byte const *firstptr{reinterpret_cast<::std::byte const *>(first)};
-			::std::byte const *ptr{
-				pwrite_some_bytes_cold_impl(outsm, firstptr, count * sizeof(char_type), off)};
-			::std::ptrdiff_t ptdf{ptr - firstptr};
-			::std::size_t diff{static_cast<::std::size_t>(ptdf)};
+			::std::size_t diff{pwrite_some_bytes_cold_impl(outsm, firstptr, count * sizeof(char_type), off)};
 			::std::size_t v{diff / sizeof(char_type)};
 			::std::size_t remain{diff % sizeof(char_type)};
 			if (remain != 0)
 			{
-				off = ::fast_io::fposoffadd_nonegative(off, ptdf);
-				pwrite_all_bytes_cold_impl(outsm, ptr, remain, off);
+				off = ::fast_io::fposoffadd_nonegative(off, static_cast<::std::ptrdiff_t>(diff));
+				pwrite_all_bytes_cold_impl(outsm, firstptr + diff, remain, off);
 			}
-			return first + v;
+			return v;
 		}
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_output_or_io_stream_seek_define<outstmtype> &&
@@ -102,7 +95,7 @@ template <typename outstmtype>
 #if __has_cpp_attribute(__gnu__::__cold__)
 [[__gnu__::__cold__]]
 #endif
-inline constexpr ::std::byte const *pwrite_some_bytes_cold_impl(outstmtype outsm, ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline constexpr ::std::size_t pwrite_some_bytes_cold_impl(outstmtype outsm, ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 	requires ::fast_io::operations::decay::defines::bytes_pwritable<outstmtype>
 {
@@ -116,8 +109,7 @@ inline constexpr ::std::byte const *pwrite_some_bytes_cold_impl(outstmtype outsm
 		::std::size_t len{count};
 		io_scatter_t sc{first, len};
 		return ::fast_io::scatter_status_one_size(
-				   scatter_pwrite_some_bytes_overflow_define(outsm, __builtin_addressof(sc), 1, off), len) +
-			   first;
+			scatter_pwrite_some_bytes_overflow_define(outsm, __builtin_addressof(sc), 1, off), len);
 	}
 	else if constexpr (sizeof(char_type) == 1 &&
 					   ::fast_io::operations::decay::defines::has_pwrite_some_overflow_define<outstmtype>)
@@ -140,19 +132,18 @@ inline constexpr ::std::byte const *pwrite_some_bytes_cold_impl(outstmtype outsm
 		::std::size_t len{count};
 		basic_io_scatter_t<char_type> sc{reinterpret_cast<char_type_const_ptr>(first), len};
 		return ::fast_io::scatter_status_one_size(
-				   scatter_pwrite_some_bytes_overflow_define(outsm, __builtin_addressof(sc), 1, off), len) +
-			   first;
+			scatter_pwrite_some_bytes_overflow_define(outsm, __builtin_addressof(sc), 1, off), len);
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_pwrite_all_bytes_overflow_define<outstmtype>)
 	{
 		pwrite_all_bytes_overflow_define(outsm, first, count, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_scatter_pwrite_all_bytes_overflow_define<outstmtype>)
 	{
 		io_scatter_t sc{first, count};
 		scatter_pwrite_all_bytes_overflow_define(outsm, __builtin_addressof(sc), 1, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (sizeof(char_type) == 1 &&
 					   ::fast_io::operations::decay::defines::has_pwrite_all_overflow_define<outstmtype>)
@@ -163,14 +154,14 @@ inline constexpr ::std::byte const *pwrite_some_bytes_cold_impl(outstmtype outsm
 #endif
 			= char_type const *;
 		pwrite_all_overflow_define(outsm, reinterpret_cast<char_type_const_ptr>(first), count, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (sizeof(char_type) == 1 &&
 					   ::fast_io::operations::decay::defines::has_scatter_pwrite_all_overflow_define<outstmtype>)
 	{
 		io_scatter_t sc{first, count};
 		scatter_pwrite_all_bytes_overflow_define(outsm, __builtin_addressof(sc), 1, off);
-		return first + count;
+		return count;
 	}
 	else if constexpr (::fast_io::operations::decay::defines::has_output_or_io_stream_seek_bytes_define<outstmtype> &&
 					   (::fast_io::operations::decay::defines::has_write_all_bytes_overflow_define<outstmtype> ||
@@ -225,7 +216,7 @@ inline constexpr void pwrite_all_cold_impl(outstmtype outsm, typename outstmtype
 		auto const e{first + count};
 		do
 		{
-			auto nit{pwrite_some_overflow_define(outsm, first, static_cast<::std::size_t>(e - first), off)};
+			auto nit{first + pwrite_some_overflow_define(outsm, first, static_cast<::std::size_t>(e - first), off)};
 			off = ::fast_io::fposoffadd_nonegative(off, nit - first);
 			first = nit;
 		} while (first != e);
@@ -306,7 +297,7 @@ inline constexpr void pwrite_all_bytes_cold_impl(outstmtype outsm, ::std::byte c
 		auto const e{first + count};
 		do
 		{
-			auto nit{pwrite_some_bytes_overflow_define(outsm, first, static_cast<::std::size_t>(e - first), off)};
+			auto nit{first + pwrite_some_bytes_overflow_define(outsm, first, static_cast<::std::size_t>(e - first), off)};
 			off = ::fast_io::fposoffadd_nonegative(off, nit - first);
 			first = nit;
 		} while (first != e);
@@ -367,7 +358,7 @@ inline constexpr void pwrite_all_bytes_cold_impl(outstmtype outsm, ::std::byte c
 }
 
 template <typename outstmtype>
-inline constexpr typename outstmtype::output_char_type const *
+inline constexpr ::std::size_t
 pwrite_some_impl(outstmtype outsm, typename outstmtype::output_char_type const *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::pwritable<outstmtype> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
@@ -412,7 +403,7 @@ inline constexpr void pwrite_all_impl(outstmtype outsm, typename outstmtype::out
 }
 
 template <typename outstmtype>
-inline constexpr ::std::byte const *pwrite_some_bytes_impl(outstmtype outsm, ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline constexpr ::std::size_t pwrite_some_bytes_impl(outstmtype outsm, ::std::byte const *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::output_stream_operations_nothrow<outstmtype>)
 	requires(::fast_io::operations::decay::defines::bytes_pwritable<outstmtype> || ::fast_io::operations::decay::defines::has_output_or_io_stream_mutex_ref_define<outstmtype>)
 {

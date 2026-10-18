@@ -690,14 +690,14 @@ inline pid_t pipefork_execveat_common_impl(int dirfd, char const *cstr, char con
 	int errno_from_subproc{};
 	auto err_buffer = reinterpret_cast<char *>(&errno_from_subproc);
 	auto n = ::fast_io::operations::read_some(error_pipe.in(), err_buffer, sizeof(errno_from_subproc));
-	if (n == err_buffer)
+	if (n == 0)
 	{
 		return pid;
 	}
 	else
 	{
 		::fast_io::details::posix_waitpid_noexcept(pid);
-		if (n == err_buffer + sizeof(errno_from_subproc))
+		if (n == sizeof(errno_from_subproc))
 		{
 			throw_posix_error(errno_from_subproc);
 		}

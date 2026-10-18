@@ -80,12 +80,13 @@ inline void scatter_write_all_bytes_overflow_define(basic_c_family_io_observer<c
 }
 
 template <::std::integral char_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_c_family_io_observer<c_family::emulated_unlocked, char_type> ciob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_c_family_io_observer<c_family::emulated_unlocked, char_type> ciob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return reinterpret_cast<::std::byte *>(
-		::fast_io::details::avr_libc_read_internal_impl(ciob.fp, reinterpret_cast<char *>(first), count));
+	return static_cast<::std::size_t>(reinterpret_cast<::std::byte *>(
+										  ::fast_io::details::avr_libc_read_internal_impl(ciob.fp, reinterpret_cast<char *>(first), count)) -
+									  first);
 }
 
 template <::std::integral char_type>

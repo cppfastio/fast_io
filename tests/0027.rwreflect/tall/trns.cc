@@ -18,24 +18,24 @@ inline constexpr foo io_stream_ref_define(foo f) noexcept
 	return f;
 }
 
-inline ::std::byte const *write_some_bytes_overflow_define(foo f, ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(foo f, ::std::byte const *first, ::std::size_t count)
 {
 	auto res{::fast_io::noexcept_call(::write, f.fd, first, count)};
 	if (res < 0)
 	{
 		::std::abort();
 	}
-	return first + res;
+	return static_cast<::std::size_t>(res);
 }
 
-inline ::std::byte *read_some_bytes_underflow_define(foo f, ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(foo f, ::std::byte *first, ::std::size_t count)
 {
 	auto res{::fast_io::noexcept_call(::read, f.fd, first, count)};
 	if (res < 0)
 	{
 		::std::abort();
 	}
-	return first + res;
+	return static_cast<::std::size_t>(res);
 }
 
 #if __has_include(<sys/uio.h>)
@@ -71,7 +71,7 @@ int main()
 	foo f1{1};
 	::std::size_t transmitted{};
 	for (::std::size_t n{}; (n = ::fast_io::operations::transmit_some_bytes(
-								   f1, {}, f0, {}, ::std::numeric_limits<::std::size_t>::max())) != 0;)
+								 f1, {}, f0, {}, ::std::numeric_limits<::std::size_t>::max())) != 0;)
 	{
 		transmitted += n;
 	}

@@ -81,10 +81,10 @@ inline ::std::byte *bsd_arc4random_read_some_bytes_define_impl(::std::byte *firs
 } // namespace details
 
 template <::std::integral char_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_bsd_arc4random<char_type>, ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_bsd_arc4random<char_type>, ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::bsd_arc4random_read_some_bytes_define_impl(first, count);
+	return static_cast<::std::size_t>(::fast_io::details::bsd_arc4random_read_some_bytes_define_impl(first, count) - first);
 }
 
 #endif

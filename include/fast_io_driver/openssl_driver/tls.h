@@ -190,11 +190,11 @@ inline void ossl_tls_drive(basic_ossl_tls_client<socket_observer_type> *client, 
 		}
 		::std::byte buf[16384];
 		auto const e{::fast_io::operations::read_some_bytes(client->sock_, buf, sizeof(buf))};
-		if (e == buf)
+		if (e == 0)
 		{
 			::fast_io::throw_posix_error(EPIPE);
 		}
-		if (BIO_write(client->rbio_, buf, static_cast<int>(e - buf)) <= 0)
+		if (BIO_write(client->rbio_, buf, static_cast<int>(e)) <= 0)
 		{
 			ossl_tls_throw();
 		}
@@ -273,8 +273,7 @@ inline ::std::size_t tls_client_read_some(basic_ossl_tls_client<socket_observer_
 {
 	if (!client->established_)
 	{
-		return static_cast<::std::size_t>(
-			::fast_io::operations::read_some_bytes(client->sock_, buf, buf_size) - buf);
+		return ::fast_io::operations::read_some_bytes(client->sock_, buf, buf_size);
 	}
 	for (;;)
 	{
@@ -295,11 +294,11 @@ inline ::std::size_t tls_client_read_some(basic_ossl_tls_client<socket_observer_
 		}
 		ossl_tls_flush_wbio(client);
 		auto const e{::fast_io::operations::read_some_bytes(client->sock_, buf, buf_size)};
-		if (e == buf)
+		if (e == 0)
 		{
 			::fast_io::throw_posix_error(EPIPE);
 		}
-		if (BIO_write(client->rbio_, buf, static_cast<int>(e - buf)) <= 0)
+		if (BIO_write(client->rbio_, buf, static_cast<int>(e)) <= 0)
 		{
 			ossl_tls_throw();
 		}
@@ -312,8 +311,7 @@ inline ::std::size_t tls_client_write_some(basic_ossl_tls_client<socket_observer
 {
 	if (!client->established_)
 	{
-		return static_cast<::std::size_t>(
-			::fast_io::operations::write_some_bytes(client->sock_, buf, buf_size) - buf);
+		return ::fast_io::operations::write_some_bytes(client->sock_, buf, buf_size);
 	}
 	for (;;)
 	{
@@ -332,11 +330,11 @@ inline ::std::size_t tls_client_write_some(basic_ossl_tls_client<socket_observer
 		ossl_tls_flush_wbio(client);
 		::std::byte tmp[16384];
 		auto const e{::fast_io::operations::read_some_bytes(client->sock_, tmp, sizeof(tmp))};
-		if (e == tmp)
+		if (e == 0)
 		{
 			::fast_io::throw_posix_error(EPIPE);
 		}
-		if (BIO_write(client->rbio_, tmp, static_cast<int>(e - tmp)) <= 0)
+		if (BIO_write(client->rbio_, tmp, static_cast<int>(e)) <= 0)
 		{
 			ossl_tls_throw();
 		}
@@ -402,17 +400,17 @@ io_bytes_stream_ref_define(basic_ossl_tls_io_observer<ch_type, socket_observer_t
 }
 
 template <::std::integral ch_type, typename socket_observer_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_ossl_tls_io_observer<ch_type, socket_observer_type> tob,
-													 ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t read_some_bytes_underflow_define(basic_ossl_tls_io_observer<ch_type, socket_observer_type> tob,
+													  ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + details::tls_client_read_some(tob.handle, first, count);
+	return details::tls_client_read_some(tob.handle, first, count);
 }
 
 template <::std::integral ch_type, typename socket_observer_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_ossl_tls_io_observer<ch_type, socket_observer_type> tob,
-														   ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t write_some_bytes_overflow_define(basic_ossl_tls_io_observer<ch_type, socket_observer_type> tob,
+													  ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + details::tls_client_write_some(tob.handle, first, count);
+	return details::tls_client_write_some(tob.handle, first, count);
 }
 
 template <::std::integral ch_type, typename socket_observer_type>

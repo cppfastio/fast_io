@@ -449,8 +449,8 @@ public:
 };
 
 template <::std::integral char_type>
-[[nodiscard]] inline ::std::byte *read_some_bytes_underflow_define(basic_win32_memory_io_observer<char_type> &iob,
-																   ::std::byte *first, ::std::size_t count)
+[[nodiscard]] inline ::std::size_t read_some_bytes_underflow_define(basic_win32_memory_io_observer<char_type> &iob,
+																	::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t readed{};
@@ -460,7 +460,7 @@ template <::std::integral char_type>
 		throw_win32_error();
 	}
 	iob.base_addr += readed;
-	return first + readed;
+	return readed;
 }
 template <::std::integral char_type>
 [[nodiscard]] inline auto find_read_start(basic_win32_memory_io_observer<char_type> iob)
@@ -473,8 +473,8 @@ template <::std::integral char_type>
 	return iob;
 }
 template <::std::integral char_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_win32_memory_io_observer<char_type> &iob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_win32_memory_io_observer<char_type> &iob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t written{};
@@ -484,7 +484,7 @@ inline ::std::byte const *write_some_bytes_overflow_define(basic_win32_memory_io
 		throw_win32_error();
 	}
 	iob.base_addr += written;
-	return first + written;
+	return written;
 }
 using win32_memory_io_observer = basic_win32_memory_io_observer<char>;
 using win32_memory_io_handle = basic_win32_memory_io_handle<char>;

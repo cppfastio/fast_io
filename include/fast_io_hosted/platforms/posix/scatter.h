@@ -111,9 +111,9 @@ inline ::fast_io::io_scatter_status_t posix_socket_scatter_write_bytes_impl(int 
 		[[__gnu__::__may_alias__]]
 #endif
 		= struct iovec *;
-	struct msghdr msg{
-		.msg_iov = reinterpret_cast<iovec_may_alias_const_ptr>(const_cast<::fast_io::io_scatter_t *>(pscatter)),
-		.msg_iovlen = this_n};
+	struct msghdr msg{};
+	msg.msg_iov = reinterpret_cast<iovec_may_alias_const_ptr>(const_cast<::fast_io::io_scatter_t *>(pscatter));
+	msg.msg_iovlen = this_n;
 #if defined(__linux__) && defined(__NR_sendmsg)
 	auto ret{system_call<__NR_sendmsg, ::std::ptrdiff_t>(fd, ::std::addressof(msg), MSG_NOSIGNAL)};
 	if (::fast_io::linux_system_call_fails(ret)) [[unlikely]]

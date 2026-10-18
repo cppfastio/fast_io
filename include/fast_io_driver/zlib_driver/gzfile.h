@@ -187,8 +187,8 @@ using gz_io_observer = basic_gz_io_observer<char>;
 using gz_file = basic_gz_file<char>;
 
 template <::std::integral char_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_gz_io_observer<char_type> giob, ::std::byte *first,
-													 ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t read_some_bytes_underflow_define(basic_gz_io_observer<char_type> giob, ::std::byte *first,
+													  ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t to_read{count};
 	if constexpr (sizeof(unsigned) < sizeof(::std::size_t))
@@ -203,12 +203,12 @@ inline ::std::byte *read_some_bytes_underflow_define(basic_gz_io_observer<char_t
 	{
 		throw_posix_error();
 	}
-	return first + static_cast<unsigned>(readed);
+	return static_cast<unsigned>(readed);
 }
 
 template <::std::integral char_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_gz_io_observer<char_type> giob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_gz_io_observer<char_type> giob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::size_t to_write{count};
@@ -224,7 +224,7 @@ inline ::std::byte const *write_some_bytes_overflow_define(basic_gz_io_observer<
 	{
 		throw_posix_error();
 	}
-	return first + static_cast<unsigned>(written);
+	return static_cast<unsigned>(written);
 }
 
 template <::std::integral char_type>

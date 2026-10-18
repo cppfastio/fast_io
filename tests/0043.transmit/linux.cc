@@ -42,7 +42,7 @@ int main()
 		char got[8];
 		auto it{::fast_io::operations::decay::pread_some_bytes_decay(
 			::fast_io::operations::input_stream_ref(out), reinterpret_cast<::std::byte *>(got), 8, 100)};
-		if (it != reinterpret_cast<::std::byte *>(got) + 8)
+		if (it != 8)
 		{
 			::fast_io::fast_terminate();
 		}

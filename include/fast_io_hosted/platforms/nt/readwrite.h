@@ -225,36 +225,36 @@ namespace fast_io
 {
 
 template <nt_family family, ::std::integral ch_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_nt_family_io_observer<family, ch_type> niob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_nt_family_io_observer<family, ch_type> niob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::nt::details::nt_read_some_bytes_impl<family>(niob.handle, first, count);
+	return static_cast<::std::size_t>(::fast_io::win32::nt::details::nt_read_some_bytes_impl<family>(niob.handle, first, count) - first);
 }
 
 template <nt_family family, ::std::integral ch_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_nt_family_io_observer<family, ch_type> niob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_nt_family_io_observer<family, ch_type> niob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::nt::details::nt_write_some_bytes_impl<family>(niob.handle, first, count);
+	return static_cast<::std::size_t>(::fast_io::win32::nt::details::nt_write_some_bytes_impl<family>(niob.handle, first, count) - first);
 }
 
 template <nt_family family, ::std::integral ch_type>
-inline ::std::byte *pread_some_bytes_underflow_define(basic_nt_family_io_observer<family, ch_type> niob,
-													  ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline ::std::size_t pread_some_bytes_underflow_define(basic_nt_family_io_observer<family, ch_type> niob,
+													   ::std::byte *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::nt::details::nt_pread_some_bytes_impl<family>(niob.handle, first, count, off);
+	return static_cast<::std::size_t>(::fast_io::win32::nt::details::nt_pread_some_bytes_impl<family>(niob.handle, first, count, off) - first);
 }
 
 template <nt_family family, ::std::integral ch_type>
-inline ::std::byte const *pwrite_some_bytes_overflow_define(basic_nt_family_io_observer<family, ch_type> niob,
-															::std::byte const *first, ::std::size_t count,
-															::fast_io::intfpos_t off)
+inline ::std::size_t pwrite_some_bytes_overflow_define(basic_nt_family_io_observer<family, ch_type> niob,
+													   ::std::byte const *first, ::std::size_t count,
+													   ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::win32::nt::details::nt_pwrite_some_bytes_impl<family>(niob.handle, first, count, off);
+	return static_cast<::std::size_t>(::fast_io::win32::nt::details::nt_pwrite_some_bytes_impl<family>(niob.handle, first, count, off) - first);
 }
 
 

@@ -407,11 +407,11 @@ inline void tls_client_handshake(basic_schannel_tls_client<socket_observer_type>
 
 		auto const e{details::tls_read_some(
 			client->sock_, inbuf + in_size, sizeof(inbuf) - in_size)};
-		if (e == inbuf + in_size)
+		if (e == 0)
 		{
 			::fast_io::throw_posix_error(EPIPE);
 		}
-		in_size += static_cast<::std::size_t>(e - inbuf);
+		in_size += e;
 	}
 
 	/* ciphertext that arrived with the final handshake flight belongs
@@ -431,8 +431,7 @@ inline ::std::size_t tls_client_read_some(basic_schannel_tls_client<socket_obser
 {
 	if (!client->established_)
 	{
-		return static_cast<::std::size_t>(
-			details::tls_read_some(client->sock_, buf, buf_size) - buf);
+		return details::tls_read_some(client->sock_, buf, buf_size);
 	}
 	for (;;)
 	{
@@ -522,11 +521,11 @@ inline ::std::size_t tls_client_read_some(basic_schannel_tls_client<socket_obser
 		auto const e{details::tls_read_some(
 			client->sock_, client->ct_pending_ + client->ct_pending_size_,
 			sizeof(client->ct_pending_) - client->ct_pending_size_)};
-		if (e == client->ct_pending_ + client->ct_pending_size_)
+		if (e == 0)
 		{
 			return 0;
 		}
-		client->ct_pending_size_ = static_cast<::std::size_t>(e - client->ct_pending_);
+		client->ct_pending_size_ += e;
 	}
 }
 
@@ -536,8 +535,7 @@ inline ::std::size_t tls_client_write_some(basic_schannel_tls_client<socket_obse
 {
 	if (!client->established_)
 	{
-		return static_cast<::std::size_t>(
-			details::tls_write_some(client->sock_, buf, buf_size) - buf);
+		return details::tls_write_some(client->sock_, buf, buf_size);
 	}
 	::std::size_t const limit{client->stream_sizes_.maximum_message};
 	::std::size_t const n{buf_size < limit ? buf_size : limit};
@@ -649,17 +647,17 @@ io_bytes_stream_ref_define(basic_schannel_tls_io_observer<ch_type, socket_observ
 }
 
 template <::std::integral ch_type, typename socket_observer_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_schannel_tls_io_observer<ch_type, socket_observer_type> tob,
-													 ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t read_some_bytes_underflow_define(basic_schannel_tls_io_observer<ch_type, socket_observer_type> tob,
+													  ::std::byte *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + details::tls_client_read_some(tob.handle, first, count);
+	return details::tls_client_read_some(tob.handle, first, count);
 }
 
 template <::std::integral ch_type, typename socket_observer_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_schannel_tls_io_observer<ch_type, socket_observer_type> tob,
-														   ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
+inline ::std::size_t write_some_bytes_overflow_define(basic_schannel_tls_io_observer<ch_type, socket_observer_type> tob,
+													  ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + details::tls_client_write_some(tob.handle, first, count);
+	return details::tls_client_write_some(tob.handle, first, count);
 }
 
 template <::std::integral ch_type, typename socket_observer_type>

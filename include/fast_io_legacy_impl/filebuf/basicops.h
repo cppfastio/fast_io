@@ -127,19 +127,19 @@ inline ::fast_io::intfpos_t output_stream_seek_define(::fast_io::basic_general_s
 }
 
 template <typename T>
-inline typename T::char_type const *write_some_overflow_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
-															   typename T::char_type const *first, ::std::size_t count)
+inline ::std::size_t write_some_overflow_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
+												typename T::char_type const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::streambuf_write_report_eh_impl(fb.fb, first, count);
+	return static_cast<::std::size_t>(::fast_io::details::streambuf_write_report_eh_impl(fb.fb, first, count) - first);
 }
 
 template <typename T>
-inline typename T::char_type *read_some_underflow_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
-														 typename T::char_type *first, ::std::size_t count)
+inline ::std::size_t read_some_underflow_define(::fast_io::basic_general_streambuf_io_observer<T> fb,
+												typename T::char_type *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return ::fast_io::details::streambuf_read_report_eh_impl(fb.fb, first, count);
+	return static_cast<::std::size_t>(::fast_io::details::streambuf_read_report_eh_impl(fb.fb, first, count) - first);
 }
 
 template <typename T>

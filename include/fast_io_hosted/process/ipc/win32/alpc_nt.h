@@ -945,8 +945,8 @@ public:
 };
 
 template <nt_family family, ::std::integral ch_type>
-inline ::std::byte *read_some_bytes_underflow_define(basic_nt_family_alpc_ipc_universal_observer<family, ch_type> wiob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_nt_family_alpc_ipc_universal_observer<family, ch_type> wiob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!wiob) [[unlikely]]
@@ -958,7 +958,7 @@ inline ::std::byte *read_some_bytes_underflow_define(basic_nt_family_alpc_ipc_un
 	{
 	case win32::nt::details::nt_alpc_status::none:
 	{
-		return ::fast_io::win32::nt::details::nt_alpc_read_or_pread_some_bytes_common_impl<family>(wiob.handle->port_handle, first, count, wiob.handle->message_attribute);
+		return static_cast<::std::size_t>(::fast_io::win32::nt::details::nt_alpc_read_or_pread_some_bytes_common_impl<family>(wiob.handle->port_handle, first, count, wiob.handle->message_attribute) - first);
 	}
 	case win32::nt::details::nt_alpc_status::after_connect:
 	{
@@ -979,7 +979,7 @@ inline ::std::byte *read_some_bytes_underflow_define(basic_nt_family_alpc_ipc_un
 				auto const bv_begin{wiob.handle->byte_vector.begin()};
 				::fast_io::freestanding::my_memcpy(first, bv_begin, bv_size);
 				wiob.handle->byte_vector.clear();
-				return first + bv_size;
+				return bv_size;
 			}
 			else
 			{
@@ -987,12 +987,12 @@ inline ::std::byte *read_some_bytes_underflow_define(basic_nt_family_alpc_ipc_un
 				::fast_io::freestanding::my_memcpy(first, bv_begin, read_size);
 				wiob.handle->byte_vector.erase(bv_begin, bv_begin + read_size);
 
-				return first + count;
+				return count;
 			}
 		}
 		else
 		{
-			return nullptr;
+			return 0;
 		}
 	}
 	default:
@@ -1003,8 +1003,8 @@ inline ::std::byte *read_some_bytes_underflow_define(basic_nt_family_alpc_ipc_un
 }
 
 template <nt_family family, ::std::integral ch_type>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_nt_family_alpc_ipc_universal_observer<family, ch_type> wiob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_nt_family_alpc_ipc_universal_observer<family, ch_type> wiob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (!wiob) [[unlikely]]
@@ -1016,7 +1016,7 @@ inline ::std::byte const *write_some_bytes_overflow_define(basic_nt_family_alpc_
 	{
 	case win32::nt::details::nt_alpc_status::none:
 	{
-		return ::fast_io::win32::nt::details::nt_alpc_write_or_pwrite_some_bytes_common_impl<family>(wiob.handle->port_handle, first, count, wiob.handle->message_attribute);
+		return static_cast<::std::size_t>(::fast_io::win32::nt::details::nt_alpc_write_or_pwrite_some_bytes_common_impl<family>(wiob.handle->port_handle, first, count, wiob.handle->message_attribute) - first);
 	}
 	case win32::nt::details::nt_alpc_status::after_connect:
 	{
@@ -1032,11 +1032,11 @@ inline ::std::byte const *write_some_bytes_overflow_define(basic_nt_family_alpc_
 			wiob.handle->byte_vector.reserve(write_size);
 			::fast_io::freestanding::my_memcpy(wiob.handle->byte_vector.begin(), first, write_size);
 			wiob.handle->byte_vector.imp.curr_ptr += write_size;
-			return first + count;
+			return count;
 		}
 		else
 		{
-			return nullptr;
+			return 0;
 		}
 	}
 	default:

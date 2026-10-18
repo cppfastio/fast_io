@@ -19,7 +19,7 @@ inline constexpr bool ibuffer_underflow_rl_size_impl(::fast_io::details::io_buff
 			::fast_io::details::io_buffer::iobuffer_allocate<char_type, allocator_type>(allochdl, bfsz);
 	}
 	ibuffer.buffer_end =
-		::fast_io::operations::decay::read_some_decay(insm, ibuffer.buffer_begin, bfsz);
+		ibuffer.buffer_begin + ::fast_io::operations::decay::read_some_decay(insm, ibuffer.buffer_begin, bfsz);
 	ibuffer.buffer_curr = ibuffer.buffer_begin;
 	return ibuffer.buffer_begin != ibuffer.buffer_end;
 }
@@ -68,20 +68,20 @@ inline constexpr void ibuffer_minimum_size_underflow_all_prepare_impl(::fast_io:
 }
 
 template <typename allocator_type, ::std::integral char_type, typename instmtype>
-inline constexpr char_type *read_some_underflow_size_impl(::fast_io::details::io_buffer::iobuffer_alloc_handle_t<allocator_type, char_type> allochdl,
-														  instmtype instm,
-														  basic_io_buffer_pointers<char_type> &__restrict pointers,
-														  char_type *first, ::std::size_t count, ::std::size_t bfsz)
+inline constexpr ::std::size_t read_some_underflow_size_impl(::fast_io::details::io_buffer::iobuffer_alloc_handle_t<allocator_type, char_type> allochdl,
+															 instmtype instm,
+															 basic_io_buffer_pointers<char_type> &__restrict pointers,
+															 char_type *first, ::std::size_t count, ::std::size_t bfsz)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype> ||
 								   ::fast_io::typed_generic_allocator_adapter<allocator_type, char_type>::throws_on_allocation_failure)
 {
 	::std::size_t const buffered{static_cast<::std::size_t>(pointers.buffer_end - pointers.buffer_curr)};
 	::std::size_t const take{buffered < count ? buffered : count};
-	first = ::fast_io::details::non_overlapped_copy_n(pointers.buffer_curr, take, first);
+	::fast_io::details::non_overlapped_copy_n(pointers.buffer_curr, take, first);
 	pointers.buffer_curr += take;
 	if (take == count)
 	{
-		return first;
+		return take;
 	}
 	::std::size_t const remaining{count - take};
 	if (pointers.buffer_begin == nullptr)
@@ -98,17 +98,17 @@ inline constexpr char_type *read_some_underflow_size_impl(::fast_io::details::io
 		if (pos == 2)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + bfsz;
-			return first + remaining;
+			return take + remaining;
 		}
 		else if (pos == 1)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + (scpos / sizeof(char_type));
-			return first + remaining;
+			return take + remaining;
 		}
 		else
 		{
 			pointers.buffer_end = pointers.buffer_curr = pointers.buffer_begin;
-			return first + scpos / sizeof(char_type);
+			return take + scpos / sizeof(char_type);
 		}
 	}
 	else
@@ -119,26 +119,26 @@ inline constexpr char_type *read_some_underflow_size_impl(::fast_io::details::io
 		if (pos == 2)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + bfsz;
-			return first + remaining;
+			return take + remaining;
 		}
 		else if (pos == 1)
 		{
 			pointers.buffer_end = (pointers.buffer_curr = pointers.buffer_begin) + scpos;
-			return first + remaining;
+			return take + remaining;
 		}
 		else
 		{
 			pointers.buffer_end = pointers.buffer_curr = pointers.buffer_begin;
-			return first + scpos;
+			return take + scpos;
 		}
 	}
 }
 
 template <::std::size_t bfsz, typename allocatortype, ::std::integral char_type, typename instmtype>
-inline constexpr char_type *read_some_underflow_impl(::fast_io::details::io_buffer::iobuffer_alloc_handle_t<allocatortype, char_type> allochdl,
-													 instmtype instm,
-													 basic_io_buffer_pointers<char_type> &__restrict pointers,
-													 char_type *first, ::std::size_t count)
+inline constexpr ::std::size_t read_some_underflow_impl(::fast_io::details::io_buffer::iobuffer_alloc_handle_t<allocatortype, char_type> allochdl,
+														instmtype instm,
+														basic_io_buffer_pointers<char_type> &__restrict pointers,
+														char_type *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(!::fast_io::operations::decay::defines::input_stream_operations_nothrow<instmtype> ||
 								   ::fast_io::typed_generic_allocator_adapter<allocatortype, char_type>::throws_on_allocation_failure)
 {
@@ -149,8 +149,8 @@ inline constexpr char_type *read_some_underflow_impl(::fast_io::details::io_buff
 } // namespace details::io_buffer
 
 template <typename io_buffer_type, ::std::integral char_type>
-inline constexpr char_type *read_some_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
-													   char_type *first, ::std::size_t count)
+inline constexpr ::std::size_t read_some_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+														  char_type *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(
 		!::fast_io::operations::decay::defines::input_stream_operations_nothrow<
 			decltype(::fast_io::operations::input_stream_ref(::std::declval<typename io_buffer_type::handle_type &>()))> ||
@@ -172,8 +172,8 @@ inline constexpr char_type *read_some_underflow_define(basic_io_buffer_ref<io_bu
 template <typename io_buffer_type, ::std::integral char_type>
 	requires(::fast_io::operations::decay::defines::preadable<
 			 decltype(::fast_io::operations::input_stream_ref(::std::declval<typename io_buffer_type::handle_type &>()))>)
-inline constexpr char_type *pread_some_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
-														char_type *first, ::std::size_t count, ::fast_io::intfpos_t off)
+inline constexpr ::std::size_t pread_some_underflow_define(basic_io_buffer_ref<io_buffer_type> iobref,
+														   char_type *first, ::std::size_t count, ::fast_io::intfpos_t off)
 	FAST_IO_HERBCEPTIONS_THROWS_IF(
 		!::fast_io::operations::decay::defines::input_stream_operations_nothrow<
 			decltype(::fast_io::operations::input_stream_ref(::std::declval<typename io_buffer_type::handle_type &>()))> ||

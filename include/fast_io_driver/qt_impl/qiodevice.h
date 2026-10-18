@@ -99,19 +99,19 @@ inline ::std::uintmax_t qio_device_seek_impl(QIODevice *__restrict qdevice, ::st
 } // namespace details
 
 template <::std::integral ch_type, typename T>
-inline ::std::byte const *write_some_bytes_overflow_define(basic_general_qdevice_io_observer<ch_type, T> qiob,
-														   ::std::byte const *first, ::std::size_t count)
+inline ::std::size_t write_some_bytes_overflow_define(basic_general_qdevice_io_observer<ch_type, T> qiob,
+													  ::std::byte const *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + ::fast_io::details::qio_device_write_impl(qiob.qdevice, first, count);
+	return ::fast_io::details::qio_device_write_impl(qiob.qdevice, first, count);
 }
 
 template <::std::integral ch_type, typename T>
-inline ::std::byte *read_some_bytes_underflow_define(basic_general_qdevice_io_observer<ch_type, T> qiob,
-													 ::std::byte *first, ::std::size_t count)
+inline ::std::size_t read_some_bytes_underflow_define(basic_general_qdevice_io_observer<ch_type, T> qiob,
+													  ::std::byte *first, ::std::size_t count)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return first + ::fast_io::details::qio_device_read_impl(qiob.qdevice, first, count);
+	return ::fast_io::details::qio_device_read_impl(qiob.qdevice, first, count);
 }
 
 template <::std::integral ch_type, typename T>

@@ -46,10 +46,10 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 		{
 			auto [base, len] = pscatters[i];
 			auto ed{base + len};
-			char_type *it{::fast_io::details::pread_some_impl(insm, base, len, off)};
-			if (it != ed)
+			::std::size_t it{::fast_io::details::pread_some_impl(insm, base, len, off)};
+			if (it != len)
 			{
-				return {static_cast<::std::size_t>(i - pscatters), static_cast<::std::size_t>(it - base)};
+				return {static_cast<::std::size_t>(i - pscatters), it};
 			}
 			off = ::fast_io::fposoffadd_nonegative(off, len);
 		}
@@ -81,17 +81,15 @@ scatter_pread_some_cold_impl(instmtype insm, basic_io_scatter_t<typename instmty
 				auto edf{basef + len};
 				::std::byte *base{reinterpret_cast<::std::byte *>(const_cast<void *>(basef))};
 				::std::byte *ed{reinterpret_cast<::std::byte *>(edf)};
-				auto written{::fast_io::details::pread_some_bytes_impl(insm, base, static_cast<::std::size_t>(ed - base), off)};
-				::std::size_t diff{static_cast<::std::size_t>(written - base)};
+				::std::size_t diff{::fast_io::details::pread_some_bytes_impl(insm, base, static_cast<::std::size_t>(ed - base), off)};
 				off = ::fast_io::fposoffadd_nonegative(off, diff);
 				::std::size_t md{diff % sizeof(char_type)};
 				::std::size_t sz{diff / sizeof(char_type)};
 				if (md)
 				{
 					::std::size_t dfd{sizeof(char_type) - md};
-					auto writtened{written + dfd};
-					auto writtenit{::fast_io::details::pread_some_bytes_impl(insm, written, dfd, off)};
-					if (writtenit == writtened)
+					::std::size_t writtenit{::fast_io::details::pread_some_bytes_impl(insm, base + diff, dfd, off)};
+					if (writtenit == dfd)
 					{
 						++sz;
 					}
