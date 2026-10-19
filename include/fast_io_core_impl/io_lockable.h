@@ -234,7 +234,7 @@ public:
 	{
 		this->destroy();
 	}
-	inline constexpr void lock() noexcept(noexcept(pmutex->lock()))
+	inline constexpr void lock() FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(pmutex->lock())
 	{
 		pmutex->lock();
 	}
@@ -258,7 +258,7 @@ struct basic_mutex_ref
 	using mutex_type = Mutex;
 	using native_handle_type = mutex_type *;
 	mutex_type *pmutex{};
-	inline constexpr void lock() noexcept(noexcept(pmutex->lock()))
+	inline constexpr void lock() FAST_IO_HERBCEPTIONS_THROWS_IF_NOT_NOEXCEPT(pmutex->lock())
 	{
 		pmutex->lock();
 	}
