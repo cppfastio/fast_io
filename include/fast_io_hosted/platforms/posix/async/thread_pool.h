@@ -12,7 +12,10 @@
  *
  * Honest limitations of a readiness-less fallback:
  * - a blocking syscall (accept on a quiet listener, a read on an empty
- *   pipe) parks a worker thread for its duration;
+ *   pipe) parks a worker thread for its duration, so the pool grows on
+ *   demand (up to a cap) whenever every live worker is parked and work
+ *   is queued — otherwise N idle keep-alive connections would starve
+ *   the (N+1)-th, a state a browser reaches with a handful of tabs;
  * - posix_statx_timestamp_opt is a DURATION despite the name (same
  *   convention as the other backends); the pool can only report
  *   errc::timed_out for work a worker has not picked up yet — a running
@@ -23,6 +26,7 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <pthread.h>
 #include <time.h>
@@ -34,11 +38,14 @@ namespace fast_io
 namespace details
 {
 
+struct posix_thread_pool_state;
+
 /* intrusive queue node; run() executes the sync op on a worker and
  * records the result, dispatch() invokes the callback on the pump
  * thread and frees the cookie */
 struct posix_thread_pool_node
 {
+	posix_thread_pool_state *state{};
 	posix_thread_pool_node *next{};
 	void (*run)(posix_thread_pool_node *) noexcept {};
 	void (*dispatch)(posix_thread_pool_node *) noexcept {};
@@ -49,9 +56,17 @@ struct posix_thread_pool_state
 	pthread_mutex_t mutex{};
 	pthread_cond_t work_cond{};
 	pthread_cond_t done_cond{};
+	/* fixed-capacity worker slot array; created workers fill it in order */
+	pthread_t *worker_array{};
+	::std::size_t worker_capacity{};
 	posix_thread_pool_node *work_head{};
 	posix_thread_pool_node *work_tail{};
 	posix_thread_pool_node *done_head{};
+	::std::size_t live_workers{};
+	::std::size_t parked_workers{};
+	/* a grow is in flight with the mutex dropped; growers are serialized
+	   because only one pthread_t slot may be committed at a time */
+	bool creating_worker{};
 	bool stop{};
 };
 
@@ -89,10 +104,53 @@ inline void *posix_thread_pool_worker(void *arg) noexcept
 	}
 }
 
+/*
+ * Widen the pool by one worker; must be called WITHOUT the mutex held.
+ * pthread_create is deliberately outside the pool mutex: under
+ * wasi-threads it takes libc-internal locks (thread bookkeeping,
+ * allocation), and a worker calling it while holding the pool mutex
+ * deadlocks against the very threads that need that mutex to progress.
+ * A worker parked in wait_io() cannot pick up queued work until its fd
+ * turns ready (an idle keep-alive connection may never), so once every
+ * live worker is parked the queue only progresses on a fresh worker.
+ * creating_worker serializes growers; a concurrent grow request returns
+ * success and leans on the worker currently being created (the next
+ * park/submit re-evaluates). Returns 0 on success, otherwise the
+ * pthread_create error — which stays invisible on the submission path,
+ * where the queued op simply keeps waiting.
+ */
+inline int posix_thread_pool_grow(posix_thread_pool_state *st) noexcept
+{
+	::fast_io::noexcept_call(::pthread_mutex_lock, __builtin_addressof(st->mutex));
+	if (st->creating_worker || st->live_workers == st->worker_capacity)
+	{
+		::fast_io::noexcept_call(::pthread_mutex_unlock, __builtin_addressof(st->mutex));
+		return st->creating_worker ? 0 : EAGAIN;
+	}
+	st->creating_worker = true;
+	::fast_io::noexcept_call(::pthread_mutex_unlock, __builtin_addressof(st->mutex));
+
+	::pthread_t thread{};
+	int const ec{::fast_io::noexcept_call(::pthread_create, __builtin_addressof(thread), nullptr,
+										  &posix_thread_pool_worker, st)};
+
+	::fast_io::noexcept_call(::pthread_mutex_lock, __builtin_addressof(st->mutex));
+	st->creating_worker = false;
+	if (ec == 0)
+	{
+		st->worker_array[st->live_workers] = thread;
+		++st->live_workers;
+	}
+	::fast_io::noexcept_call(::pthread_cond_broadcast, __builtin_addressof(st->work_cond));
+	::fast_io::noexcept_call(::pthread_mutex_unlock, __builtin_addressof(st->mutex));
+	return ec;
+}
+
 inline void posix_thread_pool_submit(posix_thread_pool_state *st,
 									 posix_thread_pool_node *node) noexcept
 {
 	::fast_io::noexcept_call(::pthread_mutex_lock, __builtin_addressof(st->mutex));
+	node->state = st;
 	node->next = nullptr;
 	if (st->work_tail != nullptr)
 	{
@@ -104,7 +162,12 @@ inline void posix_thread_pool_submit(posix_thread_pool_state *st,
 	}
 	st->work_tail = node;
 	::fast_io::noexcept_call(::pthread_cond_signal, __builtin_addressof(st->work_cond));
+	bool const grow{st->parked_workers == st->live_workers};
 	::fast_io::noexcept_call(::pthread_mutex_unlock, __builtin_addressof(st->mutex));
+	if (grow)
+	{
+		(void)posix_thread_pool_grow(st);
+	}
 }
 
 /*
@@ -114,21 +177,38 @@ the error; the error path is for real failures. Any readiness bit
 (readable, hup, err, nval) wakes the poll -- the retried syscall
 itself decides what the actual outcome is.
 */
-inline void posix_thread_pool_wait_io(int fd, short events) FAST_IO_HERBCEPTIONS_THROWS
+inline void posix_thread_pool_wait_io(posix_thread_pool_state *st, int fd,
+									  short events) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::pollfd pfd{fd, events, 0};
+	::fast_io::noexcept_call(::pthread_mutex_lock, __builtin_addressof(st->mutex));
+	++st->parked_workers;
+	/* this park may be the one that leaves the queue without a pair of
+	   hands: the op that raced in while the worker was still running
+	   never saw parked == live at submission */
+	bool const grow{st->parked_workers == st->live_workers && st->work_head != nullptr};
+	::fast_io::noexcept_call(::pthread_mutex_unlock, __builtin_addressof(st->mutex));
+	if (grow)
+	{
+		(void)posix_thread_pool_grow(st);
+	}
+	int rc{};
 	for (;;)
 	{
-		int const rc{::fast_io::noexcept_call(::poll, __builtin_addressof(pfd), ::nfds_t{1}, -1)};
-		if (rc < 0)
+		rc = ::fast_io::noexcept_call(::poll, __builtin_addressof(pfd), ::nfds_t{1}, -1);
+		if (rc < 0 && errno == EINTR)
 		{
-			if (errno == EINTR)
-			{
-				continue;
-			}
-			::fast_io::throw_posix_error();
+			continue;
 		}
-		return;
+		break;
+	}
+	int const poll_errno{rc < 0 ? errno : 0};
+	::fast_io::noexcept_call(::pthread_mutex_lock, __builtin_addressof(st->mutex));
+	--st->parked_workers;
+	::fast_io::noexcept_call(::pthread_mutex_unlock, __builtin_addressof(st->mutex));
+	if (rc < 0)
+	{
+		::fast_io::throw_posix_error(poll_errno);
 	}
 }
 
@@ -293,7 +373,7 @@ inline void posix_thread_pool_rw_run(posix_thread_pool_node *p) noexcept
 					{
 						if (posix_thread_pool_would_block(e))
 						{
-							posix_thread_pool_wait_io(self->stm.fd, POLLOUT);
+							posix_thread_pool_wait_io(self->state, self->stm.fd, POLLOUT);
 							continue;
 						}
 					}
@@ -334,7 +414,7 @@ inline void posix_thread_pool_rw_run(posix_thread_pool_node *p) noexcept
 					{
 						if (posix_thread_pool_would_block(e))
 						{
-							posix_thread_pool_wait_io(self->stm.fd, POLLIN);
+							posix_thread_pool_wait_io(self->state, self->stm.fd, POLLIN);
 							continue;
 						}
 					}
@@ -404,6 +484,18 @@ inline void posix_thread_pool_accept_run(posix_thread_pool_node *p) noexcept
 				self->accepted_fd =
 					::fast_io::details::posix_accept_posix_socket_impl(self->listenstm.fd, nullptr,
 																	   nullptr);
+#if defined(F_GETFL) && defined(F_SETFL) && defined(O_NONBLOCK)
+				/* the pool only learns a worker is blocked when the op
+				   parks on poll(): an accepted socket does not inherit the
+				   listener's non-blocking mode, so a read on an idle
+				   keep-alive connection would park the worker inside the
+				   syscall, where wait_io() cannot account for it and the
+				   pool then starves instead of growing */
+				auto const acceptedFlags{
+					::fast_io::details::sys_fcntl(self->accepted_fd, F_GETFL)};
+				::fast_io::details::sys_fcntl(self->accepted_fd, F_SETFL,
+											  acceptedFlags | O_NONBLOCK);
+#endif
 				break;
 			}
 			catch throws(::std::error e)
@@ -414,7 +506,7 @@ inline void posix_thread_pool_accept_run(posix_thread_pool_node *p) noexcept
 				}
 				/* a no_block listener answers EAGAIN -- park this
 				   worker on the fd rather than resubmitting */
-				posix_thread_pool_wait_io(self->listenstm.fd, POLLIN);
+				posix_thread_pool_wait_io(self->state, self->listenstm.fd, POLLIN);
 			}
 		}
 	}
@@ -562,7 +654,7 @@ inline void posix_thread_pool_connect_run(posix_thread_pool_node *p) noexcept
 			{
 				throw throws e;
 			}
-			posix_thread_pool_wait_io(self->fd, POLLOUT);
+			posix_thread_pool_wait_io(self->state, self->fd, POLLOUT);
 			int soerr{};
 			::fast_io::posix_socklen_t n{static_cast<::fast_io::posix_socklen_t>(sizeof(soerr))};
 			if (::fast_io::noexcept_call(::getsockopt, self->fd, SOL_SOCKET, SO_ERROR,
@@ -634,16 +726,16 @@ public:
 /*
  * Owning pool. Workers reference the embedded state, so the object is
  * immovable — construct it where it lives. `workers == 0` picks one
- * worker per online CPU. Shutdown drains queued work: workers finish
- * every queued op before exiting, but their completions still need a
- * pump to be dispatched.
+ * worker per online CPU (at least four) and lets the pool grow on
+ * demand up to a fixed ceiling; an explicit count is a fixed pool.
+ * Shutdown drains queued work: workers finish every queued op before
+ * exiting, but their completions still need a pump to be dispatched.
  */
 class posix_thread_pool : public posix_thread_pool_observer
 {
 public:
 	details::posix_thread_pool_state storage{};
 	pthread_t *workers{};
-	::std::size_t worker_count{};
 
 	inline explicit posix_thread_pool(::std::size_t worker_cap) FAST_IO_HERBCEPTIONS_THROWS
 	{
@@ -669,30 +761,37 @@ public:
 		this->state = __builtin_addressof(this->storage);
 		try
 		{
+			::std::size_t initial_workers{worker_cap};
+			::std::size_t capacity{worker_cap};
 			if (worker_cap == 0)
 			{
 				auto const online{::fast_io::noexcept_call(::sysconf, _SC_NPROCESSORS_ONLN)};
-				worker_cap = online > 0 ? static_cast<::std::size_t>(online) : 4zu;
+				initial_workers = online > 0 ? static_cast<::std::size_t>(online) : 4zu;
 				/* an indefinitely-parked op (the accept loop's poll) holds one
 				 * worker for its whole lifetime, so a single-worker pool can
 				 * never run the ops that do the actual work */
-				if (worker_cap < 4zu)
+				if (initial_workers < 4zu)
 				{
-					worker_cap = 4zu;
+					initial_workers = 4zu;
 				}
+				/* one parked worker per idle keep-alive connection is the
+				 * baseline; a browser holds six per host and range-seeking
+				 * players open more, so leave generous on-demand headroom */
+				constexpr ::std::size_t grow_ceiling{64zu};
+				capacity = initial_workers < grow_ceiling ? grow_ceiling : initial_workers;
 			}
-			this->workers = ::fast_io::native_typed_global_allocator<pthread_t>::allocate(worker_cap);
-			for (; this->worker_count < worker_cap; ++this->worker_count)
+			this->workers = ::fast_io::native_typed_global_allocator<pthread_t>::allocate(capacity);
+			this->storage.worker_array = this->workers;
+			this->storage.worker_capacity = capacity;
+			int create_ec{};
+			while (this->storage.live_workers < initial_workers &&
+				   (create_ec = ::fast_io::details::posix_thread_pool_grow(
+						__builtin_addressof(this->storage))) == 0)
 			{
-				int const create_ec{::fast_io::noexcept_call(::pthread_create,
-															 this->workers + this->worker_count,
-															 nullptr,
-															 &::fast_io::details::posix_thread_pool_worker,
-															 __builtin_addressof(this->storage))};
-				if (create_ec != 0)
-				{
-					::fast_io::throw_posix_error(create_ec);
-				}
+			}
+			if (create_ec != 0 && this->storage.live_workers < initial_workers)
+			{
+				::fast_io::throw_posix_error(create_ec);
 			}
 		}
 		catch throws(::std::error e)
@@ -723,17 +822,29 @@ public:
 			return;
 		}
 		::fast_io::noexcept_call(::pthread_mutex_lock, __builtin_addressof(this->storage.mutex));
+		/* a grow that dropped the mutex to create a thread must finish
+		   before the worker count is captured, or the join loop would
+		   miss (and destroy the pool under) a freshly created worker */
+		while (this->storage.creating_worker)
+		{
+			::fast_io::noexcept_call(::pthread_cond_wait, __builtin_addressof(this->storage.work_cond),
+									 __builtin_addressof(this->storage.mutex));
+		}
 		this->storage.stop = true;
 		::fast_io::noexcept_call(::pthread_cond_broadcast, __builtin_addressof(this->storage.work_cond));
+		auto const count{this->storage.live_workers};
 		::fast_io::noexcept_call(::pthread_mutex_unlock, __builtin_addressof(this->storage.mutex));
-		for (::std::size_t i{}; i != this->worker_count; ++i)
+		for (::std::size_t i{}; i != count; ++i)
 		{
 			::fast_io::noexcept_call(::pthread_join, this->workers[i], nullptr);
 		}
-		::fast_io::native_typed_global_allocator<pthread_t>::deallocate_n(this->workers,
-																		  this->worker_count);
+		::fast_io::native_typed_global_allocator<pthread_t>::deallocate_n(
+			this->workers, this->storage.worker_capacity);
 		this->workers = nullptr;
-		this->worker_count = 0;
+		this->storage.worker_array = nullptr;
+		this->storage.worker_capacity = 0;
+		this->storage.live_workers = 0;
+		this->storage.parked_workers = 0;
 		this->state = nullptr;
 	}
 
