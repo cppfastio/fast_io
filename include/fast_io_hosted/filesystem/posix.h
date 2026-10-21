@@ -1,5 +1,8 @@
 ﻿#pragma once
 #include <dirent.h>
+#if defined(__wasi__)
+#include <fcntl.h>
+#endif
 
 namespace fast_io
 {
@@ -98,6 +101,25 @@ inline DIR *sys_dup_dir(DIR *dirp)
 		throw_posix_error();
 	}
 	return newdir;
+}
+
+inline int sys_dup_dir_fd(int fd)
+	FAST_IO_HERBCEPTIONS_THROWS
+{
+#if defined(__wasi__)
+	/*
+	WASI preview1 has no dup(). Reopen the directory relative to itself instead: the caller owns
+	the new descriptor and fdopendir()/closedir() close it, while the original stays usable.
+	*/
+	int newfd{::openat(fd, ".", O_RDONLY | O_DIRECTORY)};
+	if (newfd == -1)
+	{
+		throw_posix_error();
+	}
+	return newfd;
+#else
+	return sys_dup(fd);
+#endif
 }
 
 } // namespace details
@@ -394,7 +416,7 @@ inline constexpr bool operator!=(posix_directory_iterator const &b, ::std::defau
 inline posix_directory_generator current(posix_at_entry pate)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return {.dir_fl = posix_directory_file(posix_file(details::sys_dup(pate.fd)))};
+	return {.dir_fl = posix_directory_file(posix_file(details::sys_dup_dir_fd(pate.fd)))};
 }
 
 template <typename StackType>
@@ -575,7 +597,7 @@ inline bool operator!=(basic_posix_recursive_directory_iterator<StackType> const
 inline posix_recursive_directory_generator recursive(posix_at_entry pate)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return {.dir_fl = posix_directory_file(posix_file(details::sys_dup(pate.fd)))};
+	return {.dir_fl = posix_directory_file(posix_file(details::sys_dup_dir_fd(pate.fd)))};
 }
 
 inline auto native_extension(posix_directory_entry ent) noexcept
