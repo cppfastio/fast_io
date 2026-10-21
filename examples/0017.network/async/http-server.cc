@@ -1282,7 +1282,6 @@ int main(int argc, char const **argv)
 				perr("  ", p, "\n");
 			}
 		}
-#if !defined(__wasi__)
 		if (fi::native_ifaddrs_file ifas{fi::ifaddrs_enumerate}; ifas)
 		{
 			/* two passes: loopback first, like node's listing */
@@ -1306,7 +1305,6 @@ int main(int argc, char const **argv)
 				}
 			}
 		}
-#endif
 		perr("Hit CTRL-C to stop the server\n");
 
 		/* supervisor: if the accept coroutine dies to a mid-run error
