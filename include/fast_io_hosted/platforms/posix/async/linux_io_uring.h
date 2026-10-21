@@ -79,8 +79,22 @@ public:
 		liburing::details::io_uring_queue_init_impl(this->storage, entries, flags);
 	}
 	inline explicit linux_io_uring(::fast_io::io_async_t) FAST_IO_HERBCEPTIONS_THROWS
-		: linux_io_uring(::fast_io::native_interface, 64, 0)
+		: linux_io_uring()
 	{
+		/* SQPOLL by default: a kernel thread drains the SQ, so userspace
+		 * enters only to sleep for CQEs. Kernels before 5.11 need
+		 * CAP_SYS_ADMIN and seccomp filters may block it; fall back to a
+		 * plain ring when setup refuses. */
+		try
+		{
+			liburing::details::io_uring_queue_init_impl(this->storage, 64,
+														::fast_io::liburing::io_uring_setup_sqpoll);
+		}
+		catch throws(::std::error)
+		{
+			this->storage = {};
+			liburing::details::io_uring_queue_init_impl(this->storage, 64, 0);
+		}
 	}
 	linux_io_uring(linux_io_uring const &) = delete;
 	linux_io_uring &operator=(linux_io_uring const &) = delete;
@@ -886,7 +900,7 @@ inline void io_uring_pipe_transmit_deliver(void *self) noexcept
 		}
 	}
 	io_uring_pipe_transmit_deliver_error<sched_type, outstmtype, instmtype, alloc_type, T>(cookie,
-																							err);
+																						   err);
 }
 
 template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
