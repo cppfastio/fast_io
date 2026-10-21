@@ -769,19 +769,59 @@ inline void io_uring_pipe_transmit_deliver_error(
 	callback(err, moved);
 }
 
+/*
+ * Input that cannot be spliced at all (not a regular file): drop the pipe
+ * and hand the remaining bound to the bounce-buffer engine, exactly like
+ * the plain splice path does. The callback moves into the new state, so
+ * this is the last thing the pipe path does with the transfer.
+ */
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+inline void io_uring_pipe_transmit_bounce(
+	io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T> *cookie) noexcept
+{
+	using state_type = ::fast_io::details::async_transmit_bytes_state<
+		false, sched_type, outstmtype, instmtype, alloc_type, T>;
+	sched_type const sched{cookie->sched};
+	outstmtype const outstm{cookie->outstm};
+	instmtype const instm{cookie->instm};
+	::fast_io::intfpos_opt const off_in{cookie->off_in};
+	::std::size_t const remaining{cookie->want};
+	::fast_io::posix_statx_timestamp_opt const timeout{cookie->timeout};
+	T callback{::std::move(cookie->callback)};
+	io_uring_pipe_transmit_close<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
+	::fast_io::details::async_delete_state(cookie);
+	try
+	{
+		::fast_io::details::async_transmit_bytes_read_round(
+			::fast_io::details::async_new_state<state_type>(
+				sched, outstm, ::fast_io::intfpos_opt{}, instm, off_in, remaining, timeout,
+				::std::move(callback), 0zu, 0zu, 0zu));
+	}
+	catch throws(::std::error e)
+	{
+		callback(e.release(), 0zu);
+	}
+}
+
+/*
+ * One completion of the fill/drain/poll state machine. Non-terminal phases
+ * resubmit and return; every terminal outcome falls through to the single
+ * deliver_error call at the bottom, so the callback has one invocation site
+ * per function.
+ */
 template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
 		  typename T>
 inline void io_uring_pipe_transmit_deliver(void *self) noexcept
 {
 	using cookie_type = io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T>;
 	auto *cookie{static_cast<cookie_type *>(self)};
+	::std::cxx_std_error err{};
 	if (cookie->tlink.fired)
 	{
-		io_uring_pipe_transmit_deliver_error<sched_type, outstmtype, instmtype, alloc_type, T>(
-			cookie, ::fast_io::details::async_make_error(::std::errc::timed_out));
-		return;
+		err = ::fast_io::details::async_make_error(::std::errc::timed_out);
 	}
-	if (cookie->errn != 0)
+	else if (cookie->errn != 0)
 	{
 		if (cookie->phase == io_uring_pipe_phase::drain && cookie->errn == EAGAIN)
 		{
@@ -794,82 +834,59 @@ inline void io_uring_pipe_transmit_deliver(void *self) noexcept
 		if (cookie->phase == io_uring_pipe_phase::fill && cookie->moved == 0 &&
 			cookie->in_pipe == 0 && io_uring_splice_unsupported(cookie->errn))
 		{
-			/* the input cannot be spliced at all (not a regular file): drop
-			 * the pipe and hand the whole bound to the bounce-buffer engine,
-			 * exactly like the plain splice path does */
-			using state_type = ::fast_io::details::async_transmit_bytes_state<
-				false, sched_type, outstmtype, instmtype, alloc_type, T>;
-			sched_type const sched{cookie->sched};
-			outstmtype const outstm{cookie->outstm};
-			instmtype const instm{cookie->instm};
-			::fast_io::intfpos_opt const off_in{cookie->off_in};
-			::std::size_t const remaining{cookie->want};
-			::fast_io::posix_statx_timestamp_opt const timeout{cookie->timeout};
-			T callback{::std::move(cookie->callback)};
-			io_uring_pipe_transmit_close<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
-			::fast_io::details::async_delete_state(cookie);
-			try
-			{
-				::fast_io::details::async_transmit_bytes_read_round(
-					::fast_io::details::async_new_state<state_type>(
-						sched, outstm, ::fast_io::intfpos_opt{}, instm, off_in, remaining, timeout,
-						::std::move(callback), 0zu, 0zu, 0zu));
-			}
-			catch throws(::std::error e)
-			{
-				callback(e.release(), 0zu);
-			}
+			io_uring_pipe_transmit_bounce<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
 			return;
 		}
-		io_uring_pipe_transmit_deliver_error<sched_type, outstmtype, instmtype, alloc_type, T>(
-			cookie, io_uring_cqe_error(false, cookie->errn));
-		return;
+		err = io_uring_cqe_error(false, cookie->errn);
 	}
-	::std::size_t const transferred{cookie->transferred};
-	switch (cookie->phase)
+	else
 	{
-	case io_uring_pipe_phase::poll:
-		cookie->phase = io_uring_pipe_phase::drain;
-		io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
-		return;
-	case io_uring_pipe_phase::drain:
-		cookie->in_pipe -= transferred;
-		cookie->moved += transferred;
-		if (cookie->in_pipe != 0)
+		switch (cookie->phase)
 		{
+		case io_uring_pipe_phase::poll:
 			cookie->phase = io_uring_pipe_phase::drain;
 			io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
 			return;
+		case io_uring_pipe_phase::drain:
+			cookie->in_pipe -= cookie->transferred;
+			cookie->moved += cookie->transferred;
+			if (cookie->in_pipe != 0)
+			{
+				io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(
+					cookie);
+				return;
+			}
+			if (cookie->want != 0)
+			{
+				cookie->phase = io_uring_pipe_phase::fill;
+				io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(
+					cookie);
+				return;
+			}
+			break;
+		case io_uring_pipe_phase::fill:
+		default:
+			/* a zero-byte fill is EOF short of the bound: report what was
+			 * delivered, like the bounce engine does */
+			if (cookie->transferred != 0)
+			{
+				cookie->in_pipe = cookie->transferred;
+				cookie->want -= cookie->transferred;
+				if (cookie->off_in.has_opt)
+				{
+					cookie->off_in.opt = ::fast_io::fposoffadd_nonegative(
+						cookie->off_in.opt, static_cast<::std::ptrdiff_t>(cookie->transferred));
+				}
+				cookie->phase = io_uring_pipe_phase::drain;
+				io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(
+					cookie);
+				return;
+			}
+			break;
 		}
-		if (cookie->want == 0)
-		{
-			io_uring_pipe_transmit_deliver_error<sched_type, outstmtype, instmtype, alloc_type, T>(
-				cookie, {});
-			return;
-		}
-		cookie->phase = io_uring_pipe_phase::fill;
-		io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
-		return;
-	case io_uring_pipe_phase::fill:
-	default:
-		if (transferred == 0)
-		{
-			/* EOF short of the bound: report what was delivered */
-			io_uring_pipe_transmit_deliver_error<sched_type, outstmtype, instmtype, alloc_type, T>(
-				cookie, {});
-			return;
-		}
-		cookie->in_pipe = transferred;
-		cookie->want -= transferred;
-		if (cookie->off_in.has_opt)
-		{
-			cookie->off_in.opt = ::fast_io::fposoffadd_nonegative(
-				cookie->off_in.opt, static_cast<::std::ptrdiff_t>(transferred));
-		}
-		cookie->phase = io_uring_pipe_phase::drain;
-		io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
-		return;
 	}
+	io_uring_pipe_transmit_deliver_error<sched_type, outstmtype, instmtype, alloc_type, T>(cookie,
+																							err);
 }
 
 template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
