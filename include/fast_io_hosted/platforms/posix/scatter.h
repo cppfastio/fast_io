@@ -123,9 +123,9 @@ inline ::fast_io::io_scatter_status_t posix_socket_scatter_write_bytes_impl(int 
 #else
 	auto ret{::fast_io::noexcept_call(::sendmsg, fd, ::std::addressof(msg),
 									  static_cast<int>(this_n))};
-	if (ret = -1) [[unlikely]]
+	if (ret == -1) [[unlikely]]
 	{
-		::fast_io::linux_system_call_throw_error(ret);
+		::fast_io::throw_posix_error();
 	}
 #endif
 	retsz = static_cast<::std::size_t>(ret);

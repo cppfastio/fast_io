@@ -82,13 +82,13 @@ inline ::std::byte const *posix_dos_write_bytes_impl(int fd, ::std::byte const *
 inline ::std::byte const *posix_socket_write_bytes_impl(int fd, ::std::byte const *first, ::std::size_t count) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(__linux__) && defined(__NR_sendto)
-	auto ret{system_call<__NR_sendto, ::std::ptrdiff_t>(fd, first, count, MSG_NOSIGNAL, nullptr, nullptr)};
+	auto ret{system_call<__NR_sendto, ::std::ptrdiff_t>(fd, first, count, MSG_NOSIGNAL, nullptr, 0u)};
 	if (::fast_io::linux_system_call_fails(ret))
 	{
 		::fast_io::linux_system_call_throw_error(ret);
 	}
 #else
-	auto ret{::fast_io::noexcept_call(::sendto, fd, first, count, MSG_NOSIGNAL, nullptr, nullptr)};
+	auto ret{::fast_io::noexcept_call(::sendto, fd, first, count, MSG_NOSIGNAL, nullptr, 0u)};
 	if (ret == -1)
 	{
 		::fast_io::throw_posix_error();
