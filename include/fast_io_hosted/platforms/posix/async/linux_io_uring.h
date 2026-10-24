@@ -1,4 +1,5 @@
 #pragma once
+#include <poll.h>
 /*
  * io_uring backend for fast_io's generic async layer, implemented on top
  * of fast_io's own system_call<> wrappers. The liburing-equivalent ring
@@ -78,8 +79,22 @@ public:
 		liburing::details::io_uring_queue_init_impl(this->storage, entries, flags);
 	}
 	inline explicit linux_io_uring(::fast_io::io_async_t) FAST_IO_HERBCEPTIONS_THROWS
-		: linux_io_uring(::fast_io::native_interface, 64, 0)
+		: linux_io_uring()
 	{
+		/* SQPOLL by default: a kernel thread drains the SQ, so userspace
+		 * enters only to sleep for CQEs. Kernels before 5.11 need
+		 * CAP_SYS_ADMIN and seccomp filters may block it; fall back to a
+		 * plain ring when setup refuses. */
+		try
+		{
+			liburing::details::io_uring_queue_init_impl(this->storage, 64,
+														::fast_io::liburing::io_uring_setup_sqpoll);
+		}
+		catch throws(::std::error)
+		{
+			this->storage = {};
+			liburing::details::io_uring_queue_init_impl(this->storage, 64, 0);
+		}
 	}
 	linux_io_uring(linux_io_uring const &) = delete;
 	linux_io_uring &operator=(linux_io_uring const &) = delete;
@@ -675,6 +690,332 @@ inline void io_uring_transmit_invoke(void *self, ::std::size_t transferred, int 
 	}
 }
 
+/* ======================= pipe-splice transmit ======================= */
+
+/*
+ * SPLICE cannot move a regular file straight into a socket: one end must be
+ * a pipe, so file->socket degrades to the bounce-buffer engine. This path
+ * drives the two splices the kernel does support through a private pipe
+ * instead (file -> pipe -> socket). Transfers smaller than the threshold
+ * stay on the bounce engine; there the pipe setup costs more than the copy
+ * it saves.
+ *
+ * The ops are driven one at a time rather than as one linked chain: splice
+ * is not poll-armed by the kernel, so a full socket send buffer completes
+ * pipe->socket with EAGAIN immediately, and IO_LINK would cancel every
+ * queued chunk behind it (stranding data in the pipe). The drain op is
+ * retried behind IORING_OP_POLL_ADD instead.
+ */
+inline constexpr ::std::size_t io_uring_pipe_splice_threshold{65536};
+/* in-flight bytes per transfer, and the pipe's target capacity */
+inline constexpr ::std::size_t io_uring_pipe_splice_size{1048576};
+
+enum class io_uring_pipe_phase : unsigned char
+{
+	fill,
+	drain,
+	poll
+};
+
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+struct io_uring_pipe_transmit_cookie
+{
+	using allocator_type = alloc_type;
+	static inline constexpr bool alloc_with_status{alloc_type::has_status};
+	io_uring_invoke_func invoke;
+	io_uring_timeout_link_block tlink;
+	::fast_io::liburing::io_uring_timespec ts{};
+	::std::size_t transferred{};
+	int errn{};
+	/* bytes delivered to the socket; what the callback reports */
+	::std::size_t moved{};
+	/* bytes filled into the pipe but not yet drained */
+	::std::size_t in_pipe{};
+	/* bytes of the caller's bound not yet taken from the input */
+	::std::size_t want{};
+	int pipe_read{-1};
+	int pipe_write{-1};
+	io_uring_pipe_phase phase{io_uring_pipe_phase::fill};
+	sched_type sched;
+	outstmtype outstm;
+	instmtype instm;
+	::fast_io::intfpos_opt off_in;
+	::fast_io::posix_statx_timestamp_opt timeout;
+	T callback;
+	FAST_IO_NO_UNIQUE_ADDRESS ::std::conditional_t<alloc_with_status, typename alloc_type::handle_type,
+												   ::fast_io::details::empty>
+		alloc_handle{};
+};
+
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+inline void io_uring_pipe_transmit_submit(
+	io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T> *cookie) noexcept;
+
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+inline void io_uring_pipe_transmit_close(
+	io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T> *cookie) noexcept
+{
+	if (cookie->pipe_read != -1)
+	{
+		::fast_io::details::sys_close(cookie->pipe_read);
+		cookie->pipe_read = -1;
+	}
+	if (cookie->pipe_write != -1)
+	{
+		::fast_io::details::sys_close(cookie->pipe_write);
+		cookie->pipe_write = -1;
+	}
+}
+
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+inline void io_uring_pipe_transmit_deliver_error(
+	io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T> *cookie,
+	::std::cxx_std_error err) noexcept
+{
+	auto callback{::std::move(cookie->callback)};
+	::std::size_t const moved{cookie->moved};
+	io_uring_pipe_transmit_close<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
+	::fast_io::details::async_delete_state(cookie);
+	callback(err, moved);
+}
+
+/*
+ * Input that cannot be spliced at all (not a regular file): drop the pipe
+ * and hand the remaining bound to the bounce-buffer engine, exactly like
+ * the plain splice path does. The callback moves into the new state, so
+ * this is the last thing the pipe path does with the transfer.
+ */
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+inline void io_uring_pipe_transmit_bounce(
+	io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T> *cookie) noexcept
+{
+	using state_type = ::fast_io::details::async_transmit_bytes_state<
+		false, sched_type, outstmtype, instmtype, alloc_type, T>;
+	sched_type const sched{cookie->sched};
+	outstmtype const outstm{cookie->outstm};
+	instmtype const instm{cookie->instm};
+	::fast_io::intfpos_opt const off_in{cookie->off_in};
+	::std::size_t const remaining{cookie->want};
+	::fast_io::posix_statx_timestamp_opt const timeout{cookie->timeout};
+	T callback{::std::move(cookie->callback)};
+	io_uring_pipe_transmit_close<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
+	::fast_io::details::async_delete_state(cookie);
+	try
+	{
+		::fast_io::details::async_transmit_bytes_read_round(
+			::fast_io::details::async_new_state<state_type>(
+				sched, outstm, ::fast_io::intfpos_opt{}, instm, off_in, remaining, timeout,
+				::std::move(callback), 0zu, 0zu, 0zu));
+	}
+	catch throws(::std::error e)
+	{
+		callback(e.release(), 0zu);
+	}
+}
+
+/*
+ * One completion of the fill/drain/poll state machine. Non-terminal phases
+ * resubmit and return; every terminal outcome falls through to the single
+ * deliver_error call at the bottom, so the callback has one invocation site
+ * per function.
+ */
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+inline void io_uring_pipe_transmit_deliver(void *self) noexcept
+{
+	using cookie_type = io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T>;
+	auto *cookie{static_cast<cookie_type *>(self)};
+	::std::cxx_std_error err{};
+	if (cookie->tlink.fired)
+	{
+		err = ::fast_io::details::async_make_error(::std::errc::timed_out);
+	}
+	else if (cookie->errn != 0)
+	{
+		if (cookie->phase == io_uring_pipe_phase::drain && cookie->errn == EAGAIN)
+		{
+			/* socket send buffer is full: wait for POLLOUT, keep the pipe
+			 * tail, and resubmit the drain when it fires */
+			cookie->phase = io_uring_pipe_phase::poll;
+			io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
+			return;
+		}
+		if (cookie->phase == io_uring_pipe_phase::fill && cookie->moved == 0 &&
+			cookie->in_pipe == 0 && io_uring_splice_unsupported(cookie->errn))
+		{
+			io_uring_pipe_transmit_bounce<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
+			return;
+		}
+		err = io_uring_cqe_error(false, cookie->errn);
+	}
+	else
+	{
+		switch (cookie->phase)
+		{
+		case io_uring_pipe_phase::poll:
+			cookie->phase = io_uring_pipe_phase::drain;
+			io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
+			return;
+		case io_uring_pipe_phase::drain:
+			cookie->in_pipe -= cookie->transferred;
+			cookie->moved += cookie->transferred;
+			if (cookie->in_pipe != 0)
+			{
+				io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(
+					cookie);
+				return;
+			}
+			if (cookie->want != 0)
+			{
+				cookie->phase = io_uring_pipe_phase::fill;
+				io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(
+					cookie);
+				return;
+			}
+			break;
+		case io_uring_pipe_phase::fill:
+		default:
+			/* a zero-byte fill is EOF short of the bound: report what was
+			 * delivered, like the bounce engine does */
+			if (cookie->transferred != 0)
+			{
+				cookie->in_pipe = cookie->transferred;
+				cookie->want -= cookie->transferred;
+				if (cookie->off_in.has_opt)
+				{
+					cookie->off_in.opt = ::fast_io::fposoffadd_nonegative(
+						cookie->off_in.opt, static_cast<::std::ptrdiff_t>(cookie->transferred));
+				}
+				cookie->phase = io_uring_pipe_phase::drain;
+				io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(
+					cookie);
+				return;
+			}
+			break;
+		}
+	}
+	io_uring_pipe_transmit_deliver_error<sched_type, outstmtype, instmtype, alloc_type, T>(cookie,
+																						   err);
+}
+
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+inline void io_uring_pipe_transmit_invoke(void *self, ::std::size_t transferred, int errn) noexcept
+{
+	using cookie_type = io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T>;
+	auto *cookie{static_cast<cookie_type *>(self)};
+	cookie->transferred = transferred;
+	cookie->errn = errn;
+	if (--cookie->tlink.pending == 0)
+	{
+		io_uring_pipe_transmit_deliver<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
+	}
+}
+
+template <typename sched_type, typename outstmtype, typename instmtype, typename alloc_type,
+		  typename T>
+inline void io_uring_pipe_transmit_submit(
+	io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T> *cookie) noexcept
+{
+	auto &ring{*cookie->sched.ring};
+	try
+	{
+		io_uring_reserve_sqes(ring, cookie->timeout.has_opt ? 2u : 1u);
+		::fast_io::liburing::io_uring_sqe *sqe{io_uring_get_sqe(ring)};
+		switch (cookie->phase)
+		{
+		case io_uring_pipe_phase::poll:
+			io_uring_prep_poll_add(sqe, cookie->outstm.fd, POLLOUT);
+			break;
+		case io_uring_pipe_phase::drain:
+			io_uring_prep_splice(sqe, cookie->pipe_read, -1, cookie->outstm.fd, -1,
+								 io_uring_clamp_count(cookie->in_pipe), 0);
+			break;
+		case io_uring_pipe_phase::fill:
+		default:
+		{
+			::std::size_t const chunk{cookie->want < io_uring_pipe_splice_size
+										  ? cookie->want
+										  : io_uring_pipe_splice_size};
+			io_uring_prep_splice(
+				sqe, cookie->instm.fd,
+				cookie->off_in.has_opt ? static_cast<::std::int_least64_t>(cookie->off_in.opt)
+									   : static_cast<::std::int_least64_t>(-1),
+				cookie->pipe_write, -1, io_uring_clamp_count(chunk), 0);
+			break;
+		}
+		}
+		io_uring_arm_timeout(
+			ring, cookie, sqe,
+			io_uring_pipe_transmit_deliver<sched_type, outstmtype, instmtype, alloc_type, T>,
+			cookie->timeout);
+		io_uring_commit(ring);
+	}
+	catch throws(::std::error e)
+	{
+		io_uring_pipe_transmit_deliver_error<sched_type, outstmtype, instmtype, alloc_type, T>(
+			cookie, e.release());
+	}
+}
+
+/*
+ * Returns false (callback untouched) when no pipe can be created, so the
+ * caller can fall through to the plain splice path; once true, the callback
+ * has been consumed.
+ */
+template <typename sched_type, typename outstmtype, typename instmtype, typename T>
+inline bool io_uring_pipe_transmit_start(sched_type sched, outstmtype outstm, instmtype instm,
+										 ::fast_io::intfpos_opt off_in, ::std::size_t want,
+										 ::fast_io::posix_statx_timestamp_opt timeout,
+										 T &callback) noexcept
+{
+	using alloc_type = ::fast_io::details::async_scheduler_allocator_t<sched_type>;
+	using cookie_type = io_uring_pipe_transmit_cookie<sched_type, outstmtype, instmtype, alloc_type, T>;
+	int fds[2]{-1, -1};
+	if (::fast_io::noexcept_call(::pipe2, fds, O_CLOEXEC) == -1) [[unlikely]]
+	{
+		return false;
+	}
+#if defined(F_SETPIPE_SZ)
+	/* best effort: if the pipe cannot grow, the fill splice simply moves
+	 * less per round */
+	try
+	{
+		(void)::fast_io::details::sys_fcntl(
+			fds[1], F_SETPIPE_SZ,
+			static_cast<int>(io_uring_pipe_splice_size));
+	}
+	catch throws(::std::error)
+	{
+	}
+#endif
+	cookie_type *cookie{};
+	try
+	{
+		cookie = io_uring_new_state<cookie_type>(
+			sched, io_uring_invoke_func{}, io_uring_timeout_link_block{},
+			::fast_io::liburing::io_uring_timespec{}, 0zu, 0, 0zu, 0zu, want,
+			fds[0], fds[1], io_uring_pipe_phase::fill, sched, outstm, instm, off_in, timeout,
+			::std::move(callback));
+	}
+	catch throws(::std::error e)
+	{
+		::fast_io::details::sys_close(fds[0]);
+		::fast_io::details::sys_close(fds[1]);
+		callback(e.release(), 0zu);
+		return true;
+	}
+	cookie->invoke =
+		io_uring_pipe_transmit_invoke<sched_type, outstmtype, instmtype, alloc_type, T>;
+	io_uring_pipe_transmit_submit<sched_type, outstmtype, instmtype, alloc_type, T>(cookie);
+	return true;
+}
+
 /* ======================= close ======================= */
 
 /*
@@ -1073,6 +1414,20 @@ inline void async_transmit_some_bytes_overflow_underflow_callback_define(
 	::std::cxx_std_error err{};
 	if (!(bound.has_opt && bound.opt == 0))
 	{
+		if constexpr (family_out == ::fast_io::posix_family::sock &&
+					  family_in == ::fast_io::posix_family::api)
+		{
+			if (!off_out.has_opt && bound.has_opt &&
+				bound.opt >= ::fast_io::liburing::details::io_uring_pipe_splice_threshold)
+			{
+				if (::fast_io::liburing::details::io_uring_pipe_transmit_start(
+						sched, outstm, instm, off_in, bound.opt, timeout, callback))
+				{
+					return;
+				}
+				/* no pipe: fall through to the plain splice path */
+			}
+		}
 		try
 		{
 			::fast_io::liburing::details::io_uring_submit_guard<cookie_type> guard{

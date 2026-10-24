@@ -40,7 +40,7 @@ struct win32_thread_pool_state
 	win32_thread_pool_node *done_head{};
 };
 
-inline ::std::uint_least32_t __stdcall win32_thread_pool_worker(void *ctx) noexcept
+inline ::std::uint_least32_t FAST_IO_WINSTDCALL win32_thread_pool_worker(void *ctx) noexcept
 {
 	auto *node{static_cast<win32_thread_pool_node *>(ctx)};
 	node->run(node);

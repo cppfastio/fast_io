@@ -894,6 +894,7 @@ template <win32_family family>
 inline ::std::size_t win32_tcp_listen_dual_impl(::std::uint_least16_t port, open_mode m)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
+#ifdef __HERBCEPTIONS__
 	try
 	{
 		basic_win32_family_socket_file<family, char> soc(sock_family::inet6, sock_type::stream, m,
@@ -911,6 +912,7 @@ inline ::std::size_t win32_tcp_listen_dual_impl(::std::uint_least16_t port, open
 	catch throws(::std::error)
 	{
 	}
+#endif
 	basic_win32_family_socket_file<family, char> soc(sock_family::inet, sock_type::stream, m,
 													 sock_protocol::tcp);
 	win32_tcp_listen_common_impl(soc.hsocket, port);

@@ -453,7 +453,6 @@ struct win32_ip_adapter_addresses
 	};
 	win32_ip_adapter_addresses *next;
 	char *adapter_name;
-	win32_ip_adapter_prefix *first_prefix;
 	win32_ip_adapter_unicast_address *first_unicast_address;
 	win32_ip_adapter_anycast_address *first_anycast_address;
 	win32_ip_adapter_multicast_address *first_multicast_address;

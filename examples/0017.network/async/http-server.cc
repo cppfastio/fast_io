@@ -1096,17 +1096,36 @@ static fi::io_async_task<> session(fi::io_async_observer sched,
 	}
 }
 
+/* Responses go out as a headers write followed by the body write. With
+ * Nagle on, the second small write sits until the peer's delayed ACK
+ * (~40 ms), which dominates the small-file latency. TCP_NODELAY has the
+ * same value (1) and IPPROTO_TCP the same value (6) on Linux, Windows
+ * and wasi-libc, so no platform headers are needed. Wine does not
+ * inherit socket options across accept(), hence per-socket setup. */
+template <typename sock_type>
+static void set_tcp_nodelay(sock_type &sock) noexcept
+{
+	::std::uint_least32_t const one{1};
+#if defined(_WIN32)
+	::fast_io::win32::setsockopt(sock.native_handle(), 6, 1,
+								 __builtin_addressof(one), static_cast<int>(sizeof(one)));
+#else
+	(void)::fast_io::noexcept_call(::setsockopt, sock.native_handle(), 6, 1,
+								   __builtin_addressof(one),
+								   static_cast<::fast_io::posix_socklen_t>(sizeof(one)));
+#endif
+}
+
 static fi::io_async_task<> accept_loop(fi::io_async_observer sched,
 									   fi::u8native_socket_io_observer listener,
 									   server_cfg cfg) throws
 {
 	for (;;)
 	{
-		session(sched,
-				fi::u8iobuf_socket_file{co_await fop::async_accept(
-					sched, {}, listener, fi::open_mode::no_block)},
-				cfg)
-			.detach();
+		fi::u8native_socket_file accepted{co_await fop::async_accept(
+			sched, {}, listener, fi::open_mode::no_block)};
+		set_tcp_nodelay(accepted);
+		session(sched, fi::u8iobuf_socket_file{::std::move(accepted)}, cfg).detach();
 	}
 }
 
@@ -1282,7 +1301,6 @@ int main(int argc, char const **argv)
 				perr("  ", p, "\n");
 			}
 		}
-#if !defined(__wasi__)
 		if (fi::native_ifaddrs_file ifas{fi::ifaddrs_enumerate}; ifas)
 		{
 			/* two passes: loopback first, like node's listing */
@@ -1306,7 +1324,6 @@ int main(int argc, char const **argv)
 				}
 			}
 		}
-#endif
 		perr("Hit CTRL-C to stop the server\n");
 
 		/* supervisor: if the accept coroutine dies to a mid-run error
