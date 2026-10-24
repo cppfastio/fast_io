@@ -21,10 +21,14 @@ https://github.com/greenjava/win-ldd
 #undef min
 #undef max
 
+inline constexpr bool win32_family_is_9xa{::fast_io::win32_family::native == ::fast_io::win32_family::ansi_9x};
+using win32_family_char_type = ::std::conditional_t<win32_family_is_9xa, char, char16_t>;
+using win32_family_string = ::std::conditional_t<win32_family_is_9xa, ::fast_io::string, ::fast_io::u16string>;
+
 struct dll_ref_entry
 {
 	::fast_io::string dll_name;
-	::fast_io::u16string dll_path;
+	win32_family_string dll_path;
 };
 
 inline constexpr bool operator==(dll_ref_entry const &a, dll_ref_entry const &b) noexcept
@@ -69,12 +73,23 @@ inline auto get_dependencies(void *hMod) HERBCEPTIONS_THROWS
 	{
 		::fast_io::string dllName(::fast_io::mnp::os_c_str((char const *)((BYTE *)hMod + pImportDesc->Name)));
 		void *hmoddep = ::LoadLibraryExA(dllName.c_str(), NULL, DONT_RESOLVE_DLL_REFERENCES);
-		::fast_io::u16string dllpath;
+		win32_family_string dllpath;
 		if (hmoddep) [[likely]]
 		{
 			::fast_io::win32_dll_file df(hmoddep);
-			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep](char16_t *buffer, size_t len) HERBCEPTIONS_THROWS {
-				if (!::GetModuleFileNameW((HMODULE)hmoddep, reinterpret_cast<wchar_t *>(buffer), static_cast<::std::uint_least32_t>(len)))
+			dllpath.resize_and_overwrite(_MAX_PATH, [hmoddep](win32_family_char_type *buffer, size_t len) HERBCEPTIONS_THROWS {
+				::std::uint_least32_t ret;
+				if constexpr (win32_family_is_9xa)
+				{
+					ret = ::GetModuleFileNameA((HMODULE)hmoddep, reinterpret_cast<char *>(buffer),
+											   static_cast<::std::uint_least32_t>(len));
+				}
+				else
+				{
+					ret = ::GetModuleFileNameW((HMODULE)hmoddep, reinterpret_cast<wchar_t *>(buffer),
+											   static_cast<::std::uint_least32_t>(len));
+				}
+				if (!ret)
 				{
 					::fast_io::throw_win32_error();
 				}
