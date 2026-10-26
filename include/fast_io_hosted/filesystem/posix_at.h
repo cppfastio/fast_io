@@ -382,7 +382,7 @@ inline void posix_unlinkat_impl(int dirfd, char const *path, int flags)
 
 namespace details
 {
-inline constexpr struct timespec unix_timestamp_to_struct_timespec(posix_statx_timestamp64 stmp) noexcept
+inline constexpr struct timespec unix_timestamp_to_struct_timespec(posix_timespec64 stmp) noexcept
 {
 	return {static_cast<::std::time_t>(stmp.tv_sec),
 			static_cast<long>(stmp.tv_nsec)};
@@ -421,7 +421,7 @@ struct kernel_timespec64
 	::std::int_least64_t tv_nsec;
 };
 
-inline constexpr kernel_timespec64 unix_timestamp_to_struct_timespec64(posix_statx_timestamp64 stmp) noexcept
+inline constexpr kernel_timespec64 unix_timestamp_to_struct_timespec64(posix_timespec64 stmp) noexcept
 {
 	return {static_cast<::std::int_least64_t>(stmp.tv_sec),
 			static_cast<::std::int_least64_t>(stmp.tv_nsec)};

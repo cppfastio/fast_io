@@ -131,7 +131,7 @@ static fi::u8string imf_date(::std::int_least64_t unix_seconds) noexcept
 		secs += 86400;
 		--days;
 	}
-	auto const iso{fi::utc(::fast_io::posix_statx_timestamp64{days * 86400, 0})};
+	auto const iso{fi::utc(::fast_io::posix_timespec64{days * 86400, 0})};
 	auto const wday{static_cast<::std::size_t>(((days % 7) + 11) % 7)};
 	/* days==0 is Thursday → index 4; +11 keeps the modulo positive */
 	fi::u8string out(29, u8' ');

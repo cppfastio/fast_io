@@ -3,7 +3,7 @@
 namespace fast_io::win32
 {
 
-inline constexpr posix_statx_timestamp64 to_unix_timestamp(filetime ft) noexcept
+inline constexpr posix_timespec64 to_unix_timestamp(filetime ft) noexcept
 {
 	::std::uint_least64_t date_time{(static_cast<::std::uint_least64_t>(ft.dwHighDateTime) << 32) | ft.dwLowDateTime};
 
@@ -29,9 +29,9 @@ inline constexpr ::std::uint_least64_t filetime_to_uint_least64_t(filetime ft) n
 	return (static_cast<::std::uint_least64_t>(ft.dwHighDateTime) << 32) | ft.dwLowDateTime;
 }
 
-inline constexpr filetime unix_timestamp_to_filetime(posix_statx_timestamp64 wt) FAST_IO_HERBCEPTIONS_THROWS
+inline constexpr filetime unix_timestamp_to_filetime(posix_timespec64 wt) FAST_IO_HERBCEPTIONS_THROWS
 {
-	::std::uint_least64_t ftu64{::fast_io::posix_statx_timestamp64_to_ftu64(wt)};
+	::std::uint_least64_t ftu64{::fast_io::posix_timespec64_to_ftu64(wt)};
 	return {.dwLowDateTime = static_cast<::std::uint_least32_t>(ftu64), .dwHighDateTime = static_cast<::std::uint_least32_t>(ftu64 >> 32)};
 }
 } // namespace fast_io::win32

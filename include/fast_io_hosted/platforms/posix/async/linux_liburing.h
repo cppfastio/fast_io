@@ -1596,7 +1596,7 @@ inline io_uring_cqe *io_uring_submit_and_wait_cqes(::fast_io::liburing::io_uring
  * Returns nullptr when the deadline elapsed.
  */
 inline io_uring_cqe *io_uring_wait_cqe_timeout(::fast_io::liburing::io_uring_ring_state &ring,
-											   ::fast_io::posix_statx_timestamp64 timestamp) FAST_IO_HERBCEPTIONS_THROWS
+											   ::fast_io::posix_timespec64 timestamp) FAST_IO_HERBCEPTIONS_THROWS
 {
 	/* the kernel reads the full 64-bit nsec field out of the address we
 	 * hand it; convert so the statx layout's 4-byte tail padding can

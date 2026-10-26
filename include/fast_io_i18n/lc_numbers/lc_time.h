@@ -130,7 +130,7 @@ inline constexpr lc_tm lc_tm_from(::fast_io::iso8601_timestamp const &t) noexcep
 	return m;
 }
 
-inline constexpr lc_tm lc_tm_from(::fast_io::posix_statx_timestamp64 t) noexcept
+inline constexpr lc_tm lc_tm_from(::fast_io::posix_timespec64 t) noexcept
 {
 	auto const u{::fast_io::utc(t)};
 	lc_tm m{lc_tm_from(u)};
@@ -150,11 +150,11 @@ inline constexpr lc_tm lc_tm_from(T const &v) noexcept
 		using dur = decltype(v.time_since_epoch());
 		::std::int_least64_t const secs{static_cast<::std::int_least64_t>(
 			v.time_since_epoch().count() * dur::period::num / dur::period::den)};
-		m = lc_tm_from(::fast_io::posix_statx_timestamp64{secs, 0});
+		m = lc_tm_from(::fast_io::posix_timespec64{secs, 0});
 	}
 	else if constexpr (requires { v.count(); })
 	{
-		m = lc_tm_from(::fast_io::posix_statx_timestamp64{
+		m = lc_tm_from(::fast_io::posix_timespec64{
 			static_cast<::std::int_least64_t>(v.count()), 0});
 	}
 	else
@@ -852,7 +852,7 @@ lc_time_program(lc_ctx<char_type> const *ctx) noexcept
 // value types the interpreter can read
 template <typename T>
 concept lc_time_value = ::std::same_as<::std::remove_cvref_t<T>, ::fast_io::iso8601_timestamp> ||
-						::std::same_as<::std::remove_cvref_t<T>, ::fast_io::posix_statx_timestamp64>;
+						::std::same_as<::std::remove_cvref_t<T>, ::fast_io::posix_timespec64>;
 
 template <typename T>
 concept lc_time_value_or_chrono = lc_time_value<T> || requires(T const &v) {
@@ -1118,7 +1118,7 @@ namespace manipulators
 // locale time formats — scalar with time_flag set; the section's
 // compiled binfmt program runs inside an imbued stream. v is any time
 // value the i18n layer can read (iso8601_timestamp,
-// posix_statx_timestamp64, chrono types, ...)
+// posix_timespec64, chrono types, ...)
 template <typename T>
 inline constexpr scalar_manip_t<
 	::fast_io::details::base_lc_time_flags_cache<lc_time_flag::d_t_fmt>, T const &>

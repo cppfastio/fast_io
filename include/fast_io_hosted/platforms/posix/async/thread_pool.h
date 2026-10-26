@@ -272,7 +272,7 @@ inline posix_thread_pool_node *posix_thread_pool_reap_try(posix_thread_pool_stat
 
 /* duration {sec, nsec} -> CLOCK_REALTIME deadline; shared by the pump's
  * timed wait and the per-op timeout */
-inline ::timespec posix_thread_pool_deadline(::fast_io::posix_statx_timestamp64 dur) noexcept
+inline ::timespec posix_thread_pool_deadline(::fast_io::posix_timespec64 dur) noexcept
 {
 	::timespec abs{};
 	::fast_io::noexcept_call(::clock_gettime, CLOCK_REALTIME, __builtin_addressof(abs));
@@ -891,7 +891,7 @@ inline bool io_async_peek(posix_thread_pool_observer sched) FAST_IO_HERBCEPTIONS
 }
 
 inline bool io_async_wait_timeout(posix_thread_pool_observer sched,
-								  ::fast_io::posix_statx_timestamp64 timeout) FAST_IO_HERBCEPTIONS_THROWS
+								  ::fast_io::posix_timespec64 timeout) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::timespec abs{::fast_io::details::posix_thread_pool_deadline(timeout)};
 	auto *node{::fast_io::details::posix_thread_pool_reap(sched.native_handle(),

@@ -316,7 +316,7 @@ inline
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_for(::fast_io::posix_statx_timestamp64 const &sleep_duration) noexcept
+	void sleep_for(::fast_io::posix_timespec64 const &sleep_duration) noexcept
 {
 
 	if (sleep_duration.tv_sec < 0)
@@ -345,7 +345,7 @@ inline
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_until(::fast_io::posix_statx_timestamp64 const &expect_time) noexcept
+	void sleep_until(::fast_io::posix_timespec64 const &expect_time) noexcept
 {
 	::fast_io::win32::filetime ft{};
 	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ft));
@@ -357,7 +357,7 @@ inline
 		return;
 	}
 
-	auto const expect_100ns{::fast_io::posix_statx_timestamp64_to_ftu64(expect_time)};
+	auto const expect_100ns{::fast_io::posix_timespec64_to_ftu64(expect_time)};
 
 	if (expect_100ns <= now_100ns)
 	{

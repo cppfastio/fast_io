@@ -110,7 +110,7 @@ inline ::std::uint_least64_t win32_thread_pool_now() noexcept
 }
 
 inline ::std::uint_least64_t
-win32_thread_pool_deadline(::fast_io::posix_statx_timestamp64 dur) noexcept
+win32_thread_pool_deadline(::fast_io::posix_timespec64 dur) noexcept
 {
 	return win32_thread_pool_now() + static_cast<::std::uint_least64_t>(dur.tv_sec) * 10000000u +
 		   static_cast<::std::uint_least64_t>(dur.tv_nsec) / 100u;
@@ -439,7 +439,7 @@ inline bool io_async_peek(win32_thread_pool_observer sched) FAST_IO_HERBCEPTIONS
 }
 
 inline bool io_async_wait_timeout(win32_thread_pool_observer sched,
-								  ::fast_io::posix_statx_timestamp64 timeout) FAST_IO_HERBCEPTIONS_THROWS
+								  ::fast_io::posix_timespec64 timeout) FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t const ms{static_cast<::std::uint_least64_t>(timeout.tv_sec) * 1000u +
 								   static_cast<::std::uint_least64_t>(timeout.tv_nsec) / 1000000u};

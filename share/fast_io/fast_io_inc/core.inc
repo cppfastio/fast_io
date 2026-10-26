@@ -363,14 +363,14 @@ using ::fast_io::intfpos_t;
 using ::fast_io::fposoffadd_scatters;
 using ::fast_io::seekdir;
 
-using ::fast_io::posix_statx_timestamp64;
+using ::fast_io::posix_timespec64;
 using ::fast_io::iso8601_timestamp;
 
 using ::fast_io::local;
 using ::fast_io::utc;
-using ::fast_io::to_posix_statx_timestamp64;
-using ::fast_io::to_posix_statx_timestamp64_ftu64;
-using ::fast_io::posix_statx_timestamp64_to_ftu64;
+using ::fast_io::to_posix_timespec64;
+using ::fast_io::to_posix_timespec64_ftu64;
+using ::fast_io::posix_timespec64_to_ftu64;
 
 using ::fast_io::operator==;
 using ::fast_io::operator!=;

@@ -184,7 +184,7 @@ struct size_t_opt
 	{}
 };
 
-struct posix_statx_timestamp64
+struct posix_timespec64
 {
 	::std::int_least64_t tv_sec;   // Seconds since the Epoch (UNIX time)
 	::std::uint_least32_t tv_nsec; // Nanoseconds since tv_sec
@@ -197,13 +197,13 @@ struct posix_statx_timestamp64
 	}
 };
 
-inline constexpr bool operator==(posix_statx_timestamp64 a, posix_statx_timestamp64 b) noexcept
+inline constexpr bool operator==(posix_timespec64 a, posix_timespec64 b) noexcept
 {
 	return (a.tv_sec == b.tv_sec) & (a.tv_nsec == b.tv_nsec);
 }
 
 #if defined(__cpp_lib_three_way_comparison) && __cpp_lib_three_way_comparison >= 201907L
-inline constexpr auto operator<=>(posix_statx_timestamp64 a, posix_statx_timestamp64 b) noexcept
+inline constexpr auto operator<=>(posix_timespec64 a, posix_timespec64 b) noexcept
 {
 	auto v{a.tv_sec <=> b.tv_sec};
 	if (v == ::std::strong_ordering::equal)
@@ -218,18 +218,18 @@ inline constexpr auto operator<=>(posix_statx_timestamp64 a, posix_statx_timesta
 An optional timeout for asynchronous operations: has_opt == false means
 "no timeout"; has_opt == true means the operation fails with a timeout
 error once opt elapses (or, where the backend interprets it as a
-timepoint, once opt passes — posix_statx_timestamp64 carries both).
+timepoint, once opt passes — posix_timespec64 carries both).
 */
 struct posix_statx_timestamp_opt
 {
-	::fast_io::posix_statx_timestamp64 opt{};
+	::fast_io::posix_timespec64 opt{};
 	bool has_opt{false};
 	inline constexpr posix_statx_timestamp_opt() noexcept = default;
-	inline constexpr posix_statx_timestamp_opt(::fast_io::posix_statx_timestamp64 ts) noexcept
+	inline constexpr posix_statx_timestamp_opt(::fast_io::posix_timespec64 ts) noexcept
 		: opt{ts}, has_opt{true}
 	{
 	}
-	inline constexpr posix_statx_timestamp_opt(::fast_io::posix_statx_timestamp64 ts, bool has) noexcept
+	inline constexpr posix_statx_timestamp_opt(::fast_io::posix_timespec64 ts, bool has) noexcept
 		: opt{ts}, has_opt{has}
 	{
 	}

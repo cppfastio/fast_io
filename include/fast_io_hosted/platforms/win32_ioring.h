@@ -994,7 +994,7 @@ inline bool io_async_peek(win32_ioring_observer sched) FAST_IO_HERBCEPTIONS_THRO
 }
 
 inline bool io_async_wait_timeout(win32_ioring_observer sched,
-								  ::fast_io::posix_statx_timestamp64 timeout) FAST_IO_HERBCEPTIONS_THROWS
+								  ::fast_io::posix_timespec64 timeout) FAST_IO_HERBCEPTIONS_THROWS
 {
 	/* relative duration -> WaitForSingleObject milliseconds, rounded up
 	 * and clamped below INFINITE */

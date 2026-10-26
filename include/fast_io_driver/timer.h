@@ -10,7 +10,7 @@ namespace fast_io
 namespace details
 {
 
-inline ::fast_io::posix_statx_timestamp64 posix_clock_gettime_nothrow_for_timer(::fast_io::posix_clock_id id) noexcept
+inline ::fast_io::posix_timespec64 posix_clock_gettime_nothrow_for_timer(::fast_io::posix_clock_id id) noexcept
 {
 	FAST_IO_HERBCEPTIONS_TRY
 	{
@@ -26,7 +26,7 @@ inline ::fast_io::posix_statx_timestamp64 posix_clock_gettime_nothrow_for_timer(
 struct timer
 {
 	::fast_io::u8string_view s;
-	posix_statx_timestamp64 t0;
+	posix_timespec64 t0;
 #if __has_cpp_attribute(__gnu__::__cold__)
 	[[__gnu__::__cold__]]
 #endif

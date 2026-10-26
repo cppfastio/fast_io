@@ -228,10 +228,10 @@ inline void win32_iocp_associate(void *port, void *handle) FAST_IO_HERBCEPTIONS_
 	}
 }
 
-/* posix_statx_timestamp64 -> relative FILETIME due time (negative
+/* posix_timespec64 -> relative FILETIME due time (negative
  * 100ns units), rounded up and clamped away from the disarm value 0 */
 inline ::fast_io::win32::filetime
-win32_iocp_relative_deadline(::fast_io::posix_statx_timestamp64 timeout) noexcept
+win32_iocp_relative_deadline(::fast_io::posix_timespec64 timeout) noexcept
 {
 	::std::int_least64_t due{-(
 		static_cast<::std::int_least64_t>(timeout.tv_sec) * 10000000 +
@@ -1170,7 +1170,7 @@ inline bool io_async_peek(win32_io_observer port) FAST_IO_HERBCEPTIONS_THROWS
 }
 
 inline bool io_async_wait_timeout(win32_io_observer port,
-								  ::fast_io::posix_statx_timestamp64 timeout) FAST_IO_HERBCEPTIONS_THROWS
+								  ::fast_io::posix_timespec64 timeout) FAST_IO_HERBCEPTIONS_THROWS
 {
 	/* the port bound is a relative duration here, same as the uring
 	 * backend — convert {sec, nsec} to GQCS milliseconds */
