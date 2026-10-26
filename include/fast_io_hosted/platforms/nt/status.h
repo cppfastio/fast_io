@@ -6,7 +6,7 @@ namespace fast_io
 namespace win32::nt::details
 {
 
-inline constexpr posix_statx_timestamp64 to_unix_timestamp(::std::uint_least64_t date_time) noexcept
+inline constexpr posix_timespec64 to_unix_timestamp(::std::uint_least64_t date_time) noexcept
 {
 	/*
 	116444736000000000

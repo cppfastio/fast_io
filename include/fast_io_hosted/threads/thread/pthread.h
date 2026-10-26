@@ -303,7 +303,7 @@ inline
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_for(::fast_io::posix_statx_timestamp64 const &sleep_duration) noexcept
+	void sleep_for(::fast_io::posix_timespec64 const &sleep_duration) noexcept
 {
 	if (sleep_duration.tv_sec < 0)
 	{
@@ -328,7 +328,7 @@ inline
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_until(::fast_io::posix_statx_timestamp64 const &expect_time) noexcept
+	void sleep_until(::fast_io::posix_timespec64 const &expect_time) noexcept
 {
 	if (expect_time.tv_sec < 0)
 	{

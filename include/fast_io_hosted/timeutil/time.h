@@ -197,7 +197,7 @@ inline ::std::int_least64_t win32_query_performance_frequency() FAST_IO_HERBCEPT
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
 #endif
-inline posix_statx_timestamp64 win32_query_performance_frequency_to_posix_statx_timestamp64() FAST_IO_HERBCEPTIONS_THROWS
+inline posix_timespec64 win32_query_performance_frequency_to_posix_timespec64() FAST_IO_HERBCEPTIONS_THROWS
 {
 	return {0, static_cast<::std::uint_least32_t>(1000000000ULL /
 												 static_cast<::std::uint_least64_t>(win32_query_performance_frequency()))};
@@ -209,7 +209,7 @@ inline
 #if (defined(_WIN32) && !defined(__CYGWIN__)) || defined(__MSDOS__)
 	constexpr
 #endif
-	posix_statx_timestamp64
+	posix_timespec64
 	posix_clock_getres([[maybe_unused]] posix_clock_id pclk_id) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if (defined(_WIN32) && !defined(__CYGWIN__))
@@ -228,7 +228,7 @@ inline
 	case posix_clock_id::monotonic_coarse:
 	case posix_clock_id::monotonic_raw:
 	case posix_clock_id::boottime:
-		return ::fast_io::details::win32_query_performance_frequency_to_posix_statx_timestamp64();
+		return ::fast_io::details::win32_query_performance_frequency_to_posix_timespec64();
 		break;
 	default:
 		throw_win32_error(0x00000057);
@@ -275,7 +275,7 @@ inline
 namespace win32::details
 {
 
-inline posix_statx_timestamp64 win32_posix_clock_gettime_tai_impl() noexcept
+inline posix_timespec64 win32_posix_clock_gettime_tai_impl() noexcept
 {
 	::fast_io::win32::filetime ftm;
 #if (!defined(_WIN32_WINNT) || _WIN32_WINNT >= 0x0602) && !defined(_WIN32_WINDOWS)
@@ -283,10 +283,10 @@ inline posix_statx_timestamp64 win32_posix_clock_gettime_tai_impl() noexcept
 #else
 	::fast_io::win32::GetSystemTimeAsFileTime(__builtin_addressof(ftm));
 #endif
-	return ::fast_io::to_posix_statx_timestamp64_ftu64(::fast_io::win32::filetime_to_uint_least64_t(ftm));
+	return ::fast_io::to_posix_timespec64_ftu64(::fast_io::win32::filetime_to_uint_least64_t(ftm));
 }
 
-inline posix_statx_timestamp64 win32_posix_clock_gettime_uptime_impl()
+inline posix_timespec64 win32_posix_clock_gettime_uptime_impl()
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t ftm;
@@ -300,7 +300,7 @@ inline posix_statx_timestamp64 win32_posix_clock_gettime_uptime_impl()
 }
 
 template <bool is_thread>
-inline posix_statx_timestamp64 win32_posix_clock_gettime_process_or_thread_time_impl()
+inline posix_timespec64 win32_posix_clock_gettime_process_or_thread_time_impl()
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::fast_io::win32::filetime creation_time, exit_time, kernel_time, user_time;
@@ -331,7 +331,7 @@ inline posix_statx_timestamp64 win32_posix_clock_gettime_process_or_thread_time_
 	return {static_cast<::std::int_least64_t>(seconds), nanoseconds};
 }
 
-inline posix_statx_timestamp64 win32_posix_clock_gettime_boottime_impl()
+inline posix_timespec64 win32_posix_clock_gettime_boottime_impl()
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::uint_least64_t freq{
@@ -357,14 +357,14 @@ inline posix_statx_timestamp64 win32_posix_clock_gettime_boottime_impl()
 
 namespace win32::nt::details
 {
-inline posix_statx_timestamp64 nt602_posix_clock_gettime_tai_impl() noexcept
+inline posix_timespec64 nt602_posix_clock_gettime_tai_impl() noexcept
 {
-	return ::fast_io::to_posix_statx_timestamp64_ftu64(
+	return ::fast_io::to_posix_timespec64_ftu64(
 		static_cast<::std::uint_least64_t>(::fast_io::win32::nt::RtlGetSystemTimePrecise()));
 }
 
 template <bool zw>
-inline posix_statx_timestamp64 nt_posix_clock_gettime_boottime_impl() FAST_IO_HERBCEPTIONS_THROWS
+inline posix_timespec64 nt_posix_clock_gettime_boottime_impl() FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::int_least64_t counter;
 	::std::int_least64_t freq;
@@ -391,7 +391,7 @@ inline posix_statx_timestamp64 nt_posix_clock_gettime_boottime_impl() FAST_IO_HE
 }
 
 template <bool zw, bool is_thread>
-inline posix_statx_timestamp64 nt_posix_clock_gettime_process_or_thread_time_impl() FAST_IO_HERBCEPTIONS_THROWS
+inline posix_timespec64 nt_posix_clock_gettime_process_or_thread_time_impl() FAST_IO_HERBCEPTIONS_THROWS
 {
 	::std::int_least64_t kernel_time;
 	::std::int_least64_t user_time;
@@ -514,13 +514,13 @@ inline iso8601_timestamp get_dos_iso8601_timestamp()
 	throw_posix_error(EINVAL);
 }
 
-inline posix_statx_timestamp64 get_dos_unix_timestamp()
+inline posix_timespec64 get_dos_unix_timestamp()
 	FAST_IO_HERBCEPTIONS_THROWS
 {
-	return to_posix_statx_timestamp64(get_dos_iso8601_timestamp());
+	return to_posix_timespec64(get_dos_iso8601_timestamp());
 }
 
-inline void set_dos_unix_timestamp(posix_statx_timestamp64 tsp)
+inline void set_dos_unix_timestamp(posix_timespec64 tsp)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	iso8601_timestamp iso8601{utc(tsp)};
@@ -567,7 +567,7 @@ inline void set_dos_unix_timestamp(posix_statx_timestamp64 tsp)
 } // namespace details
 #endif
 
-inline posix_statx_timestamp64 posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_id) FAST_IO_HERBCEPTIONS_THROWS
+inline posix_timespec64 posix_clock_gettime([[maybe_unused]] posix_clock_id pclk_id) FAST_IO_HERBCEPTIONS_THROWS
 {
 #if (defined(_WIN32) && !defined(__CYGWIN__))
 	switch (pclk_id)
@@ -657,8 +657,8 @@ inline posix_statx_timestamp64 posix_clock_gettime([[maybe_unused]] posix_clock_
 #if defined(_WIN32) || defined(__CYGWIN__)
 template <nt_family family>
 	requires(family == nt_family::nt || family == nt_family::zw)
-inline posix_statx_timestamp64 nt_family_clock_settime(posix_clock_id pclk_id,
-													   posix_statx_timestamp64 timestamp)
+inline posix_timespec64 nt_family_clock_settime(posix_clock_id pclk_id,
+													   posix_timespec64 timestamp)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	switch (pclk_id)
@@ -677,19 +677,19 @@ inline posix_statx_timestamp64 nt_family_clock_settime(posix_clock_id pclk_id,
 		{
 			::fast_io::herbceptions::throws_nt_errc_with_value(ntstatus);
 		}
-		return ::fast_io::to_posix_statx_timestamp64_ftu64(static_cast<::std::uint_least64_t>(old_tms));
+		return ::fast_io::to_posix_timespec64_ftu64(static_cast<::std::uint_least64_t>(old_tms));
 	}
 	default:
 		::fast_io::herbceptions::throws_nt_errc_with_value(0xC00000EF);
 	};
 }
-inline posix_statx_timestamp64 nt_clock_settime(posix_clock_id pclk_id, posix_statx_timestamp64 timestamp)
+inline posix_timespec64 nt_clock_settime(posix_clock_id pclk_id, posix_timespec64 timestamp)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return nt_family_clock_settime<nt_family::nt>(pclk_id, timestamp);
 }
 
-inline posix_statx_timestamp64 zw_clock_settime(posix_clock_id pclk_id, posix_statx_timestamp64 timestamp)
+inline posix_timespec64 zw_clock_settime(posix_clock_id pclk_id, posix_timespec64 timestamp)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	return nt_family_clock_settime<nt_family::zw>(pclk_id, timestamp);
@@ -1011,7 +1011,7 @@ inline basic_io_scatter_t<char> timezone_name([[maybe_unused]] bool dst = posix_
 
 #endif
 
-inline iso8601_timestamp local(posix_statx_timestamp64 timestamp, [[maybe_unused]] bool dstadj = posix_daylight()) FAST_IO_HERBCEPTIONS_THROWS
+inline iso8601_timestamp local(posix_timespec64 timestamp, [[maybe_unused]] bool dstadj = posix_daylight()) FAST_IO_HERBCEPTIONS_THROWS
 {
 #ifdef __MSDOS__
 	return utc(timestamp);
@@ -1020,7 +1020,7 @@ inline iso8601_timestamp local(posix_statx_timestamp64 timestamp, [[maybe_unused
 #endif
 }
 
-inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe_unused]] posix_statx_timestamp64 timestamp)
+inline void posix_clock_settime([[maybe_unused]] posix_clock_id pclk_id, [[maybe_unused]] posix_timespec64 timestamp)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 #if defined(_WIN32) && !defined(__NEWLIB__)
@@ -1104,7 +1104,7 @@ namespace details
 
 }
 
-inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,posix_statx_timestamp64 timestamp)
+inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,posix_timespec64 timestamp)
  FAST_IO_HERBCEPTIONS_THROWS
 {
 	switch(pclk_id)
@@ -1129,7 +1129,7 @@ inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,posix_stat
 	}
 }
 
-inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,posix_statx_timestamp64 timestamp)
+inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,posix_timespec64 timestamp)
  FAST_IO_HERBCEPTIONS_THROWS
 {
 	posix_clock_sleep_abstime_complete(pclk_id,timestamp);
@@ -1138,7 +1138,7 @@ inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,posix
 
 #else
 
-inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,posix_statx_timestamp64 timestamp)
+inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,posix_timespec64 timestamp)
  FAST_IO_HERBCEPTIONS_THROWS
 {
 	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.tv_sec),static_cast<long>(timestamp.tv_nsec)};
@@ -1153,7 +1153,7 @@ inline [[nodiscard]] bool posix_clock_sleep_abstime(posix_clock_id pclk_id,posix
 	return false;
 }
 
-inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,posix_statx_timestamp64 timestamp)
+inline void posix_clock_sleep_abstime_complete(posix_clock_id pclk_id,posix_timespec64 timestamp)
  FAST_IO_HERBCEPTIONS_THROWS
 {
 	struct timespec timestamp_spec{static_cast<::std::time_t>(timestamp.tv_sec),static_cast<long>(timestamp.tv_nsec)};

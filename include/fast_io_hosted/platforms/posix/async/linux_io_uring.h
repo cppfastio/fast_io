@@ -1553,7 +1553,7 @@ inline bool io_async_peek(linux_io_uring_observer ring) FAST_IO_HERBCEPTIONS_THR
 }
 
 inline bool io_async_wait_timeout(linux_io_uring_observer ring,
-								  ::fast_io::posix_statx_timestamp64 timestamp) FAST_IO_HERBCEPTIONS_THROWS
+								  ::fast_io::posix_timespec64 timestamp) FAST_IO_HERBCEPTIONS_THROWS
 {
 	liburing::io_uring_cqe *cqe{liburing::io_uring_wait_cqe_timeout(*ring.ring, timestamp)};
 	if (cqe == nullptr)

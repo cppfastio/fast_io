@@ -24,10 +24,10 @@ struct posix_file_status
 	/* Since Linux 2.6, the kernel supports nanosecond
 			precision for the following timestamp fields.
 			For the details before Linux 2.6, see NOTES. */
-	posix_statx_timestamp64 atim;    // Time of last access
-	posix_statx_timestamp64 mtim;    // Time of last modification
-	posix_statx_timestamp64 ctim;    // Time of last status change
-	posix_statx_timestamp64 btim;    // Time of file creation
+	posix_timespec64 atim;    // Time of last access
+	posix_timespec64 mtim;    // Time of last modification
+	posix_timespec64 ctim;    // Time of last status change
+	posix_timespec64 btim;    // Time of file creation
 	::std::uintmax_t flags; // user defined flags for file
 	::std::uintmax_t gen;   // file generation number
 };
@@ -43,7 +43,7 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, f
 		sizeof(u8"\natim:") + sizeof(u8"\nmtim:") + sizeof(u8"\nctim:") + sizeof(u8"\nbtim:") + sizeof(u8"\nflags:") +
 		sizeof(u8"\ngen:") - 16 + print_reserve_size(io_reserve_type<char_type, perms>) +
 		print_reserve_size(io_reserve_type<char_type, file_type>) +
-		print_reserve_size(io_reserve_type<char_type, posix_statx_timestamp64>) * 4};
+		print_reserve_size(io_reserve_type<char_type, posix_timespec64>) * 4};
 	return res;
 }
 
@@ -79,13 +79,13 @@ inline constexpr char_type *print_file_status_impl(char_type *iter, fast_io::pos
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.blocks);
 
 		iter = details::copy_string_literal("\natim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.atim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.atim);
 		iter = details::copy_string_literal("\nmtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.mtim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.mtim);
 		iter = details::copy_string_literal("\nctim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.ctim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.ctim);
 		iter = details::copy_string_literal("\nbtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.btim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.btim);
 
 		iter = details::copy_string_literal("\nflags:", iter);
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.flags);
@@ -118,13 +118,13 @@ inline constexpr char_type *print_file_status_impl(char_type *iter, fast_io::pos
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.blocks);
 
 		iter = details::copy_string_literal(L"\natim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.atim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.atim);
 		iter = details::copy_string_literal(L"\nmtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.mtim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.mtim);
 		iter = details::copy_string_literal(L"\nctim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.ctim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.ctim);
 		iter = details::copy_string_literal(L"\nbtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.btim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.btim);
 
 		iter = details::copy_string_literal(L"\nflags:", iter);
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.flags);
@@ -157,13 +157,13 @@ inline constexpr char_type *print_file_status_impl(char_type *iter, fast_io::pos
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.blocks);
 
 		iter = details::copy_string_literal(u"\natim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.atim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.atim);
 		iter = details::copy_string_literal(u"\nmtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.mtim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.mtim);
 		iter = details::copy_string_literal(u"\nctim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.ctim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.ctim);
 		iter = details::copy_string_literal(u"\nbtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.btim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.btim);
 
 		iter = details::copy_string_literal(u"\nflags:", iter);
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.flags);
@@ -196,13 +196,13 @@ inline constexpr char_type *print_file_status_impl(char_type *iter, fast_io::pos
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.blocks);
 
 		iter = details::copy_string_literal(U"\natim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.atim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.atim);
 		iter = details::copy_string_literal(U"\nmtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.mtim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.mtim);
 		iter = details::copy_string_literal(U"\nctim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.ctim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.ctim);
 		iter = details::copy_string_literal(U"\nbtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.btim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.btim);
 
 		iter = details::copy_string_literal(U"\nflags:", iter);
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.flags);
@@ -235,13 +235,13 @@ inline constexpr char_type *print_file_status_impl(char_type *iter, fast_io::pos
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.blocks);
 
 		iter = details::copy_string_literal(u8"\natim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.atim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.atim);
 		iter = details::copy_string_literal(u8"\nmtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.mtim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.mtim);
 		iter = details::copy_string_literal(u8"\nctim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.ctim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.ctim);
 		iter = details::copy_string_literal(u8"\nbtim:", iter);
-		iter = print_reserve_define(io_reserve_type<char_type, posix_statx_timestamp64>, iter, status.btim);
+		iter = print_reserve_define(io_reserve_type<char_type, posix_timespec64>, iter, status.btim);
 
 		iter = details::copy_string_literal(u8"\nflags:", iter);
 		iter = print_reserve_define(io_reserve_type<char_type, ::std::uintmax_t>, iter, status.flags);

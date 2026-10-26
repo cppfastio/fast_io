@@ -6,7 +6,7 @@ namespace manipulators
 {
 /*
  * mnp::imf_date_get(t) — scan an RFC 9110 IMF-fixdate ("Sun, 06 Nov 1994
- * 08:49:37 GMT") into an iso8601_timestamp, a posix_statx_timestamp64,
+ * 08:49:37 GMT") into an iso8601_timestamp, a posix_timespec64,
  * or a plain integral type holding unix seconds (conversions run
  * through iso8601_to_unix_timestamp_impl).
  * This is the format the HTTP Date / Last-Modified / If-*-Since headers
@@ -21,7 +21,7 @@ struct imf_date_manip_t
 
 template <typename T>
 	requires(::std::same_as<::std::remove_cvref_t<T>, ::fast_io::iso8601_timestamp> ||
-			 ::std::same_as<::std::remove_cvref_t<T>, ::fast_io::posix_statx_timestamp64> ||
+			 ::std::same_as<::std::remove_cvref_t<T>, ::fast_io::posix_timespec64> ||
 			 (::fast_io::details::my_integral<::std::remove_cvref_t<T>> &&
 			  !::std::same_as<::std::remove_cvref_t<T>, bool>))
 inline constexpr imf_date_manip_t<T> imf_date_get(T &t) noexcept

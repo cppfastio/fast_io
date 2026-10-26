@@ -7,7 +7,7 @@ using namespace fast_io::io;
 int main() try
 {
 	auto const *loc{::fast_io::l10n::load_l10n(u8"de_DE.UTF-8")};
-	auto const ts{::fast_io::posix_statx_timestamp64{1742044245, 0}};
+	auto const ts{::fast_io::posix_timespec64{1742044245, 0}};
 	auto s{::fast_io::lc_concat(
 		loc, ::fast_io::mnp::chvw(u8'x'), ::fast_io::mnp::chvw(u8' '),
 		1234567890, ::fast_io::mnp::chvw(u8' '),

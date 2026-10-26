@@ -339,7 +339,7 @@ inline
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_for(::fast_io::posix_statx_timestamp64 const &sleep_duration)
+	void sleep_for(::fast_io::posix_timespec64 const &sleep_duration)
 		FAST_IO_HERBCEPTIONS_THROWS
 {
 	if (sleep_duration.tv_sec < 0) [[unlikely]]
@@ -408,10 +408,10 @@ inline
 	// for reduce some warning purpose
 	constexpr
 #endif
-	void sleep_until(::fast_io::posix_statx_timestamp64 const &expect_time)
+	void sleep_until(::fast_io::posix_timespec64 const &expect_time)
 		FAST_IO_HERBCEPTIONS_THROWS
 {
-	auto const win_100ns_seconds{::fast_io::posix_statx_timestamp64_to_ftu64(expect_time)};
+	auto const win_100ns_seconds{::fast_io::posix_timespec64_to_ftu64(expect_time)};
 
 	if (win_100ns_seconds > static_cast<::std::uint_least64_t>(::std::numeric_limits<::std::int_least64_t>::max())) [[unlikely]]
 	{

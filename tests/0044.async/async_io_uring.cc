@@ -225,7 +225,7 @@ int main()
 		bool fired{};
 		::std::cxx_std_error err{};
 		fad::async_pread_some_bytes_callback(
-			sched, fi::posix_statx_timestamp_opt{fi::posix_statx_timestamp64{0, 50000000}},
+			sched, fi::posix_statx_timestamp_opt{fi::posix_timespec64{0, 50000000}},
 			fi::posix_io_observer{pfds[0]}, buf, sizeof(buf), {},
 			[&](::std::cxx_std_error e, ::std::size_t) noexcept {
 				fired = true;

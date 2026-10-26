@@ -1,7 +1,7 @@
 ﻿#define FAST_IO_SANITIZE_IO_BUFFER
 #include <fast_io.h>
 
-inline void test_val(::fast_io::posix_statx_timestamp64 ts) throws
+inline void test_val(::fast_io::posix_timespec64 ts) throws
 {
 	using namespace ::fast_io::mnp;
 	using namespace ::fast_io::io;

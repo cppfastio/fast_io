@@ -7,7 +7,7 @@ namespace details
 {
 inline constexpr ::std::uint_least64_t statx_timestamp64_nanoseconds_per_second{1000000000u};
 
-inline constexpr posix_statx_timestamp64 div_uint(::std::int_least64_t rseconds, ::std::uint_least32_t nanoseconds,
+inline constexpr posix_timespec64 div_uint(::std::int_least64_t rseconds, ::std::uint_least32_t nanoseconds,
 												::std::uint_least64_t d) noexcept
 {
 	if (d == 0) [[unlikely]]
@@ -92,7 +92,7 @@ inline constexpr posix_statx_timestamp64 div_uint(::std::int_least64_t rseconds,
 
 } // namespace details
 
-inline constexpr posix_statx_timestamp64 operator-(posix_statx_timestamp64 a) noexcept
+inline constexpr posix_timespec64 operator-(posix_timespec64 a) noexcept
 {
 	::std::uint_least64_t sec{static_cast<::std::uint_least64_t>(a.tv_sec)};
 	::std::uint_least32_t nsec{a.tv_nsec};
@@ -105,8 +105,8 @@ inline constexpr posix_statx_timestamp64 operator-(posix_statx_timestamp64 a) no
 	return {static_cast<::std::int_least64_t>(sec), nsec};
 }
 
-inline constexpr posix_statx_timestamp64 operator+(posix_statx_timestamp64 a,
-												   posix_statx_timestamp64 b) noexcept
+inline constexpr posix_timespec64 operator+(posix_timespec64 a,
+												   posix_timespec64 b) noexcept
 {
 	::std::uint_least64_t sec{static_cast<::std::uint_least64_t>(a.tv_sec) + static_cast<::std::uint_least64_t>(b.tv_sec)};
 	::std::uint_least32_t nsec{a.tv_nsec + b.tv_nsec};
@@ -118,31 +118,31 @@ inline constexpr posix_statx_timestamp64 operator+(posix_statx_timestamp64 a,
 	return {static_cast<::std::int_least64_t>(sec), nsec};
 }
 
-inline constexpr posix_statx_timestamp64 &operator+=(posix_statx_timestamp64 &a,
-													 posix_statx_timestamp64 b) noexcept
+inline constexpr posix_timespec64 &operator+=(posix_timespec64 &a,
+													 posix_timespec64 b) noexcept
 {
 	return a = a + b;
 }
 
-inline constexpr posix_statx_timestamp64 operator-(posix_statx_timestamp64 a,
-												   posix_statx_timestamp64 b) noexcept
+inline constexpr posix_timespec64 operator-(posix_timespec64 a,
+												   posix_timespec64 b) noexcept
 {
 	return a + (-b);
 }
 
-inline constexpr posix_statx_timestamp64 &operator-=(posix_statx_timestamp64 &a,
-													 posix_statx_timestamp64 b) noexcept
+inline constexpr posix_timespec64 &operator-=(posix_timespec64 &a,
+													 posix_timespec64 b) noexcept
 {
 	return a = a + (-b);
 }
 
-inline constexpr posix_statx_timestamp64 operator/(posix_statx_timestamp64 a,
+inline constexpr posix_timespec64 operator/(posix_timespec64 a,
 												   ::std::uint_least64_t b) noexcept
 {
 	return ::fast_io::details::div_uint(a.tv_sec, a.tv_nsec, b);
 }
 
-inline constexpr posix_statx_timestamp64 &operator/=(posix_statx_timestamp64 &a,
+inline constexpr posix_timespec64 &operator/=(posix_timespec64 &a,
 													 ::std::uint_least64_t b) noexcept
 {
 	return a = ::fast_io::details::div_uint(a.tv_sec, a.tv_nsec, b);
@@ -324,7 +324,7 @@ inline constexpr ::std::int_least64_t year_month_to_seconds(::std::int_least64_t
 #if __has_cpp_attribute(__gnu__::__pure__)
 [[__gnu__::__pure__]]
 #endif
-inline constexpr posix_statx_timestamp64 iso8601_to_unix_timestamp_impl(iso8601_timestamp const &tsp) noexcept
+inline constexpr posix_timespec64 iso8601_to_unix_timestamp_impl(iso8601_timestamp const &tsp) noexcept
 {
 	return {static_cast<::std::int_least64_t>(
 				static_cast<::std::uint_least32_t>(tsp.day - 1) * static_cast<::std::uint_least32_t>(86400LL) +
@@ -337,12 +337,12 @@ inline constexpr posix_statx_timestamp64 iso8601_to_unix_timestamp_impl(iso8601_
 
 } // namespace details
 
-inline constexpr iso8601_timestamp utc(posix_statx_timestamp64 timestamp) noexcept
+inline constexpr iso8601_timestamp utc(posix_timespec64 timestamp) noexcept
 {
 	return details::unix_timestamp_to_iso8601_tsp_impl(timestamp.tv_sec, timestamp.tv_nsec);
 }
 
-inline constexpr posix_statx_timestamp64 to_posix_statx_timestamp64(iso8601_timestamp const &timestamp) noexcept
+inline constexpr posix_timespec64 to_posix_timespec64(iso8601_timestamp const &timestamp) noexcept
 {
 	return details::iso8601_to_unix_timestamp_impl(timestamp);
 }
@@ -500,7 +500,7 @@ inline constexpr char_type *print_reserve_iso8601_timestamp_impl(char_type *iter
 }
 
 template <bool comma = false, ::std::integral char_type>
-inline constexpr char_type *print_reserve_bsc_timestamp_impl(char_type *iter, posix_statx_timestamp64 timestamp) noexcept
+inline constexpr char_type *print_reserve_bsc_timestamp_impl(char_type *iter, posix_timespec64 timestamp) noexcept
 {
 	::std::int_least64_t seconds{timestamp.tv_sec};
 	::std::uint_least32_t nanoseconds{timestamp.tv_nsec};
@@ -532,7 +532,7 @@ inline constexpr char_type *print_reserve_bsc_timestamp_impl(char_type *iter, po
 } // namespace details
 
 template <::std::integral char_type>
-inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, posix_statx_timestamp64>) noexcept
+inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, posix_timespec64>) noexcept
 {
 	constexpr ::std::size_t sz{print_reserve_size(io_reserve_type<char_type, ::std::int_least64_t>) + 1u +
 							   ::std::numeric_limits<::std::uint_least32_t>::digits10};
@@ -540,8 +540,8 @@ inline constexpr ::std::size_t print_reserve_size(io_reserve_type_t<char_type, p
 }
 
 template <::std::integral char_type>
-inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, posix_statx_timestamp64>,
-												 char_type *iter, posix_statx_timestamp64 timestamp) noexcept
+inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, posix_timespec64>,
+												 char_type *iter, posix_timespec64 timestamp) noexcept
 {
 	return details::print_reserve_bsc_timestamp_impl(iter, timestamp);
 }
@@ -563,7 +563,7 @@ inline constexpr char_type *print_reserve_define(io_reserve_type_t<char_type, is
 	return details::print_reserve_iso8601_timestamp_impl(iter, timestamp);
 }
 
-inline constexpr posix_statx_timestamp64 to_posix_statx_timestamp64_ftu64(::std::uint_least64_t ftu64) noexcept
+inline constexpr posix_timespec64 to_posix_timespec64_ftu64(::std::uint_least64_t ftu64) noexcept
 {
 	constexpr ::std::uint_least64_t win32_epoch_to_unix_epoch_seconds{11644473600ULL};
 	::std::uint_least64_t seconds{ftu64 / 10000000ULL};
@@ -571,7 +571,7 @@ inline constexpr posix_statx_timestamp64 to_posix_statx_timestamp64_ftu64(::std:
 	return {static_cast<::std::int_least64_t>(seconds - win32_epoch_to_unix_epoch_seconds), nanoseconds};
 }
 
-inline constexpr ::std::uint_least64_t posix_statx_timestamp64_to_ftu64(posix_statx_timestamp64 timestamp)
+inline constexpr ::std::uint_least64_t posix_timespec64_to_ftu64(posix_timespec64 timestamp)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
 	constexpr ::std::int_least64_t win32_epoch_to_unix_epoch_seconds{11644473600LL};
@@ -655,7 +655,7 @@ struct timestamp_scan_state_t : private timestamp_scan_context_buffer_max_size_t
 namespace details
 {
 
-inline constexpr void normalize_posix_statx_timestamp64_scan_result(posix_statx_timestamp64 &t) noexcept
+inline constexpr void normalize_posix_timespec64_scan_result(posix_timespec64 &t) noexcept
 {
 	if (::fast_io::details::statx_timestamp64_nanoseconds_per_second <= t.tv_nsec)
 	{
@@ -679,7 +679,7 @@ inline constexpr void normalize_posix_statx_timestamp64_scan_result(posix_statx_
 
 template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const *>
-scn_cnt_define_unix_timestamp_impl(char_type const *begin, char_type const *end, posix_statx_timestamp64 &t) noexcept
+scn_cnt_define_unix_timestamp_impl(char_type const *begin, char_type const *end, posix_timespec64 &t) noexcept
 {
 	// TODO: whether to accept C-like floatings such as 2. and .2
 	auto [itr, ec] = scan_int_contiguous_define_impl<10, false, false, false>(begin, end, t.tv_sec);
@@ -711,7 +711,7 @@ scn_cnt_define_unix_timestamp_impl(char_type const *begin, char_type const *end,
 	auto result{chrono_scan_decimal_fraction_part_never_overflow_impl(begin, end, t.tv_nsec)};
 	if (result.code == ::fast_io::freestanding::parse_errc::ok)
 	{
-		normalize_posix_statx_timestamp64_scan_result(t);
+		normalize_posix_timespec64_scan_result(t);
 	}
 	return result;
 }
@@ -845,7 +845,7 @@ scn_ctx_decimal_fraction_part_never_overflow_impl(timestamp_scan_state_t<char_ty
 template <bool comma, ::std::integral char_type>
 inline constexpr parse_result<char_type const *>
 scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, char_type const *begin,
-								   char_type const *end, posix_statx_timestamp64 &t) noexcept
+								   char_type const *end, posix_timespec64 &t) noexcept
 {
 #if __has_cpp_attribute(assume)
 	[[assume(state.tsp_phase != scan_timestamp_context_phase::after_year)]];
@@ -910,7 +910,7 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 		if (result.code == ::fast_io::freestanding::parse_errc::ok)
 		{
 			state.tsp_phase = scan_timestamp_context_phase::ok;
-			normalize_posix_statx_timestamp64_scan_result(t);
+			normalize_posix_timespec64_scan_result(t);
 		}
 		return result;
 	}
@@ -925,7 +925,7 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 					++t.tv_nsec;
 				}
 				state.tsp_phase = scan_timestamp_context_phase::ok;
-				normalize_posix_statx_timestamp64_scan_result(t);
+				normalize_posix_timespec64_scan_result(t);
 				return {begin, ::fast_io::freestanding::parse_errc::ok};
 			}
 			if (*begin != char_literal_v<u8'0', char_type>)
@@ -949,7 +949,7 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 			return {end, ::fast_io::freestanding::parse_errc::partial};
 		}
 		state.tsp_phase = scan_timestamp_context_phase::ok;
-		normalize_posix_statx_timestamp64_scan_result(t);
+		normalize_posix_timespec64_scan_result(t);
 		return {itr, ::fast_io::freestanding::parse_errc::ok};
 	}
 	case scan_timestamp_context_phase::ok:
@@ -962,7 +962,7 @@ scn_ctx_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state, cha
 
 template <::std::integral char_type>
 inline constexpr ::fast_io::freestanding::parse_errc scn_ctx_eof_define_unix_timestamp_impl(timestamp_scan_state_t<char_type> &state,
-																							posix_statx_timestamp64 &t) noexcept
+																							posix_timespec64 &t) noexcept
 {
 	switch (state.tsp_phase)
 	{
@@ -976,7 +976,7 @@ inline constexpr ::fast_io::freestanding::parse_errc scn_ctx_eof_define_unix_tim
 		{
 			return ::fast_io::freestanding::parse_errc::invalid;
 		}
-		normalize_posix_statx_timestamp64_scan_result(t);
+		normalize_posix_timespec64_scan_result(t);
 		return ::fast_io::freestanding::parse_errc::ok;
 	}
 	case scan_timestamp_context_phase::waiting_for_five:
@@ -986,7 +986,7 @@ inline constexpr ::fast_io::freestanding::parse_errc scn_ctx_eof_define_unix_tim
 		}
 		[[fallthrough]];
 	case scan_timestamp_context_phase::waiting_for_numbers:
-		normalize_posix_statx_timestamp64_scan_result(t);
+		normalize_posix_timespec64_scan_result(t);
 		return ::fast_io::freestanding::parse_errc::ok;
 	case scan_timestamp_context_phase::ok:
 		return ::fast_io::freestanding::parse_errc::ok;
@@ -1620,34 +1620,34 @@ scn_ctx_define_iso8601_impl(timestamp_scan_state_t<char_type> &state, char_type 
 
 template <::std::integral char_type>
 inline constexpr parse_result<char_type const *>
-scan_contiguous_define(io_reserve_type_t<char_type, fast_io::parameter<posix_statx_timestamp64 &>>,
+scan_contiguous_define(io_reserve_type_t<char_type, fast_io::parameter<posix_timespec64 &>>,
 					   char_type const *begin, char_type const *end,
-					   fast_io::parameter<posix_statx_timestamp64 &> t) noexcept
+					   fast_io::parameter<posix_timespec64 &> t) noexcept
 {
 	return details::scn_cnt_define_unix_timestamp_impl<false>(begin, end, t.reference);
 }
 
 template <::std::integral char_type>
 inline constexpr io_type_t<timestamp_scan_state_t<char_type>>
-scan_context_type(io_reserve_type_t<char_type, fast_io::parameter<posix_statx_timestamp64 &>>) noexcept
+scan_context_type(io_reserve_type_t<char_type, fast_io::parameter<posix_timespec64 &>>) noexcept
 {
 	return {};
 }
 
 template <::std::integral char_type>
 inline constexpr parse_result<char_type const *>
-scan_context_define(io_reserve_type_t<char_type, parameter<posix_statx_timestamp64 &>>,
+scan_context_define(io_reserve_type_t<char_type, parameter<posix_timespec64 &>>,
 					timestamp_scan_state_t<char_type> &state, char_type const *begin, char_type const *end,
-					parameter<posix_statx_timestamp64 &> t) noexcept
+					parameter<posix_timespec64 &> t) noexcept
 {
 	return details::scn_ctx_define_unix_timestamp_impl<false>(state, begin, end, t.reference);
 }
 
 template <::std::integral char_type>
 inline constexpr ::fast_io::freestanding::parse_errc
-scan_context_eof_define(io_reserve_type_t<char_type, parameter<posix_statx_timestamp64 &>>,
+scan_context_eof_define(io_reserve_type_t<char_type, parameter<posix_timespec64 &>>,
 						timestamp_scan_state_t<char_type> &state,
-						fast_io::parameter<posix_statx_timestamp64 &> t) noexcept
+						fast_io::parameter<posix_timespec64 &> t) noexcept
 {
 	return details::scn_ctx_eof_define_unix_timestamp_impl(state, t.reference);
 }
@@ -1693,18 +1693,18 @@ scan_context_eof_define(io_reserve_type_t<char_type, fast_io::parameter<iso8601_
 
 namespace manipulators
 {
-inline constexpr auto fixed(posix_statx_timestamp64 t, ::std::size_t n) noexcept
+inline constexpr auto fixed(posix_timespec64 t, ::std::size_t n) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_precision_t<
 		::fast_io::details::dcmfloat_mani_flags_cache<false, false, ::fast_io::manipulators::floating_format::fixed>,
-		::fast_io::posix_statx_timestamp64>{t, n};
+		::fast_io::posix_timespec64>{t, n};
 }
 
-inline constexpr auto comma_fixed(posix_statx_timestamp64 t, ::std::size_t n) noexcept
+inline constexpr auto comma_fixed(posix_timespec64 t, ::std::size_t n) noexcept
 {
 	return ::fast_io::manipulators::scalar_manip_precision_t<
 		::fast_io::details::dcmfloat_mani_flags_cache<false, true, ::fast_io::manipulators::floating_format::fixed>,
-		::fast_io::posix_statx_timestamp64>{t, n};
+		::fast_io::posix_timespec64>{t, n};
 }
 } // namespace manipulators
 
@@ -1802,8 +1802,8 @@ inline constexpr char_type *print_reserve_define_fixed_precision_unix_timestamp_
 
 template <::fast_io::manipulators::scalar_flags flags, ::std::integral char_type>
 inline constexpr ::std::size_t print_reserve_size(
-	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_statx_timestamp64>>,
-	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_statx_timestamp64> const &e) noexcept
+	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_timespec64>>,
+	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_timespec64> const &e) noexcept
 {
 	static_assert(flags.base == 10 && flags.floating == ::fast_io::manipulators::floating_format::fixed && !flags.full);
 	return ::fast_io::details::print_reserve_size_fixed_precision_unix_timestamp_impl<char_type>(e.precision);
@@ -1811,9 +1811,9 @@ inline constexpr ::std::size_t print_reserve_size(
 
 template <::fast_io::manipulators::scalar_flags flags, ::std::integral char_type>
 inline constexpr char_type *print_reserve_define(
-	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_statx_timestamp64>>,
+	::fast_io::io_reserve_type_t<char_type, ::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_timespec64>>,
 	char_type *iter,
-	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_statx_timestamp64> const &e) noexcept
+	::fast_io::manipulators::scalar_manip_precision_t<flags, ::fast_io::posix_timespec64> const &e) noexcept
 {
 	static_assert(flags.base == 10 && flags.floating == ::fast_io::manipulators::floating_format::fixed && !flags.full);
 	return ::fast_io::details::print_reserve_define_fixed_precision_unix_timestamp_impl<flags.comma, flags.showpos>(iter, e.reference.tv_sec, e.reference.tv_nsec, e.precision);

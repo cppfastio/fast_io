@@ -353,7 +353,7 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		fbi.CreationTime = ::fast_io::posix_statx_timestamp64_to_ftu64(creation_time.timestamp);
+		fbi.CreationTime = ::fast_io::posix_timespec64_to_ftu64(creation_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:
@@ -370,7 +370,7 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		fbi.LastAccessTime = ::fast_io::posix_statx_timestamp64_to_ftu64(last_access_time.timestamp);
+		fbi.LastAccessTime = ::fast_io::posix_timespec64_to_ftu64(last_access_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:
@@ -387,7 +387,7 @@ inline void nt_utimensat_impl(void *dirhd, char16_t const *path_c_str, ::std::si
 	{
 	case ::fast_io::utime_flags::none:
 	{
-		fbi.LastWriteTime = ::fast_io::posix_statx_timestamp64_to_ftu64(last_modification_time.timestamp);
+		fbi.LastWriteTime = ::fast_io::posix_timespec64_to_ftu64(last_modification_time.timestamp);
 		break;
 	}
 	case ::fast_io::utime_flags::now:

@@ -211,7 +211,7 @@ inline void dos_unlinkat_impl(int dirfd, char const *pathname)
 	djgpp_libc_throw_posix_error(::fast_io::posix::my_dos_unlink(::fast_io::details::my_dos_concat_tlc_path(dirfd, pathname).c_str()));
 }
 
-inline constexpr ::std::time_t unix_timestamp_to_time_t(posix_statx_timestamp64 stmp) noexcept
+inline constexpr ::std::time_t unix_timestamp_to_time_t(posix_timespec64 stmp) noexcept
 {
 	return static_cast<::std::time_t>(stmp.tv_sec);
 }
