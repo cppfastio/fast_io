@@ -152,15 +152,10 @@ try
 	}
 	::fast_io::native_file_loader fmp(::fast_io::mnp::os_c_str(argv[1]));
 	char const *base{reinterpret_cast<char const *>(fmp.data())};
-	if (fmp.size() < sizeof(ilc::lc_locale))
-	{
-		::fast_io::perrln("not a locale blob (too small)");
-		return 1;
-	}
 	auto const *loc{reinterpret_cast<ilc::lc_locale const *>(base)};
-	if (ilc::lc_u32(loc->magic) != ilc::magic)
+	if (!ilc::lc_verify(loc, fmp.size()))
 	{
-		::fast_io::perrln("bad magic");
+		::fast_io::perrln("not a valid locale blob");
 		return 1;
 	}
 	::fast_io::println("version=", ilc::lc_u32(loc->version),
