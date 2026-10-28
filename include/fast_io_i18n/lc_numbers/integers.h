@@ -102,6 +102,58 @@ inline char_type *lc_grouped_write(lc_ctx<char_type> const *ctx,
 	return first;
 }
 
+// Fast path for the common locale shape lc_ctx::uniform_group records:
+// one group size repeated forever, so the separator positions need no
+// bounds walk and the caller can count them as (nd - 1) / g. Same
+// output as lc_grouped_write.
+template <::std::size_t base, bool upper, bool full, ::std::integral char_type,
+		  ::fast_io::details::my_unsigned_integral T>
+inline char_type *lc_uniform_grouped_write(lc_ctx<char_type> const *ctx,
+										   char_type *first, T u) noexcept
+{
+	using int_type = ::std::remove_cv_t<T>;
+	int_type tmp[::fast_io::details::cal_max_int_size<int_type, base>()];
+	int_type *tmpend{tmp};
+	do
+	{
+		*tmpend++ = static_cast<int_type>(u % base);
+		u /= base;
+	} while (u != 0);
+	::std::size_t nd{static_cast<::std::size_t>(tmpend - tmp)};
+	if constexpr (full)
+	{
+		nd = sizeof(tmp) / sizeof(int_type);
+		for (auto p{tmpend}; p != tmp + nd; ++p)
+		{
+			*p = int_type{};
+		}
+		tmpend = tmp + nd;
+	}
+	::std::size_t const g{ctx->uniform_group};
+	::std::size_t pos{nd};
+	::std::size_t lead{nd % g};
+	if (lead == 0)
+	{
+		lead = g;
+	}
+	while (pos != 0)
+	{
+		::std::size_t cnt{lead};
+		lead = g;
+		do
+		{
+			*first++ = ::fast_io::details::charliteralofnumber<char_type, upper>(tmp[--pos]);
+		} while (--cnt != 0);
+		if (pos != 0)
+		{
+			::fast_io::details::my_memcpy(first, ctx->sep,
+										  ctx->sep_len * sizeof(char_type));
+			first += ctx->sep_len;
+		}
+	}
+	return first;
+}
+
 // full emit: sign for decimal only (non-decimal bases write the
 // unsigned representation, like print_reserve on scalar_manip), the
 // showbase prefix, then grouped or plain digits in the base
@@ -150,10 +202,15 @@ inline char_type *lc_print_scalar(lc_ctx<char_type> const *ctx,
 	if constexpr (flags.showbase)
 	{
 		first = ::fast_io::details::print_reserve_show_base_impl<flags.base,
-															   flags.uppercase_showbase>(first);
+																 flags.uppercase_showbase>(first);
 	}
 	if (ctx->grouping_len != 0 && ctx->sep_len != 0)
 	{
+		if (ctx->uniform_group != 0)
+		{
+			return lc_uniform_grouped_write<flags.base, flags.uppercase, flags.full>(
+				ctx, first, u);
+		}
 		return lc_grouped_write<flags.base, flags.uppercase, flags.full>(ctx, first, u);
 	}
 	return ::fast_io::details::print_reserve_integral_withfull_main_impl<
@@ -223,7 +280,10 @@ print_reserve_size(lc_ctx<char_type> const *ctx,
 		sign += ::fast_io::details::base_prefix_array<char_type, flags.base>.size();
 	}
 	return sign + nd +
-		   ::fast_io::details::lc_grouped_count(ctx, nd) * ctx->sep_len;
+		   (ctx->uniform_group != 0
+				? (nd != 0 ? (nd - 1) / ctx->uniform_group : 0)
+				: ::fast_io::details::lc_grouped_count(ctx, nd)) *
+			   ctx->sep_len;
 }
 
 template <::std::integral char_type, ::fast_io::manipulators::scalar_flags flags, typename T>
@@ -237,4 +297,3 @@ print_reserve_define(lc_ctx<char_type> const *ctx, char_type *iter,
 }
 
 } // namespace fast_io
-

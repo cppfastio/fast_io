@@ -22,6 +22,21 @@ inline constexpr T basic_lc_general_concat(
 					  decltype(::fast_io::io_print_forward<char_type>(
 						  ::fast_io::io_print_alias(args)))...>)
 	{
+		/* Integers are the only lc args whose formatting is the plain
+		   path whenever the locale has no grouping: don't build the
+		   context in that (common) case. */
+		if constexpr (::fast_io::l10n::details::lc_all_plain_scalar_v<
+						  char_type,
+						  decltype(::fast_io::io_print_forward<char_type>(
+							  ::fast_io::io_print_alias(args)))...>)
+		{
+			if (!::fast_io::details::lc_numeric_grouped<char_type>(loc))
+			{
+				return ::fast_io::basic_general_concat<line, char_type, T>(
+					::fast_io::io_print_forward<char_type>(
+						::fast_io::io_print_alias(args))...);
+			}
+		}
 		T str;
 		::fast_io::lc_ctx<char_type> ctx{::fast_io::lc_load_ctx<char_type>(loc)};
 		::fast_io::io_strlike_reference_wrapper<char_type, T> ref{
@@ -72,4 +87,3 @@ inline constexpr ::fast_io::basic_string<char_type> lc_concatln(
 }
 
 } // namespace fast_io
-

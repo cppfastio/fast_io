@@ -34,6 +34,10 @@ struct lc_ctx
 	::std::size_t sep_len{};
 	char8_t grouping[lc_sep_capacity]{};
 	::std::size_t grouping_len{};
+	// the common locale shape — one group size repeated forever from
+	// the right ({3}, {3,0}, {3,CHAR_MAX}); 0 when the list is not
+	// uniform and the writers must consult it group by group
+	::std::uint_least8_t uniform_group{};
 
 	// resolve a wire scatter member to a real scatter of char_type
 	// units — the member's declared T is the charset tag (char for
@@ -98,14 +102,58 @@ lc_load_ctx(::fast_io::l10n::lc_locale const *v) noexcept
 	{
 		::fast_io::details::my_memcpy(ctx.grouping, g.base, g.len);
 		ctx.grouping_len = g.len;
+		/* glibc semantics: entries count from the right, 0 repeats
+		   the previous size, CHAR_MAX stops, running past the end
+		   repeats the last one. The list is uniform when every
+		   consulted entry is the same size. */
+		auto const g0{static_cast<::std::uint_least8_t>(ctx.grouping[0])};
+		if (g0 != 0 && g0 != 0xFFu)
+		{
+			bool uniform{true};
+			for (::std::size_t i{1}; i < g.len; ++i)
+			{
+				auto const gi{static_cast<::std::uint_least8_t>(ctx.grouping[i])};
+				if (gi == 0xFFu)
+				{
+					break;
+				}
+				if (gi != 0 && gi != g0)
+				{
+					uniform = false;
+					break;
+				}
+			}
+			if (uniform)
+			{
+				ctx.uniform_group = g0;
+			}
+		}
 	}
 	return ctx;
 }
 
-
 namespace details
 {
 
+// Cheap probe for the imbued status path: without a thousands
+// separator there is nothing to group with, so the integers format
+// exactly like the plain path and no lc_ctx is needed.
+template <::std::integral char_type>
+inline bool lc_numeric_grouped(::fast_io::l10n::lc_locale const *loc) noexcept
+{
+	namespace lc = ::fast_io::l10n;
+	if (loc == nullptr)
+	{
+		return false;
+	}
+	auto const *all{lc::lc_get_all<char_type>(loc)};
+	if (all == nullptr)
+	{
+		return false;
+	}
+	auto const s{lc::lc_get_scatter(loc, all->numeric.thousands_sep)};
+	return s.base != nullptr && s.len != 0;
+}
 // glibc grouping semantics: entry gi is the group size for group gi
 // counting from the right; past the end the last value repeats; a 0
 // repeats the previous value; 0xFF (CHAR_MAX) or 0-with-no-previous
