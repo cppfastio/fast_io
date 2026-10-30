@@ -12,31 +12,31 @@ namespace fast_io
 
 template <typename char_type, typename T>
 concept lc_scatter_printable = ::std::integral<char_type> &&
-	requires(lc_ctx<char_type> const *ctx, T t) {
-		{
-			print_scatter_define(ctx, t)
-		} -> ::std::same_as<::fast_io::basic_io_scatter_t<char_type>>;
-	};
+							   requires(lc_ctx<char_type> const *ctx, T t) {
+								   {
+									   print_scatter_define(ctx, t)
+								   } -> ::std::same_as<::fast_io::basic_io_scatter_t<char_type>>;
+							   };
 
 template <typename char_type, typename T>
 concept lc_dynamic_reserve_printable = ::std::integral<char_type> &&
-	requires(lc_ctx<char_type> const *ctx, T t, char_type *ptr, ::std::size_t size) {
-		{ print_reserve_size(ctx, t) } -> ::std::convertible_to<::std::size_t>;
-		{ print_reserve_define(ctx, ptr, t) } -> ::std::convertible_to<char_type *>;
-	};
+									   requires(lc_ctx<char_type> const *ctx, T t, char_type *ptr, ::std::size_t size) {
+										   { print_reserve_size(ctx, t) } -> ::std::convertible_to<::std::size_t>;
+										   { print_reserve_define(ctx, ptr, t) } -> ::std::convertible_to<char_type *>;
+									   };
 
 template <typename char_type, typename T>
 concept lc_printable = ::std::integral<char_type> &&
-	requires(lc_ctx<char_type> const *ctx,
-			 ::fast_io::details::dummy_buffer_output_stream<char_type> out, T t) {
-		print_define(ctx, out, t);
-	};
+					   requires(lc_ctx<char_type> const *ctx,
+								::fast_io::details::dummy_buffer_output_stream<char_type> out, T t) {
+						   print_define(ctx, out, t);
+					   };
 
 // any of the three lc-hook shapes exists for T in char_type
 template <typename char_type, typename T>
 concept lc_any_printable = lc_scatter_printable<char_type, T> ||
-	lc_dynamic_reserve_printable<char_type, T> ||
-	lc_printable<char_type, T>;
+						   lc_dynamic_reserve_printable<char_type, T> ||
+						   lc_printable<char_type, T>;
 
 // write one lc arg to the stream — scatter straight out of the image
 // when the hook gives one, the obuffer reserve fast path for
@@ -61,6 +61,17 @@ inline constexpr void lc_write_lc(lc_ctx<typename output::output_char_type> cons
 	}
 	else if constexpr (lc_dynamic_reserve_printable<char_type, value_type>)
 	{
+		/* An integer with no grouping in the locale formats exactly
+		   like the plain path; skip the count pass and the locale
+		   writer entirely. */
+		if constexpr (::fast_io::lc_grouped_scalar_v<value_type>)
+		{
+			if (ctx.grouping_len == 0 || ctx.sep_len == 0)
+			{
+				::fast_io::operations::decay::print_freestanding_decay<false>(out, t);
+				return;
+			}
+		}
 		auto const *cp{__builtin_addressof(ctx)};
 		::std::size_t const need{print_reserve_size(cp, t)};
 		if constexpr (::fast_io::operations::decay::defines::
@@ -156,6 +167,12 @@ inline consteval ::std::size_t lc_first_index() noexcept
 template <typename char_type, typename... Args>
 inline constexpr bool lc_any_arg_v{lc_first_index<char_type, Args...>() != sizeof...(Args)};
 
+// Every arg is an integer scalar — the only lc args that format exactly
+// like the plain path when the locale does not group.
+template <typename char_type, typename... Args>
+inline constexpr bool lc_all_plain_scalar_v{
+	(::fast_io::lc_grouped_scalar_v<::std::remove_cvref_t<Args>> && ...)};
+
 // args are split at every lc arg: contiguous non-lc segments go through
 // print_freestanding_decay (the plain path keeps its reserve / scatter
 // batching inside each segment), lc args write through their hooks on
@@ -189,4 +206,3 @@ inline constexpr void lc_status_print_impl(lc_ctx<typename output::output_char_t
 } // namespace l10n::details
 
 } // namespace fast_io
-

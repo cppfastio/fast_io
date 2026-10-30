@@ -381,10 +381,11 @@ inline constexpr void lc_prog_run(char8_t const *prog, ::std::size_t plen,
 								  bool in_era)
 	FAST_IO_HERBCEPTIONS_THROWS;
 
-// run a program member (empty member = nothing) — file contents are
-// trusted like a DLL: no bounds checking, magic+version were the whole
-// validation. in_era marks execution inside an era fmt program: %Ey is
-// the era's year number there, not another fmt recursion
+// run a program member (empty member = nothing) — the container is
+// verified at load (lc_verify), so the member range is trusted; the
+// program reader still bounds-checks its own LEB stream. in_era marks
+// execution inside an era fmt program: %Ey is the era's year number
+// there, not another fmt recursion
 template <::std::integral char_type, typename sink>
 inline constexpr void lc_run_member(sink &sk, lc_ctx<char_type> const *ctx,
 									::fast_io::l10n::lc_scatter<char8_t> prog,

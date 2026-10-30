@@ -10,10 +10,12 @@
 // All fields are little-endian u32/s32, so the image is architecture
 // neutral; on little-endian hosts it is read in place with zero parsing.
 //
-// Loading a locale is: mmap (private copy-on-write) + check magic and
-// version + return a pointer to the lc_locale in the file. That is all —
-// there is no decoding step. COW pages also mean a user may patch rva
-// fields in their own mapping without touching the shared file image.
+// Loading a locale is: mmap (private copy-on-write) + lc_verify the
+// whole image once + return a pointer to the lc_locale in the file.
+// After that there is no decoding and no per-field validation — the
+// formatting code trusts every rva/scatter. COW pages also mean a user
+// may patch rva fields in their own mapping without touching the shared
+// file image.
 //
 // File layout:
 //   [lc_locale root]                    (40 bytes, offsets are constants)
@@ -35,6 +37,10 @@ namespace fast_io::l10n
 
 inline constexpr ::std::uint_least32_t magic{0x314C4346}; // 'FCL1' LE
 inline constexpr ::std::uint_least32_t blob_version{1};
+
+// LC_NUMERIC fields cached per imbue (lc_ctx) have a fixed capacity;
+// lc_verify checks the wire lengths once so formatting never has to.
+inline constexpr ::std::size_t lc_numeric_capacity{16};
 
 // little-endian file scalars -> host
 inline constexpr ::std::uint_least32_t lc_u32(::std::uint_least32_t v) noexcept
@@ -219,44 +225,32 @@ struct lc_locale
 };
 
 // resolve an rva against the file base — the lc_locale pointer itself.
-// off 0 = absent -> nullptr; anything outside the image is a malformed
-// file, so it throws rather than resolving a wild pointer
+// off 0 = absent -> nullptr. The image was fully verified at load time
+// (lc_verify), so this is a plain pointer add — no per-access checks.
 template <typename T>
-inline constexpr T const *lc_get_rva(void const *base, lc_rva<T> r)
-	FAST_IO_HERBCEPTIONS_THROWS
+inline constexpr T const *lc_get_rva(void const *base, lc_rva<T> r) noexcept
 {
 	::std::uint_least32_t const off{lc_u32(r.off)};
 	if (off == 0)
 	{
 		return nullptr;
 	}
-	if (off >= lc_u32(static_cast<lc_locale const *>(base)->total))
-	{
-		::fast_io::herbceptions::throws_errc(::std::errc::invalid_argument);
-	}
 	return reinterpret_cast<T const *>(static_cast<char8_t const *>(base) + off);
 }
 
 // resolve a scatter to a host {base,len} pair — T units. {nullptr,0}
-// when absent; the whole range must fit inside the image
+// when absent. Bounds were checked once at load, so no checks here.
 template <typename T>
 inline constexpr ::fast_io::basic_io_scatter_t<T>
-lc_get_scatter(void const *base, lc_scatter<T> s)
-	FAST_IO_HERBCEPTIONS_THROWS
+lc_get_scatter(void const *base, lc_scatter<T> s) noexcept
 {
 	::std::uint_least32_t const off{lc_u32(s.ref.off)};
 	if (off == 0)
 	{
 		return {};
 	}
-	auto const total{lc_u32(static_cast<lc_locale const *>(base)->total)};
-	auto const len{static_cast<::std::size_t>(lc_u32(s.len))};
-	if (off >= total || len > (total - off) / sizeof(T))
-	{
-		::fast_io::herbceptions::throws_errc(::std::errc::invalid_argument);
-	}
 	return {reinterpret_cast<T const *>(static_cast<char8_t const *>(base) + off),
-			len};
+			static_cast<::std::size_t>(lc_u32(s.len))};
 }
 
 
@@ -286,8 +280,7 @@ inline constexpr char8_t const *locale_charset_name(locale_charset cs) noexcept
 // slot (the locale's declared codeset), char8_t/16/32 their own UTF
 // sections, wchar_t follows its size. nullptr when the slot is absent.
 template <::std::integral char_type>
-inline constexpr basic_lc_all<char_type> const *lc_get_all(lc_locale const *l)
-	FAST_IO_HERBCEPTIONS_THROWS
+inline constexpr basic_lc_all<char_type> const *lc_get_all(lc_locale const *l) noexcept
 {
 	if constexpr (::std::same_as<char_type, char>)
 	{
@@ -329,6 +322,311 @@ inline constexpr basic_lc_all<char_type> const *lc_get_all(lc_locale const *l)
 	}
 }
 
+
+// ---------------------------------------------------------------------------
+// one-shot verification — load_l10n runs this before publishing a locale
+// into the cache. Formatting code then trusts every rva/scatter and never
+// re-checks bounds. size is the valid byte range backing l (the mapping,
+// or the private user-locale image on Windows).
+// ---------------------------------------------------------------------------
+namespace verify_details
+{
+
+// absent (off 0) is always fine; otherwise the entire [off, off+len*T)
+// range must stay inside the image
+template <typename T>
+inline constexpr bool scatter(void const *base, ::std::size_t total,
+							  lc_scatter<T> s) noexcept
+{
+	auto const off{lc_u32(s.ref.off)};
+	if (off == 0)
+	{
+		return true;
+	}
+	if (off >= total)
+	{
+		return false;
+	}
+	auto const len{static_cast<::std::size_t>(lc_u32(s.len))};
+	return len <= (total - off) / sizeof(T);
+}
+
+template <typename T, ::std::size_t N>
+inline constexpr bool scatter_array(void const *base, ::std::size_t total,
+									lc_scatter<T> const (&arr)[N]) noexcept
+{
+	for (auto const &s : arr)
+	{
+		if (!scatter(base, total, s))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+// a strref table: outer array of lc_scatter<T>, every element's range
+// must be valid as well
+template <typename T>
+inline constexpr bool str_table(void const *base, ::std::size_t total,
+								lc_scatter<lc_scatter<T>> s) noexcept
+{
+	if (!scatter(base, total, s))
+	{
+		return false;
+	}
+	auto const off{lc_u32(s.ref.off)};
+	if (off == 0)
+	{
+		return true;
+	}
+	auto const *tbl{reinterpret_cast<lc_scatter<T> const *>(
+		static_cast<char8_t const *>(base) + off)};
+	auto const n{static_cast<::std::size_t>(lc_u32(s.len))};
+	for (::std::size_t i{}; i != n; ++i)
+	{
+		if (!scatter(base, total, tbl[i]))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+// era records carry their own name and compiled-format scatters
+template <typename T>
+inline constexpr bool era_list(
+	void const *base, ::std::size_t total,
+	lc_scatter<basic_lc_time_era<T>> s) noexcept
+{
+	if (!scatter(base, total, s))
+	{
+		return false;
+	}
+	auto const off{lc_u32(s.ref.off)};
+	if (off == 0)
+	{
+		return true;
+	}
+	auto const *tbl{reinterpret_cast<basic_lc_time_era<T> const *>(
+		static_cast<char8_t const *>(base) + off)};
+	auto const n{static_cast<::std::size_t>(lc_u32(s.len))};
+	for (::std::size_t i{}; i != n; ++i)
+	{
+		if (!scatter(base, total, tbl[i].name) ||
+			!scatter(base, total, tbl[i].era_format))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+template <typename T>
+inline constexpr bool identification(
+	void const *base, ::std::size_t total,
+	basic_lc_identification<T> const &s) noexcept
+{
+	return scatter(base, total, s.name) &&
+		   scatter(base, total, s.encoding) &&
+		   scatter(base, total, s.title) &&
+		   scatter(base, total, s.source) &&
+		   scatter(base, total, s.address) &&
+		   scatter(base, total, s.contact) &&
+		   scatter(base, total, s.email) &&
+		   scatter(base, total, s.tel) &&
+		   scatter(base, total, s.fax) &&
+		   scatter(base, total, s.language) &&
+		   scatter(base, total, s.territory) &&
+		   scatter(base, total, s.audience) &&
+		   scatter(base, total, s.application) &&
+		   scatter(base, total, s.abbreviation) &&
+		   scatter(base, total, s.revision) &&
+		   scatter(base, total, s.date);
+}
+
+template <typename T>
+inline constexpr bool monetary(void const *base, ::std::size_t total,
+							   basic_lc_monetary<T> const &s) noexcept
+{
+	return scatter(base, total, s.int_curr_symbol) &&
+		   scatter(base, total, s.currency_symbol) &&
+		   scatter(base, total, s.mon_decimal_point) &&
+		   scatter(base, total, s.mon_thousands_sep) &&
+		   scatter(base, total, s.mon_grouping) &&
+		   scatter(base, total, s.positive_sign) &&
+		   scatter(base, total, s.negative_sign);
+}
+
+template <typename T>
+inline constexpr bool numeric(void const *base, ::std::size_t total,
+							  basic_lc_numeric<T> const &s) noexcept
+{
+	if (!scatter(base, total, s.decimal_point) ||
+		!scatter(base, total, s.thousands_sep) ||
+		!scatter(base, total, s.grouping))
+	{
+		return false;
+	}
+	// lc_ctx caches these in fixed arrays with no further checks
+	if (lc_u32(s.thousands_sep.ref.off) != 0 &&
+		lc_u32(s.thousands_sep.len) > lc_numeric_capacity)
+	{
+		return false;
+	}
+	if (lc_u32(s.grouping.ref.off) != 0 &&
+		lc_u32(s.grouping.len) > lc_numeric_capacity)
+	{
+		return false;
+	}
+	return true;
+}
+
+template <typename T>
+inline constexpr bool time(void const *base, ::std::size_t total,
+						   basic_lc_time<T> const &s) noexcept
+{
+	return scatter_array(base, total, s.abday) &&
+		   scatter_array(base, total, s.day) &&
+		   scatter_array(base, total, s.abmon) &&
+		   scatter_array(base, total, s.ab_alt_mon) &&
+		   scatter_array(base, total, s.mon) &&
+		   scatter_array(base, total, s.alt_mon) &&
+		   scatter(base, total, s.d_t_fmt) &&
+		   scatter(base, total, s.d_fmt) &&
+		   scatter(base, total, s.t_fmt) &&
+		   scatter(base, total, s.t_fmt_ampm) &&
+		   scatter(base, total, s.date_fmt) &&
+		   scatter_array(base, total, s.am_pm) &&
+		   era_list(base, total, s.era) &&
+		   scatter(base, total, s.era_d_fmt) &&
+		   scatter(base, total, s.era_d_t_fmt) &&
+		   scatter(base, total, s.era_t_fmt) &&
+		   str_table(base, total, s.alt_digits) &&
+		   str_table(base, total, s.timezone);
+}
+
+template <typename T>
+inline constexpr bool messages(void const *base, ::std::size_t total,
+							   basic_lc_messages<T> const &s) noexcept
+{
+	return scatter(base, total, s.yesexpr) &&
+		   scatter(base, total, s.noexpr) &&
+		   scatter(base, total, s.yesstr) &&
+		   scatter(base, total, s.nostr);
+}
+
+template <typename T>
+inline constexpr bool telephone(void const *base, ::std::size_t total,
+								basic_lc_telephone<T> const &s) noexcept
+{
+	return scatter(base, total, s.tel_int_fmt) &&
+		   scatter(base, total, s.tel_dom_fmt) &&
+		   scatter(base, total, s.int_select) &&
+		   scatter(base, total, s.int_prefix);
+}
+
+template <typename T>
+inline constexpr bool name(void const *base, ::std::size_t total,
+						   basic_lc_name<T> const &s) noexcept
+{
+	return scatter(base, total, s.name_fmt) &&
+		   scatter(base, total, s.name_gen) &&
+		   scatter(base, total, s.name_miss) &&
+		   scatter(base, total, s.name_mr) &&
+		   scatter(base, total, s.name_mrs) &&
+		   scatter(base, total, s.name_ms);
+}
+
+template <typename T>
+inline constexpr bool address(void const *base, ::std::size_t total,
+							  basic_lc_address<T> const &s) noexcept
+{
+	return scatter(base, total, s.postal_fmt) &&
+		   scatter(base, total, s.country_name) &&
+		   scatter(base, total, s.country_post) &&
+		   scatter(base, total, s.country_ab2) &&
+		   scatter(base, total, s.country_ab3) &&
+		   scatter(base, total, s.country_car) &&
+		   scatter(base, total, s.country_isbn) &&
+		   scatter(base, total, s.lang_name) &&
+		   scatter(base, total, s.lang_ab) &&
+		   scatter(base, total, s.lang_term) &&
+		   scatter(base, total, s.lang_lib);
+}
+
+template <typename T>
+inline constexpr bool keyboard(void const *base, ::std::size_t total,
+							   basic_lc_keyboard<T> const &s) noexcept
+{
+	return str_table(base, total, s.keyboards);
+}
+
+template <typename T>
+inline constexpr bool all_fields(void const *base, ::std::size_t total,
+								 basic_lc_all<T> const *a) noexcept
+{
+	return identification(base, total, a->identification) &&
+		   monetary(base, total, a->monetary) &&
+		   numeric(base, total, a->numeric) &&
+		   time(base, total, a->time) &&
+		   messages(base, total, a->messages) &&
+		   telephone(base, total, a->telephone) &&
+		   name(base, total, a->name) &&
+		   address(base, total, a->address) &&
+		   keyboard(base, total, a->keyboard);
+}
+
+template <typename T>
+inline constexpr bool section(void const *base, ::std::size_t total,
+							  lc_rva<basic_lc_all<T>> r) noexcept
+{
+	auto const off{lc_u32(r.off)};
+	if (off == 0)
+	{
+		return true;
+	}
+	if (off >= total || sizeof(basic_lc_all<T>) > total - off)
+	{
+		return false;
+	}
+	auto const *a{reinterpret_cast<basic_lc_all<T> const *>(
+		static_cast<char8_t const *>(base) + off)};
+	return all_fields(base, total, a);
+}
+
+} // namespace verify_details
+
+// verify the whole blob in one pass. Called once by the loader before
+// the locale is cached; also usable by callers that map a blob by hand.
+[[nodiscard]] inline constexpr bool lc_verify(lc_locale const *l,
+											  ::std::size_t size) noexcept
+{
+	using namespace verify_details;
+	if (l == nullptr || size < sizeof(lc_locale))
+	{
+		return false;
+	}
+	auto const total{static_cast<::std::size_t>(lc_u32(l->total))};
+	if (total < sizeof(lc_locale) || total > size)
+	{
+		return false;
+	}
+	if (lc_u32(l->magic) != magic || lc_u32(l->version) > blob_version)
+	{
+		return false;
+	}
+	if (lc_u32(l->codeset) >
+		static_cast<::std::uint_least32_t>(locale_charset::utf_ebcdic))
+	{
+		return false;
+	}
+	return scatter(l, total, l->name) &&
+		   section(l, total, l->all) &&
+		   section(l, total, l->u8all) &&
+		   section(l, total, l->u16all) &&
+		   section(l, total, l->u32all);
+}
 
 // load flags — bits controlling how much of the OS's own locale
 // settings the load consults

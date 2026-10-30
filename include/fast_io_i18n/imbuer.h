@@ -7,22 +7,26 @@
 //   ::fast_io::println(::fast_io::imbue(loc, obf), ::fast_io::mnp::d_t_fmt(ts));
 //   ::fast_io::println(::fast_io::imbue(loc, obf), ::fast_io::mnp::boolalpha(b));
 //
-// The locale handle is a ::fast_io::l10n::lc_locale const* — an
-// lc_ctx built from it at imbue time selects the section for the
-// stream's char_type: char follows the file's declared codeset
-// (UTF-8/GB18030/UTF-EBCDIC), char8_t/char16_t/char32_t select their
-// own always-present sections.
+// The locale handle is a ::fast_io::l10n::lc_locale const*. The lc_ctx
+// that selects the section for the stream's char_type (char follows the
+// file's declared codeset — UTF-8/GB18030/UTF-EBCDIC; char8_t/char16_t/
+// char32_t select their own always-present sections) is built lazily, on
+// the first argument that actually formats through the locale, so
+// imbue() itself is just the locale pointer plus the stream reference.
 
 namespace fast_io
 {
 
-template <typename stm>
+// Holds exactly the output_stream_ref result and the locale pointer.
+// The whole object is passed by value through the print path, so it must
+// stay small; the lc_ctx is built lazily only when a locale-aware
+// argument actually needs it.
+template <typename output_stream_ref_t>
 struct lc_imbuer
 {
-	using handle_type = stm;
+	using handle_type = output_stream_ref_t;
 	using output_char_type = typename handle_type::output_char_type;
 	using char_type = output_char_type;
-	lc_ctx<char_type> ctx{};
 #ifndef __INTELLISENSE__
 #if __has_cpp_attribute(msvc::no_unique_address)
 	[[msvc::no_unique_address]]
@@ -31,6 +35,7 @@ struct lc_imbuer
 #endif
 #endif
 	handle_type handle{};
+	::fast_io::l10n::lc_locale const *loc{};
 };
 
 template <typename stm>
@@ -47,21 +52,32 @@ inline constexpr auto imbue(::fast_io::l10n::lc_locale const *loc,
 {
 	using reftype = decltype(::fast_io::operations::output_stream_ref(out));
 	using char_type = typename reftype::output_char_type;
-	return lc_imbuer<reftype>{::fast_io::lc_load_ctx<char_type>(loc),
-							  ::fast_io::operations::output_stream_ref(out)};
+	return lc_imbuer<reftype>{::fast_io::operations::output_stream_ref(out), loc};
 }
-
 
 
 template <bool line, typename output, typename... Args>
 inline constexpr void status_print_define(::fast_io::lc_imbuer<output> imb, Args... args)
 	FAST_IO_HERBCEPTIONS_THROWS
 {
+	using char_type = typename lc_imbuer<output>::char_type;
 	if constexpr (::fast_io::l10n::details::lc_any_arg_v<
 					  typename lc_imbuer<output>::char_type, Args...>)
 	{
-		return ::fast_io::l10n::details::lc_status_print_impl<line>(imb.ctx, imb.handle,
-																  args...);
+		/* Integers are the only lc args whose formatting is the plain
+		   path whenever the locale has no grouping: don't build the
+		   context in that (common) case. */
+		if constexpr (::fast_io::l10n::details::lc_all_plain_scalar_v<char_type, Args...>)
+		{
+			if (!::fast_io::details::lc_numeric_grouped<char_type>(imb.loc))
+			{
+				return ::fast_io::operations::decay::print_freestanding_decay<line>(
+					imb.handle, args...);
+			}
+		}
+		::fast_io::lc_ctx<char_type> ctx{::fast_io::lc_load_ctx<char_type>(imb.loc)};
+		return ::fast_io::l10n::details::lc_status_print_impl<line>(ctx, imb.handle,
+																	args...);
 	}
 	else
 	{
@@ -84,10 +100,22 @@ inline auto async_status_print_define(schedulertype sched,
 	using char_type = typename lc_imbuer<output>::char_type;
 	if constexpr (::fast_io::l10n::details::lc_any_arg_v<char_type, Args...>)
 	{
+		/* Integers are the only lc args whose formatting is the plain
+		   path whenever the locale has no grouping: don't build the
+		   context or the owned payload in that (common) case. */
+		if constexpr (::fast_io::l10n::details::lc_all_plain_scalar_v<char_type, Args...>)
+		{
+			if (!::fast_io::details::lc_numeric_grouped<char_type>(imb.loc))
+			{
+				return ::fast_io::operations::decay::async_print_decay<line>(
+					sched, timeout, imb.handle, args...);
+			}
+		}
 		::fast_io::containers::basic_string<char_type, ::fast_io::native_global_allocator>
 			payload;
+		::fast_io::lc_ctx<char_type> ctx{::fast_io::lc_load_ctx<char_type>(imb.loc)};
 		::fast_io::l10n::details::lc_status_print_impl<line>(
-			imb.ctx, io_strlike_ref(::fast_io::io_alias, payload), args...);
+			ctx, io_strlike_ref(::fast_io::io_alias, payload), args...);
 		return ::fast_io::operations::decay::async_print_decay<false>(
 			sched, timeout, imb.handle,
 			::fast_io::mnp::strvw(payload));
@@ -101,4 +129,3 @@ inline auto async_status_print_define(schedulertype sched,
 #endif
 
 } // namespace fast_io
-

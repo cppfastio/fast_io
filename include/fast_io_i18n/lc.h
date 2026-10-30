@@ -17,7 +17,8 @@
 namespace fast_io
 {
 
-inline constexpr ::std::size_t lc_sep_capacity{16};
+inline constexpr ::std::size_t lc_sep_capacity{
+	::fast_io::l10n::lc_numeric_capacity};
 
 template <::std::integral char_type>
 struct lc_ctx
@@ -33,34 +34,38 @@ struct lc_ctx
 	::std::size_t sep_len{};
 	char8_t grouping[lc_sep_capacity]{};
 	::std::size_t grouping_len{};
+	// the common locale shape — one group size repeated forever from
+	// the right ({3}, {3,0}, {3,CHAR_MAX}); 0 when the list is not
+	// uniform and the writers must consult it group by group
+	::std::uint_least8_t uniform_group{};
 
 	// resolve a wire scatter member to a real scatter of char_type
 	// units — the member's declared T is the charset tag (char for
 	// every string field); the actual units are this section's
-	// char_type. rva==0 gives {nullptr,0}
+	// char_type. rva==0 gives {nullptr,0}. Bounds were verified once
+	// at load, so this is just pointer arithmetic.
 	template <typename T>
 	inline constexpr ::fast_io::basic_io_scatter_t<char_type> sc(
-		::fast_io::l10n::lc_scatter<T> s) const FAST_IO_HERBCEPTIONS_THROWS
+		::fast_io::l10n::lc_scatter<T> s) const noexcept
 	{
 		auto const r{::fast_io::l10n::lc_get_scatter(loc, s)};
 		return {reinterpret_cast<char_type const *>(r.base), r.len};
 	}
 	// resolve a wire rva member to a pointer; rva==0 gives nullptr
 	template <typename T>
-	inline constexpr T const *pt(::fast_io::l10n::lc_rva<T> r) const
-		FAST_IO_HERBCEPTIONS_THROWS
+	inline constexpr T const *pt(::fast_io::l10n::lc_rva<T> r) const noexcept
 	{
 		return ::fast_io::l10n::lc_get_rva(loc, r);
 	}
 	// a strref-table element of a dynamic string list (alt_digits and
-	// friends): member is {tbl_rva,count}, tbl = lc_scatter[count]
+	// friends): member is {tbl_rva,count}, tbl = lc_scatter[count].
+	// The load-time check bounds the whole table; the index check stays
+	// because the index itself is caller-controlled.
 	template <typename T>
 	inline constexpr ::fast_io::basic_io_scatter_t<char_type> sc_elem(
 		::fast_io::l10n::lc_scatter<::fast_io::l10n::lc_scatter<T>> s,
-		::std::size_t i) const FAST_IO_HERBCEPTIONS_THROWS
+		::std::size_t i) const noexcept
 	{
-		// the table itself is bounded first — off + len*sizeof covers
-		// the whole element array, so tbl[i] is always inside the image
 		auto const tbl{::fast_io::l10n::lc_get_scatter(loc, s)};
 		if (tbl.base == nullptr || i >= tbl.len)
 		{
@@ -73,8 +78,7 @@ struct lc_ctx
 
 template <::std::integral char_type>
 inline lc_ctx<char_type>
-lc_load_ctx(::fast_io::l10n::lc_locale const *v)
-	FAST_IO_HERBCEPTIONS_THROWS
+lc_load_ctx(::fast_io::l10n::lc_locale const *v) noexcept
 {
 	namespace lc = ::fast_io::l10n;
 	lc_ctx<char_type> ctx{};
@@ -85,34 +89,71 @@ lc_load_ctx(::fast_io::l10n::lc_locale const *v)
 	}
 	ctx.loc = v;
 	ctx.all = reinterpret_cast<lc::basic_lc_all<char> const *>(all);
-	// payload units already are char_type — no codecvt anywhere
+	// payload units already are char_type — no codecvt anywhere.
+	// Lengths were capped by lc_verify, so these copies are unconditional.
 	if (auto const sep{lc::lc_get_scatter(v, all->numeric.thousands_sep)};
 		sep.base != nullptr && sep.len != 0)
 	{
-		if (sep.len > lc_sep_capacity)
-		{
-			::fast_io::herbceptions::throws_errc(::std::errc::invalid_argument);
-		}
 		::fast_io::details::my_memcpy(ctx.sep, sep.base, sep.len * sizeof(char_type));
 		ctx.sep_len = sep.len;
 	}
 	if (auto const g{lc::lc_get_scatter(v, all->numeric.grouping)};
 		g.base != nullptr && g.len != 0)
 	{
-		if (g.len > lc_sep_capacity)
-		{
-			::fast_io::herbceptions::throws_errc(::std::errc::invalid_argument);
-		}
 		::fast_io::details::my_memcpy(ctx.grouping, g.base, g.len);
 		ctx.grouping_len = g.len;
+		/* glibc semantics: entries count from the right, 0 repeats
+		   the previous size, CHAR_MAX stops, running past the end
+		   repeats the last one. The list is uniform when every
+		   consulted entry is the same size. */
+		auto const g0{static_cast<::std::uint_least8_t>(ctx.grouping[0])};
+		if (g0 != 0 && g0 != 0xFFu)
+		{
+			bool uniform{true};
+			for (::std::size_t i{1}; i < g.len; ++i)
+			{
+				auto const gi{static_cast<::std::uint_least8_t>(ctx.grouping[i])};
+				if (gi == 0xFFu)
+				{
+					break;
+				}
+				if (gi != 0 && gi != g0)
+				{
+					uniform = false;
+					break;
+				}
+			}
+			if (uniform)
+			{
+				ctx.uniform_group = g0;
+			}
+		}
 	}
 	return ctx;
 }
 
-
 namespace details
 {
 
+// Cheap probe for the imbued status path: without a thousands
+// separator there is nothing to group with, so the integers format
+// exactly like the plain path and no lc_ctx is needed.
+template <::std::integral char_type>
+inline bool lc_numeric_grouped(::fast_io::l10n::lc_locale const *loc) noexcept
+{
+	namespace lc = ::fast_io::l10n;
+	if (loc == nullptr)
+	{
+		return false;
+	}
+	auto const *all{lc::lc_get_all<char_type>(loc)};
+	if (all == nullptr)
+	{
+		return false;
+	}
+	auto const s{lc::lc_get_scatter(loc, all->numeric.thousands_sep)};
+	return s.base != nullptr && s.len != 0;
+}
 // glibc grouping semantics: entry gi is the group size for group gi
 // counting from the right; past the end the last value repeats; a 0
 // repeats the previous value; 0xFF (CHAR_MAX) or 0-with-no-previous
@@ -179,4 +220,3 @@ struct lc_write_sink
 } // namespace details
 
 } // namespace fast_io
-

@@ -11,7 +11,7 @@
 //        |
 //        miss
 //        v
-//   native_file_loader mmap -> magic+version check -> publish the
+//   native_file_loader mmap -> lc_verify the whole image -> publish the
 //   lc_locale pointer straight into the mapping
 //
 // The mapping is private copy-on-write (the default native_file_loader
@@ -809,19 +809,14 @@ inline ::fast_io::l10n::lc_locale const *load_blob_impl(::fast_io::u8string_view
 					::fast_io::mnp::os_c_str(locale_dir().data()));
 			}
 			// private copy-on-write pages — the default loader mode.
-			// the only checks are magic and version; everything else
-			// is the file's own struct layout.
+			// verify the complete image once, before it is published into
+			// either cache; formatting then trusts every rva/scatter.
 			::fast_io::native_file_loader loader{::fast_io::at(*locale_dir_file),
 												 file};
 			::fast_io::u8string_view bv{reinterpret_cast<char8_t const *>(loader.data()),
 										loader.size()};
-			if (bv.size() < sizeof(lcblob::lc_locale))
-			{
-				throw_einval();
-			}
 			auto const *loc{reinterpret_cast<lcblob::lc_locale const *>(bv.data())};
-			if (lcblob::lc_u32(loc->magic) != lcblob::magic ||
-				lcblob::lc_u32(loc->version) > lcblob::blob_version)
+			if (!lcblob::lc_verify(loc, bv.size()))
 			{
 				throw_einval();
 			}
@@ -900,6 +895,15 @@ inline ::fast_io::l10n::lc_locale const *load_blob_impl(::fast_io::u8string_view
 			{
 				p = reinterpret_cast<lcblob::lc_locale const *>(entry->loader.data());
 			}
+			// re-verify the private image after the Windows registry
+			// overrides were appended (rva fields and total changed).
+			// normal loads were already verified above.
+#if defined(_WIN32) && !defined(__WINE__) && !defined(__CYGWIN__)
+			if (user && !lcblob::lc_verify(p, entry->img.size()))
+			{
+				throw_einval();
+			}
+#endif
 			global_map.insert_key(key, p);
 		}
 	}
