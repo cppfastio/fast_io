@@ -313,58 +313,6 @@ static_assert(device_and_type_ok, "some types are not printable for perrln");
 	}
 }
 
-template <typename... Args>
-[[noreturn]] inline constexpr void panic(Args &&...args) noexcept
-{
-	::fast_io::details::io_print_check_no_consecutive_character_arrays<Args...>();
-	if constexpr (sizeof...(Args) != 0)
-	{
-#if defined(__HERBCEPTIONS__) || defined(__cpp_exceptions)
-		try
-		{
-#endif
-			::fast_io::io::perr(::std::forward<Args>(args)...);
-#if defined(__HERBCEPTIONS__) || defined(__cpp_exceptions)
-		}
-#endif
-#ifdef __HERBCEPTIONS__
-		catch throws(::std::error)
-		{
-		}
-#elif defined(__cpp_exceptions)
-		catch (...)
-		{
-		}
-#endif
-	}
-	::fast_io::fast_terminate();
-}
-
-template <typename... Args>
-[[noreturn]] inline constexpr void panicln(Args &&...args) noexcept
-{
-	::fast_io::details::io_print_check_no_consecutive_character_arrays<Args...>();
-	::fast_io::details::io_print_check_last_arg_not_character_array<Args...>();
-#if defined(__HERBCEPTIONS__) || defined(__cpp_exceptions)
-	try
-	{
-#endif
-		::fast_io::io::perrln(::std::forward<Args>(args)...);
-#if defined(__HERBCEPTIONS__) || defined(__cpp_exceptions)
-	}
-#endif
-#ifdef __HERBCEPTIONS__
-	catch throws(::std::error)
-	{
-	}
-#elif defined(__cpp_exceptions)
-	catch (...)
-	{
-	}
-#endif
-	::fast_io::fast_terminate();
-}
-
 // Allow debug print
 #if FAST_IO_DISABLE_DEBUG_PRINT == 0
 // With debugging. We output to POSIX fd or Win32 Handle directly instead of C's stdout.
